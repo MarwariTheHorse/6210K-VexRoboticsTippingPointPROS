@@ -82,11 +82,11 @@ void opcontrol() {
 		pros::lcd::print(0, "%d %d %d", (pros::lcd::read_buttons() & LCD_BTN_LEFT) >> 2,
 		                 (pros::lcd::read_buttons() & LCD_BTN_CENTER) >> 1,
 		                 (pros::lcd::read_buttons() & LCD_BTN_RIGHT) >> 0);
-		int left = master.get_analog(ANALOG_LEFT_Y);
-		int right = master.get_analog(ANALOG_RIGHT_Y);
+		int leftY = master.get_analog(ANALOG_LEFT_Y);
+		int rightX = master.get_analog(ANALOG_RIGHT_X);
 
-		left_mtr = left;
-		right_mtr = right;
+		left_mtr = leftY + rightX;
+		right_mtr = leftY - rightX;
 		pros::delay(20);
 	}
 }
