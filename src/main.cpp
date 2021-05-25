@@ -82,11 +82,25 @@ void opcontrol() {
 		pros::lcd::print(0, "%d %d %d", (pros::lcd::read_buttons() & LCD_BTN_LEFT) >> 2,
 		                 (pros::lcd::read_buttons() & LCD_BTN_CENTER) >> 1,
 		                 (pros::lcd::read_buttons() & LCD_BTN_RIGHT) >> 0);
-		int leftY = master.get_analog(ANALOG_LEFT_Y);
-		int rightX = master.get_analog(ANALOG_RIGHT_X);
 
+		// WHEELS /////////////////////////////////////////////////////////////////////////
+
+		// Get joystick values
+		int left = master.get_analog(ANALOG_LEFT_Y);
+		int right = master.get_analog(ANALOG_RIGHT_X);
+
+		// Zeroing out stuff
+		if(abs(left < 10)) left = 0;
+		if(abs(right < 10)) right = 0;
+
+		// Assign converted values to the wheels
 		left_mtr = leftY + rightX;
 		right_mtr = leftY - rightX;
+
+		// CONVEYOR ///////////////////////////////////////////////////////////////////////
+
+		//
+
 		pros::delay(20);
 	}
 }
