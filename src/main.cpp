@@ -1,5 +1,15 @@
 #include "main.h"
 
+// Motor port definitions
+#define WHEEL_LEFT 1
+#define WHEEL_RIGHT 2
+#define CONVEYOR_LOWER 3
+#define CONVEYOR_UPPER 4
+#define ROTATOR_LEFT 5
+#define ROTATOR_RIGHT 6
+#define TILT_LEFT 7
+#define TILT_RIGHT 8
+
 /**
  * A callback function for LLEMU's center button.
  *
