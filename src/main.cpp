@@ -96,19 +96,19 @@ void opcontrol() {
 		// WHEELS /////////////////////////////////////////////////////////////////////////
 
 		// Get joystick values
-		int left = master.get_analog(ANALOG_LEFT_Y);
-		int right = master.get_analog(ANALOG_RIGHT_X);
+		int leftY = master.get_analog(ANALOG_LEFT_Y);
+		int rightX = master.get_analog(ANALOG_RIGHT_X);
 
 		// Zeroing out stuff
-		if(abs(left < 10)) left = 0;
-		if(abs(right < 10)) right = 0;
+		if(abs(left < 10)) leftY = 0;
+		if(abs(right < 10)) rightX = 0;
 
 		// Assign converted values to the wheels
 		left_mtr = leftY + rightX;
 		right_mtr = leftY - rightX;
 
 		// CONVEYOR ///////////////////////////////////////////////////////////////////////
-
+		
 		//
 
 		pros::delay(20);
