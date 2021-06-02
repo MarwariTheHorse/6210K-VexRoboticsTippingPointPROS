@@ -1,3 +1,4 @@
+#include "neural_network.hpp"
 typedef std::vector<RowVector*> data;
 int main()
 {

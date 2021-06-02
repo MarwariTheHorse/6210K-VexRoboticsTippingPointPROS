@@ -1,9 +1,4 @@
-#include "pog_lib/neural_network.hpp"
-NeuralNetwork::NeuralNetwork(std::vector<uint> topology, Scalar learningRate)
-{
-	this->topology = topology;
-	this->learningRate = learningRate;
-
+#include "neural_network.hpp"
 	// Make the neuron layers
 	for(uint i = 0; i < topology.size(); i++){
 		if(i == topology.size() - 1)
