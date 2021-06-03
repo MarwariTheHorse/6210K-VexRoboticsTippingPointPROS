@@ -1,7 +1,0 @@
-Seudocode for 2021-2022 robotics game
-
-Preauton stuff like getting auton mode
-
-Drivetrain:
-Splitstick + filters
-
