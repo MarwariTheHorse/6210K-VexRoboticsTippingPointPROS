@@ -102,8 +102,12 @@ void opcontrol() {
 		right_mtr = leftY - rightX;
 
 		// Ring Intake ///////////////////////////////////////////////////////////////////////
+
 		
 		// Ring Director /////////////////////////////////////////////////////////////////////
+		
+		// This mechinism is going to be pretty deep in the robot, so we are going to need to
+		// come up with some algorithm so that the robot can deal with this part of operations
 
 		pros::delay(10);
 	}

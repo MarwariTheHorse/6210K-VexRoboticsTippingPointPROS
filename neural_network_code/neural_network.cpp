@@ -1,4 +1,6 @@
 #include "neural_network.hpp"
+#include "Eigen/Dense"
+NeuralNetwork::NeuralNetwork(){
 	// Make the neuron layers
 	for(uint i = 0; i < topology.size(); i++){
 		if(i == topology.size() - 1)
