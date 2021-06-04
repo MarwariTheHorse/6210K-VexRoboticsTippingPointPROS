@@ -12,6 +12,12 @@
 
 const bool DEBUG = false;
 
+okapi::Motor mWheelBackLeft(20);
+okapi::Motor mWheelFrontLeft(11);
+okapi::Motor mWheelFrontRight(1);
+okapi::Motor mWheelBackRight(9);
+okapi::Controller master(okapi::ControllerId::master);
+
 /**
  * A callback function for LLEMU's center button.
  *
@@ -65,6 +71,31 @@ void opcontrol() {
 		pros::lcd::print(0, "%d %d %d", (pros::lcd::read_buttons() & LCD_BTN_LEFT) >> 2,
 		                 (pros::lcd::read_buttons() & LCD_BTN_CENTER) >> 1,
 		                 (pros::lcd::read_buttons() & LCD_BTN_RIGHT) >> 0);
+
+		// x-drive software
+		float controllerY = master.getAnalog(okapi::ControllerAnalog::leftY) * 100;
+		float controllerX = master.getAnalog(okapi::ControllerAnalog::leftX) * 100;
+		float controllerR = master.getAnalog(okapi::ControllerAnalog::rightX) * 100;
+
+		// Zero out the channels
+		if(controllerY < 10 && controllerY > -10) controllerY = 0;
+		if(controllerX < 10 && controllerX > -10) controllerX = 0;
+		if(controllerR < 10 && controllerR > -10) controllerR = 0;
+
+		double magnitude = sqrt((controllerX * controllerX) + (controllerY * controllerY));
+	    double direction;
+	    if(controllerX > 0){
+	      direction = (2 * okapi::pi) + asin(controllerY/magnitude) - (okapi::pi/4);
+	    }else{
+	      direction = okapi::pi - asin(controllerY/magnitude) - (okapi::pi/4);
+	    }
+
+	    // Assign wheel speeds
+	    mWheelFrontLeft.moveVelocity((controllerR) + (cos(direction) * magnitude));
+	    mWheelFrontRight.moveVelocity((controllerR) - (sin(direction) * magnitude));
+	    mWheelBackLeft.moveVelocity((controllerR) + (sin(direction) * magnitude));
+	    mWheelBackRight.moveVelocity((controllerR) - (cos(direction) * magnitude));
+
 		pros::delay(10);
 	}
 }
