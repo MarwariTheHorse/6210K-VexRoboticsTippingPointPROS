@@ -1,6 +1,11 @@
+#pragma once
+
 #include "neural_network.hpp"
-#include "Eigen/Dense"
-NeuralNetwork::NeuralNetwork(){
+NeuralNetwork::NeuralNetwork(std::vector<uint> topology, Scalar learningRate)
+{
+	this->topology = topology;
+	this->learningRate = learningRate;
+
 	// Make the neuron layers
 	for(uint i = 0; i < topology.size(); i++){
 		if(i == topology.size() - 1)
@@ -77,74 +82,74 @@ void NeuralNetwork::updateWeights()
 			}
 		}
 	}
+}
 
-	void NeuralNetwork::propogateBackward(RowVector& output){
-		calcErrors(output);
-		updateWeights();
+void NeuralNetwork::propogateBackward(RowVector& output){
+	calcErrors(output);
+	updateWeights();
+}
+
+Scalar activationFunction(Scalar x){
+	return tanhf(x);
+}
+
+Scalar activationFunctionDerivative(Scalar x){
+	return 1 - tanhf(x) * tanhf(x);
+}
+
+void NeuralNetwork::train(std::vector<RowVector*> input_data, std::vector<RowVector*> output_data)
+{
+	for(uint i = 0; i < input_data.size(); i++){
+		std::cout << "Input to neural network is : " << *input_data[i] << std::endl;
+		propogateForward(*input_data[i]);
+		std::cout << "Expected output is : " << *output_data[i] << std::endl;
+		std::cout << "Output produced is : " << *neuronLayers.back() << std::endl;
+		propogateBackward(*output_data[i]);
+		std::cout << "MSE : " << std::sqrt((*deltas.back()).dot((*deltas.back())) / deltas.back()->size()) << std::endl;
+
+	}
+}
+
+void readCSV(std::string filename, std::vector<RowVector*>& data)
+{
+	data.clear();
+	std::ifstream file(filename);
+	std::string line, word;
+	//Determine number of columns
+	getline(file, line, '\n');
+	std::stringstream ss(line);
+	std::vector<Scalar> parsed_vec;
+	while (getline(ss, word, ', ')) {
+		parsed_vec.push_back(Scalar(std::stof(&word[0])));
+	}
+	uint cols = parsed_vec.size();
+	data.push_back(new RowVector(cols));
+	for (uint i = 0; i < cols; i++){
+		data.back()->coeffRef(1, i) = parsed_vec[i];
 	}
 
-	Scalar activationFunction(Scalar x){
-		return tanhf(x);
-	}
-
-	Scalar activationFunctionDerivative(Scalar x){
-		return 1 - tanhf(x) * tanhf(x);
-	}
-
-	void NeuralNetwork::train(std::vector<RowVector*> input_data, std::vector<RowVector*> output_data)
-	{
-		for(uint i = 0; i < input_data.size(); i++){
-			std::cout << "Input to neural network is : " << *input_data[i] << std::endl;
-			propogateForward(*input_data[i]);
-			std::cout << "Expected output is : " << *output_data[i] << std::endl;
-			std::cout << "Output produced is : " << *neuronLayers.back() << std::endl;
-			propogateBackward(*output_data[i]);
-			std::cout << "MSE : " << std::sqrt((*deltas.back()).dot((*deltas.back())) / deltas.back()->size()) << std::endl;
-
-		}
-	}
-
-	void readCSV(std::string filename, std::vector<RowVector*>& data)
-	{
-		data.clear();
-		std::ifstream file(filename);
-		std::string line, word;
-		//Determine number of columns
-		getline(file, line, '\n');
-		std::stringstream ss(line);
-		std::vector<Scalar> parsed_vec;
-		while (getline(ss, word, ', ')) {
-			parsed_vec.push_back(Scalar(std::stof(&word[0])));
-		}
-		uint cols = parsed_vec.size();
-		data.push_back(new RowVector(cols));
-		for (uint i = 0; i < cols; i++){
-			data.back()->coeffRef(1, i) = parsed_vec[i];
-		}
-
-		// Read the file
-		if (file.is_open()){
-			while(getline(file, line, '\n')){
-				std::stringstream ss(line);
-				data.push_back(new RowVector(1, cols));
-				uint i = 0;
-				while (getline(ss, word, ', ')) {
-					data.back()->coeffRef(i) = Scalar(std::stof(&word[0]));
-					i++;
-				}
+	// Read the file
+	if (file.is_open()){
+		while(getline(file, line, '\n')){
+			std::stringstream ss(line);
+			data.push_back(new RowVector(1, cols));
+			uint i = 0;
+			while (getline(ss, word, ', ')) {
+				data.back()->coeffRef(i) = Scalar(std::stof(&word[0]));
+				i++;
 			}
 		}
 	}
-	void genData(std::string filename){
-		std::ofstream file1(filename + "-in");
-		std::ofstream file2(filename + "-out");
-		for(uint r = 0; r < 1000; r++){
-			Scalar x = rand() / Scalar(RAND_MAX);
-			Scalar y = rand() / Scalar(RAND_MAX);
-			file1 << x << ", " << y << std::endl;
-			file2 << 2 * x + 10 + y << std::endl;
-		}
-		file1.close();
-		file2.close();
+}
+void genData(std::string filename){
+	std::ofstream file1(filename + "-in");
+	std::ofstream file2(filename + "-out");
+	for(uint r = 0; r < 1000; r++){
+		Scalar x = rand() / Scalar(RAND_MAX);
+		Scalar y = rand() / Scalar(RAND_MAX);
+		file1 << x << ", " << y << std::endl;
+		file2 << 2 * x + 10 + y << std::endl;
 	}
+	file1.close();
+	file2.close();
 }
