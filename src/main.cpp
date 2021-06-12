@@ -68,6 +68,8 @@ void autonomous() {}
  */
 void opcontrol() {
 	while (true) {
+		// a ridiculously complicated print statement. originally returns three bits. each value is masked 
+		// via the bitwise AND operator and then bit shifted so that it is the only bit left.
 		pros::lcd::print(0, "%d %d %d", (pros::lcd::read_buttons() & LCD_BTN_LEFT) >> 2,
 		                 (pros::lcd::read_buttons() & LCD_BTN_CENTER) >> 1,
 		                 (pros::lcd::read_buttons() & LCD_BTN_RIGHT) >> 0);
@@ -91,10 +93,10 @@ void opcontrol() {
 	    }
 
 	    // Assign wheel speeds
-	    mWheelFrontLeft.moveVelocity((controllerR) + (cos(direction) * magnitude));
-	    mWheelFrontRight.moveVelocity((controllerR) - (sin(direction) * magnitude));
-	    mWheelBackLeft.moveVelocity((controllerR) + (sin(direction) * magnitude));
-	    mWheelBackRight.moveVelocity((controllerR) - (cos(direction) * magnitude));
+	    mWheelFrontLeft.moveVelocity(controllerR + controllerX + controllerY);
+	    mWheelFrontRight.moveVelocity(controllerR + controllerX - controllerY);
+	    mWheelBackLeft.moveVelocity(controllerR - controllerX + controllerY);
+	    mWheelBackRight.moveVelocity(controllerR - controllerX - controllerY);
 
 		pros::delay(10);
 	}
