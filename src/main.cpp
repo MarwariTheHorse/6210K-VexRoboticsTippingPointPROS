@@ -17,6 +17,9 @@ okapi::Motor mWheelFrontLeft(11);
 okapi::Motor mWheelFrontRight(1);
 okapi::Motor mWheelBackRight(9);
 okapi::Controller master(okapi::ControllerId::master);
+pros::Vision sCamera(2, pros::E_VISION_ZERO_CENTER);
+pros::vision_signature colorCode = sCamera.signature_from_utility(1, -4561, -4203, -4382, -5005, -4321, -4664, 2.400, 0);
+
 
 /**
  * A callback function for LLEMU's center button.
@@ -84,19 +87,26 @@ void opcontrol() {
 		if(controllerX < 10 && controllerX > -10) controllerX = 0;
 		if(controllerR < 10 && controllerR > -10) controllerR = 0;
 
-		double magnitude = sqrt((controllerX * controllerX) + (controllerY * controllerY));
-	    double direction;
-	    if(controllerX > 0){
-	      direction = (2 * okapi::pi) + asin(controllerY/magnitude) - (okapi::pi/4);
-	    }else{
-	      direction = okapi::pi - asin(controllerY/magnitude) - (okapi::pi/4);
-	    }
-
 	    // Assign wheel speeds
-	    mWheelFrontLeft.moveVelocity(controllerR + controllerX + controllerY);
-	    mWheelFrontRight.moveVelocity(controllerR + controllerX - controllerY);
-	    mWheelBackLeft.moveVelocity(controllerR - controllerX + controllerY);
-	    mWheelBackRight.moveVelocity(controllerR - controllerX - controllerY);
+		if(master.getDigital(okapi::ControllerDigital::up)){
+			pros::vision_object tempobj = sCamera.get_by_sig(0, 1);
+			if(sCamera.get_object_count() == 0 || tempobj.width * tempobj.height < 30){
+				mWheelBackLeft.moveVelocity(0);
+				mWheelBackRight.moveVelocity(0);
+				mWheelFrontLeft.moveVelocity(0);
+				mWheelFrontRight.moveVelocity(0);
+			}else{
+				mWheelFrontLeft.moveVelocity(-127 + tempobj.width + tempobj.x_middle_coord * .5);
+				mWheelFrontRight.moveVelocity(127 - tempobj.width + tempobj.x_middle_coord * .5);
+				mWheelBackRight.moveVelocity(127 - tempobj.width + tempobj.x_middle_coord * .5);
+				mWheelBackLeft.moveVelocity(-127 + tempobj.width + tempobj.x_middle_coord * .5); // largest object, sig 1
+			}
+		}else{
+			mWheelFrontLeft.moveVelocity(controllerR + controllerX + controllerY);
+			mWheelFrontRight.moveVelocity(controllerR + controllerX - controllerY);
+			mWheelBackLeft.moveVelocity(controllerR - controllerX + controllerY);
+			mWheelBackRight.moveVelocity(controllerR - controllerX - controllerY);
+		}
 
 		pros::delay(10);
 	}
