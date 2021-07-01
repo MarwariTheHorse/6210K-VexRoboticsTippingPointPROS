@@ -11,6 +11,7 @@
 #define TILT_RIGHT 8
 
 const bool DEBUG = false;
+const bool RECORD_NN_DATA = true;
 
 okapi::Motor mWheelBackLeft(20);
 okapi::Motor mWheelFrontLeft(11);
@@ -79,7 +80,7 @@ void opcontrol() {
 		                 (pros::lcd::read_buttons() & LCD_BTN_RIGHT) >> 0);
 
 
-		// Movement assigning code
+		// Movement assigning code //
 
 		// Get the largest green object
 		pros::vision_object tempobj = sCamera.get_by_sig(0, 1);
@@ -96,20 +97,32 @@ void opcontrol() {
 		else{
 			leftSpeed = -127 + tempobj.width + tempobj.x_middle_coord * .5;
 			rightSpeed = 127 - tempobj.width + tempobj.x_middle_coord * .5;
-			mWheelFrontLeft.moveVelocity(leftSpeed);
-			mWheelFrontRight.moveVelocity(rightSpeed);
-			mWheelBackRight.moveVelocity(rightSpeed);
-			mWheelBackLeft.moveVelocity(leftSpeed);
 		}
 
-		// Capture the data
+		mWheelFrontLeft.moveVelocity(leftSpeed);
+		mWheelFrontRight.moveVelocity(rightSpeed);
+		mWheelBackRight.moveVelocity(rightSpeed);
+		mWheelBackLeft.moveVelocity(leftSpeed);
+
+		// Capture the data (Runs every ten loops, ie >100ms)
 		// Steps: Store data into variables, write the group of data into the file
-		
-		// Capture training data
-		int greenX = tempobj.x_middle_coord;
+		if(pros::usd::is_installed() && count == 0 && RECORD_NN_DATA){
+			// Capture training data
+			int greenX = tempobj.x_middle_coord;
 
-		// Store the data
+			// Open the predefined data file
+			FILE* dataFile;
+			dataFile = fopen("usd/data.ntd", "a");
 
+			// Write the data
+			fputs("\n" + greenX + "\n" + leftSpeed + "\n" + rightSpeed + "\n", dataFile);
+
+			// Close the file
+			fclose(dataFile);
+		}
+
+		count++;
+		if(count == 10) count = 0;
 		pros::delay(10);
 	}
 }
