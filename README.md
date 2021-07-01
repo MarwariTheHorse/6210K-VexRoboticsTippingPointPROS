@@ -1,7 +1,7 @@
 # 6210K-VexRoboticsTippingPointPROS
 The amazing code repo for all the PROS code of 2021-2022.
 
-Currently this code is written for a robot with a 6 motor drive + a ring intake and a ring director + pneumatics for grabbing two cones. If this does not end up being the final plan, at least we will have some code to use.
+NOTE: The code in this repo as of now is for the neural network test bot.
 
 The Plans for this season:
 Fall: Build the robot, (Base>Mechs>Tuning), Program the foundation to the program
