@@ -16,6 +16,7 @@ okapi::Motor mWheelBackLeft(20);
 okapi::Motor mWheelFrontLeft(11);
 okapi::Motor mWheelFrontRight(1);
 okapi::Motor mWheelBackRight(9);
+
 okapi::Controller master(okapi::ControllerId::master);
 pros::Vision sCamera(2, pros::E_VISION_ZERO_CENTER);
 pros::vision_signature colorCode = sCamera.signature_from_utility(1, -4561, -4203, -4382, -5005, -4321, -4664, 2.400, 0);
@@ -77,36 +78,37 @@ void opcontrol() {
 		                 (pros::lcd::read_buttons() & LCD_BTN_CENTER) >> 1,
 		                 (pros::lcd::read_buttons() & LCD_BTN_RIGHT) >> 0);
 
-		// x-drive software
-		float controllerY = master.getAnalog(okapi::ControllerAnalog::leftY) * 100;
-		float controllerX = master.getAnalog(okapi::ControllerAnalog::leftX) * 100;
-		float controllerR = master.getAnalog(okapi::ControllerAnalog::rightX) * 100;
 
-		// Zero out the channels
-		if(controllerY < 10 && controllerY > -10) controllerY = 0;
-		if(controllerX < 10 && controllerX > -10) controllerX = 0;
-		if(controllerR < 10 && controllerR > -10) controllerR = 0;
+		// Movement assigning code
 
-	    // Assign wheel speeds
-		if(master.getDigital(okapi::ControllerDigital::up)){
-			pros::vision_object tempobj = sCamera.get_by_sig(0, 1);
-			if(sCamera.get_object_count() == 0 || tempobj.width * tempobj.height < 30){
-				mWheelBackLeft.moveVelocity(0);
-				mWheelBackRight.moveVelocity(0);
-				mWheelFrontLeft.moveVelocity(0);
-				mWheelFrontRight.moveVelocity(0);
-			}else{
-				mWheelFrontLeft.moveVelocity(-127 + tempobj.width + tempobj.x_middle_coord * .5);
-				mWheelFrontRight.moveVelocity(127 - tempobj.width + tempobj.x_middle_coord * .5);
-				mWheelBackRight.moveVelocity(127 - tempobj.width + tempobj.x_middle_coord * .5);
-				mWheelBackLeft.moveVelocity(-127 + tempobj.width + tempobj.x_middle_coord * .5); // largest object, sig 1
-			}
-		}else{
-			mWheelFrontLeft.moveVelocity(controllerR + controllerX + controllerY);
-			mWheelFrontRight.moveVelocity(controllerR + controllerX - controllerY);
-			mWheelBackLeft.moveVelocity(controllerR - controllerX + controllerY);
-			mWheelBackRight.moveVelocity(controllerR - controllerX - controllerY);
+		// Get the largest green object
+		pros::vision_object tempobj = sCamera.get_by_sig(0, 1);
+
+		int leftSpeed;
+		int rightSpeed;
+
+		// If there are no green object >= 30 pix, don't move
+		if(sCamera.get_object_count() == 0 || tempobj.width * tempobj.height < 30){
+			leftSpeed = 0;
+			rightSpeed = 0;
 		}
+		// Otherwise, drive forward, decreasing our speed as we get closer
+		else{
+			leftSpeed = -127 + tempobj.width + tempobj.x_middle_coord * .5;
+			rightSpeed = 127 - tempobj.width + tempobj.x_middle_coord * .5;
+			mWheelFrontLeft.moveVelocity(leftSpeed);
+			mWheelFrontRight.moveVelocity(rightSpeed);
+			mWheelBackRight.moveVelocity(rightSpeed);
+			mWheelBackLeft.moveVelocity(leftSpeed);
+		}
+
+		// Capture the data
+		// Steps: Store data into variables, write the group of data into the file
+		
+		// Capture training data
+		int greenX = tempobj.x_middle_coord;
+
+		// Store the data
 
 		pros::delay(10);
 	}
