@@ -1,4 +1,5 @@
 #include "main.h"
+#include <fstream>
 
 // Motor port definitions
 #define WHEEL_LEFT 1
@@ -20,8 +21,7 @@ okapi::Motor mWheelBackRight(9);
 
 okapi::Controller master(okapi::ControllerId::master);
 pros::Vision sCamera(2, pros::E_VISION_ZERO_CENTER);
-pros::vision_signature colorCode = sCamera.signature_from_utility(1, -4561, -4203, -4382, -5005, -4321, -4664, 2.400, 0);
-
+pros::vision_signature colorCode = sCamera.signature_from_utility(1, -4275, -3275, -3774, -7043, -5763, -6402, 2.400, 0);
 
 /**
  * A callback function for LLEMU's center button.
@@ -46,6 +46,8 @@ void initialize() {
 	pros::lcd::initialize();
 	pros::lcd::set_text(1, "Hello PROS User!");
 	pros::lcd::register_btn1_cb(on_center_button);
+	sCamera.set_wifi_mode(true);
+	sCamera.set_exposure(79);
 }
 
 /**
@@ -72,6 +74,7 @@ void autonomous() {}
  * to a field controller or etc.
  */
 void opcontrol() {
+	int count = 0;
 	while (true) {
 		// a ridiculously complicated print statement. originally returns three bits. each value is masked 
 		// via the bitwise AND operator and then bit shifted so that it is the only bit left.
@@ -109,20 +112,23 @@ void opcontrol() {
 		if(pros::usd::is_installed() && count == 0 && RECORD_NN_DATA){
 			// Capture training data
 			int greenX = tempobj.x_middle_coord;
+			int width = tempobj.width;
 
-			// Open the predefined data file
-			FILE* dataFile;
-			dataFile = fopen("usd/data.ntd", "a");
+			// Record training sensor data (obj_x, obj_width)
+			std::ofstream dataFile;
+  			dataFile.open("/usd/nn_data.csv", std::ofstream::out | std::ofstream::app);
+ 	 		dataFile << greenX << ", " << width << std::endl;
+  			dataFile.close();
 
-			// Write the data
-			fputs("\n" + greenX + "\n" + leftSpeed + "\n" + rightSpeed + "\n", dataFile);
-
-			// Close the file
-			fclose(dataFile);
+			// Record output training data (left_wheel_speed, right_wheel_speed)
+			std::ofstream resultsFile;
+			resultsFile.open("/usd/nn_results.csv", std::ofstream::out | std::ofstream::app);
+			resultsFile << leftSpeed << ", " << rightSpeed << std::endl;
+			resultsFile.close();
 		}
 
 		count++;
-		if(count == 10) count = 0;
+		if(count == 100) count = 0;
 		pros::delay(10);
 	}
 }
