@@ -13,6 +13,8 @@
 
 const bool DEBUG = false;
 const bool RECORD_NN_DATA = true;
+const bool RECORD_CC_DATA = true;
+const bool LOGGING_RATE = 100; // ms * 10, ie 100 results in data every second
 
 okapi::Motor mWheelBackLeft(20);
 okapi::Motor mWheelFrontLeft(11);
@@ -75,6 +77,7 @@ void autonomous() {}
  */
 void opcontrol() {
 	int count = 0;
+	int ccCount = 0;
 	while (true) {
 		// a ridiculously complicated print statement. originally returns three bits. each value is masked 
 		// via the bitwise AND operator and then bit shifted so that it is the only bit left.
@@ -109,26 +112,41 @@ void opcontrol() {
 
 		// Capture the data (Runs every ten loops, ie >100ms)
 		// Steps: Store data into variables, write the group of data into the file
-		if(pros::usd::is_installed() && count == 0 && RECORD_NN_DATA){
-			// Capture training data
-			int greenX = tempobj.x_middle_coord;
-			int width = tempobj.width;
+		if(pros::usd::is_installed()){
+			if(RECORD_NN_DATA && count == 0){ // NN data runs on a delay because I'm not sure how long file interactions take
+				// TODO: measure how long file interactions take
 
-			// Record training sensor data (obj_x, obj_width)
-			std::ofstream dataFile;
-  			dataFile.open("/usd/nn_data.csv", std::ofstream::out | std::ofstream::app);
- 	 		dataFile << greenX << ", " << width << std::endl;
-  			dataFile.close();
+				// Capture training data
+				int greenX = tempobj.x_middle_coord;
+				int width = tempobj.width;
 
-			// Record output training data (left_wheel_speed, right_wheel_speed)
-			std::ofstream resultsFile;
-			resultsFile.open("/usd/nn_results.csv", std::ofstream::out | std::ofstream::app);
-			resultsFile << leftSpeed << ", " << rightSpeed << std::endl;
-			resultsFile.close();
+				// Record training sensor data (obj_x, obj_width)
+				std::ofstream dataFile;
+				dataFile.open("/usd/nn_data.csv", std::ofstream::out | std::ofstream::app);
+				dataFile << greenX << ", " << width << std::endl;
+				dataFile.close();
+
+				// Record output training data (left_wheel_speed, right_wheel_speed)
+				std::ofstream resultsFile;
+				resultsFile.open("/usd/nn_results.csv", std::ofstream::out | std::ofstream::app);
+				resultsFile << leftSpeed << ", " << rightSpeed << std::endl;
+				resultsFile.close();
+			}
+			if(RECORD_COPYCAT_DATA){
+				if(master.getDigital(okapi::ControllerDigital::B)){
+					// Log stuff
+					ccCount++;
+					std::ofstream dataFile;
+					dataFile.open("/usd/cc_data.csv");
+					dataFile << ccCount << ", " << mWheelBackLeft.getPosition() << ", " 
+						<< mWheelBackRight.getPosition() << ", " << std::endl;
+					dataFile.close();
+				}
+			}
 		}
 
 		count++;
-		if(count == 100) count = 0;
+		if(count == LOGGING_RATE) count = 0;
 		pros::delay(10);
 	}
 }

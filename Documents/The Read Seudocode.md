@@ -9,3 +9,15 @@ Parts of the robot:
 * Ring intake **via a Okapi motor** (1 motor)
 * Ring director **via a Okapi motor** (1 motor)
 * Pneumatics for both mogo grabbers **via PROS ADI Digital Out** (2 pneumatics)
+
+Seudocode:
+* (exparimental) Assign following values via NN
+* Driving code
+* Print to brain code
+* Print to controller code
+* Lift code
+* Spinner code
+* Intake code
+* PGS code (Pneumatic gear shift
+* Logging code
+* Copycat logging code
