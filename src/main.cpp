@@ -12,8 +12,8 @@
 #define TILT_RIGHT 8
 
 const bool DEBUG = false;
-const bool RECORD_NN_DATA = true;
-const bool RECORD_CC_DATA = true;
+const bool RECORD_NN_DATA = false;
+const bool RECORD_COPYCAT_DATA = true;
 const bool LOGGING_RATE = 100; // ms * 10, ie 100 results in data every second
 
 okapi::Motor mWheelBackLeft(20);
@@ -133,11 +133,11 @@ void opcontrol() {
 				resultsFile.close();
 			}
 			if(RECORD_COPYCAT_DATA){
-				if(master.getDigital(okapi::ControllerDigital::B)){
+				if(master[okapi::ControllerDigital::B].changedToPressed()){
 					// Log stuff
 					ccCount++;
 					std::ofstream dataFile;
-					dataFile.open("/usd/cc_data.csv");
+					dataFile.open("/usd/cc_data.csv", std::ofstream::out | std::ofstream::app);
 					dataFile << ccCount << ", " << mWheelBackLeft.getPosition() << ", " 
 						<< mWheelBackRight.getPosition() << ", " << std::endl;
 					dataFile.close();
