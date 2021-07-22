@@ -11,13 +11,25 @@ Parts of the robot:
 * Pneumatics for both mogo grabbers **via PROS ADI Digital Out** (2 pneumatics)
 
 Seudocode:
-* (exparimental) Assign following values via NN
-* Driving code
-* Print to brain code
-* Print to controller code
-* Lift code
-* Spinner code
-* Intake code
-* PGS code (Pneumatic gear shift
-* Logging code
-* Copycat logging code
+* [ ] (exparimental) Assign following values via NN
+
+* [ ] Driving code
+* [ ] Lift code
+
+* [ ] Print to brain code
+* [ ] Print to controller code
+
+* [x] Data Logging code
+* [ ] Error Logging code
+* [x] Copycat logging code
+
+Driving code: Split stick
+
+L:100, R:100  >  100: 0
+L:100, R:-100 >  0  : 100
+L:100, R:0    >  100: 100
+L:0  , R:100  >  100:-100
+L:0  , R:-100 > -100: 100
+
+LW = L + R
+RW = L - R
