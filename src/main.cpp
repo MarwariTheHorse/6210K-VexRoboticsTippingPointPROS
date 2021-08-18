@@ -2,14 +2,16 @@
 #include <fstream>
 
 // Motor port definitions
-#define WHEEL_LEFT 1
-#define WHEEL_RIGHT 2
-#define CONVEYOR_LOWER 3
-#define CONVEYOR_UPPER 4
-#define ROTATOR_LEFT 5
-#define ROTATOR_RIGHT 6
-#define TILT_LEFT 7
-#define TILT_RIGHT 8
+#define WHEEL_LEFT_LOWER 1
+#define WHEEL_LEFT_UPPER 2
+#define WHEEL_RIGHT_LOWER 3
+#define WHEEL_RIGHT_UPPER 3
+#define WHEEL_BACK_LOWER 4
+#define WHEEL_BACK_UPPER 5
+#define LOCK_LEFT 6
+#define LOCK_RIGHT 7
+#define LIFT_LEFT 8
+#define LIFT_RIGHT 9
 
 const bool DEBUG = false;
 const bool RECORD_NN_DATA = false;
