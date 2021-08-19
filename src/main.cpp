@@ -98,10 +98,9 @@ void opcontrol() {
 		// Convert joysticks to wheel speeds
 		int wheelLeftSpeed = joyLY + joyRX;
 		int wheelRightSpeed = joyLY - joyRX;
-		int wheelBackSpeed
+		int wheelBackSpeed = (wheelLeftSpeed + wheelRightSpeed) / 2;
 
-		// Filter wheel speeds
-
+		// Filter wheel speeds (We got none right now)
 
 		// Wheel speed assignments
 		mWheelFrontLeft.moveVelocity(leftSpeed);
