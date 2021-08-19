@@ -15,8 +15,8 @@
 
 const bool DEBUG = false;
 const bool RECORD_NN_DATA = false;
-const bool RECORD_COPYCAT_DATA = true;
-const bool LOGGING_RATE = 100; // ms * 10, ie 100 results in data every second
+const bool RECORD_COPYCAT_DATA = false;
+const bool LOGGING_RATE = 100; // ms * 10, plus execution per loop time. ie 100 results in data appox. every second
 
 okapi::Motor mWheelBackLeft(20);
 okapi::Motor mWheelFrontLeft(11);
@@ -81,71 +81,33 @@ void opcontrol() {
 	int count = 0;
 	int ccCount = 0;
 	while (true) {
-		// a ridiculously complicated print statement. originally returns three bits. each value is masked 
-		// via the bitwise AND operator and then bit shifted so that it is the only bit left.
-		pros::lcd::print(0, "%d %d %d", (pros::lcd::read_buttons() & LCD_BTN_LEFT) >> 2,
-		                 (pros::lcd::read_buttons() & LCD_BTN_CENTER) >> 1,
-		                 (pros::lcd::read_buttons() & LCD_BTN_RIGHT) >> 0);
 
+		// Store joysticks
+		int joyLY = master.getAnalog(ControllerAnalog::leftY);
+		int joyRX = master.getAnalog(ControllerAnalog::rightX);
 
-		// Movement assigning code //
-
-		// Get the largest green object
-		pros::vision_object tempobj = sCamera.get_by_sig(0, 1);
-
-		int leftSpeed;
-		int rightSpeed;
-
-		// If there are no green object >= 30 pix, don't move
-		if(sCamera.get_object_count() == 0 || tempobj.width * tempobj.height < 30){
-			leftSpeed = 0;
-			rightSpeed = 0;
-		}
-		// Otherwise, drive forward, decreasing our speed as we get closer
-		else{
-			leftSpeed = -127 + tempobj.width + tempobj.x_middle_coord * .5;
-			rightSpeed = 127 - tempobj.width + tempobj.x_middle_coord * .5;
+		// Filter joysticks
+		if(math.abs(joyLY) < 10){
+			joyLY = 0;
 		}
 
+		if(math.abs(joyRX) < 10){
+			joyRX = 0;
+		}
+
+		// Convert joysticks to wheel speeds
+		int wheelLeftSpeed = joyLY + joyRX;
+		int wheelRightSpeed = joyLY - joyRX;
+		int wheelBackSpeed
+
+		// Filter wheel speeds
+
+
+		// Wheel speed assignments
 		mWheelFrontLeft.moveVelocity(leftSpeed);
 		mWheelFrontRight.moveVelocity(rightSpeed);
 		mWheelBackRight.moveVelocity(rightSpeed);
 		mWheelBackLeft.moveVelocity(leftSpeed);
-
-		// Capture the data (Runs every ten loops, ie >100ms)
-		// Steps: Store data into variables, write the group of data into the file
-		if(pros::usd::is_installed()){
-			if(RECORD_NN_DATA && count == 0){ // NN data runs on a delay because I'm not sure how long file interactions take
-				// TODO: measure how long file interactions take
-
-				// Capture training data
-				int greenX = tempobj.x_middle_coord;
-				int width = tempobj.width;
-
-				// Record training sensor data (obj_x, obj_width)
-				std::ofstream dataFile;
-				dataFile.open("/usd/nn_data.csv", std::ofstream::out | std::ofstream::app);
-				dataFile << greenX << ", " << width << std::endl;
-				dataFile.close();
-
-				// Record output training data (left_wheel_speed, right_wheel_speed)
-				std::ofstream resultsFile;
-				resultsFile.open("/usd/nn_results.csv", std::ofstream::out | std::ofstream::app);
-				resultsFile << leftSpeed << ", " << rightSpeed << std::endl;
-				resultsFile.close();
-			}
-			if(RECORD_COPYCAT_DATA){
-				if(master[okapi::ControllerDigital::B].changedToPressed()){
-					// Log stuff
-					ccCount++;
-					std::ofstream dataFile;
-					dataFile.open("/usd/cc_data.csv", std::ofstream::out | std::ofstream::app);
-					dataFile << ccCount << ", " << mWheelBackLeft.getPosition() << ", " 
-						<< mWheelBackRight.getPosition() << ", " << std::endl;
-					dataFile.close();
-				}
-			}
-		}
 
 		count++;
 		if(count == LOGGING_RATE) count = 0;
