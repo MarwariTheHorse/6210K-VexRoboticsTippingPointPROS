@@ -1,21 +1,19 @@
 #include "main.h"
 #include <fstream>
 
-// Motor port definitions
-#define WHEEL_LEFT_LOWER 1
-#define WHEEL_LEFT_UPPER 2
-#define WHEEL_RIGHT_LOWER 3
-#define WHEEL_RIGHT_UPPER 3
-#define WHEEL_BACK_LOWER 4
-#define WHEEL_BACK_UPPER 5
-#define LOCK_LEFT 6
-#define LOCK_RIGHT 7
-#define LIFT_LEFT 8
-#define LIFT_RIGHT 9
+// Motor + pneumatic port definitions
+#define WHEEL_LEFT_L 1
+#define WHEEL_LEFT_R 2
+#define WHEEL_RIGHT_L 3
+#define WHEEL_RIGHT_R 4
+#define WHEEL_BACK_L 5
+#define WHEEL_BACK_R 6
+#define LOCK_LEFT 7
+#define LOCK_RIGHT 8
+#define LIFT_LEFT 9
+#define LIFT_RIGHT 10
 
 const bool DEBUG = false;
-const bool RECORD_NN_DATA = false;
-const bool RECORD_COPYCAT_DATA = false;
 const bool LOGGING_RATE = 100; // ms * 10, plus execution per loop time. ie 100 results in data appox. every second
 
 okapi::Motor mWheelBackLeft(20);
@@ -73,6 +71,38 @@ void competition_initialize() {}
  */
 void autonomous() {}
 
+void setDTSpeeds(){
+	// Store joysticks
+	int joyLY = master.getAnalog(ControllerAnalog::leftY);
+	int joyRX = master.getAnalog(ControllerAnalog::rightX);
+
+	// Filter joysticks
+	if(math.abs(joyLY) < 10){
+		joyLY = 0;
+	}
+
+	if(math.abs(joyRX) < 10){
+		joyRX = 0;
+	}
+
+	// Convert joysticks to wheel speeds
+	int wheelLeftSpeed = joyLY + joyRX;
+	int wheelRightSpeed = joyLY - joyRX;
+	int wheelBackSpeed = (wheelLeftSpeed + wheelRightSpeed) / 2;
+
+	// Filter wheel speeds (We got none right now)
+
+	// Wheel speed assignments
+	mWheelFrontLeft.moveVelocity(leftSpeed);
+	mWheelFrontRight.moveVelocity(rightSpeed);
+	mWheelBackRight.moveVelocity(rightSpeed);
+	mWheelBackLeft.moveVelocity(leftSpeed);
+}
+
+
+
+
+
 /**
  * For operator control. Automatically runs after initialize if not connected 
  * to a field controller or etc.
@@ -81,32 +111,7 @@ void opcontrol() {
 	int count = 0;
 	int ccCount = 0;
 	while (true) {
-
-		// Store joysticks
-		int joyLY = master.getAnalog(ControllerAnalog::leftY);
-		int joyRX = master.getAnalog(ControllerAnalog::rightX);
-
-		// Filter joysticks
-		if(math.abs(joyLY) < 10){
-			joyLY = 0;
-		}
-
-		if(math.abs(joyRX) < 10){
-			joyRX = 0;
-		}
-
-		// Convert joysticks to wheel speeds
-		int wheelLeftSpeed = joyLY + joyRX;
-		int wheelRightSpeed = joyLY - joyRX;
-		int wheelBackSpeed = (wheelLeftSpeed + wheelRightSpeed) / 2;
-
-		// Filter wheel speeds (We got none right now)
-
-		// Wheel speed assignments
-		mWheelFrontLeft.moveVelocity(leftSpeed);
-		mWheelFrontRight.moveVelocity(rightSpeed);
-		mWheelBackRight.moveVelocity(rightSpeed);
-		mWheelBackLeft.moveVelocity(leftSpeed);
+		setDTSpeeds();
 
 		count++;
 		if(count == LOGGING_RATE) count = 0;
