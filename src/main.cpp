@@ -1,53 +1,26 @@
 #include "main.h"
 #include <fstream>
 
-// Motor port definitions
-#define WHEEL_LEFT 1
-#define WHEEL_RIGHT 2
-#define CONVEYOR_LOWER 3
-#define CONVEYOR_UPPER 4
-#define ROTATOR_LEFT 5
-#define ROTATOR_RIGHT 6
-#define TILT_LEFT 7
-#define TILT_RIGHT 8
-
 const bool DEBUG = false;
 const bool RECORD_NN_DATA = false;
 const bool RECORD_COPYCAT_DATA = true;
 const bool LOGGING_RATE = 100; // ms * 10, ie 100 results in data every second
 
+// Wheel Definitions
 okapi::Motor mWheelBackLeft(20);
 okapi::Motor mWheelFrontLeft(11);
 okapi::Motor mWheelFrontRight(1);
 okapi::Motor mWheelBackRight(9);
 
+// Controlle and camera definitions + green is defined
 okapi::Controller master(okapi::ControllerId::master);
 pros::Vision sCamera(2, pros::E_VISION_ZERO_CENTER);
 pros::vision_signature colorCode = sCamera.signature_from_utility(1, -4275, -3275, -3774, -7043, -5763, -6402, 2.400, 0);
 
 /**
- * A callback function for LLEMU's center button.
- *
- * When this callback is fired, it will toggle line 2 of the LCD text between
- * "I was pressed!" and nothing.
- */
-void on_center_button() {
-	static bool pressed = false;
-	pressed = !pressed;
-	if (pressed) {
-		pros::lcd::set_text(2, "I was pressed!");
-	} else {
-		pros::lcd::clear_line(2);
-	}
-}
-
-/**
  * Runs when program is started. Blocks everything else.
  */
 void initialize() {
-	pros::lcd::initialize();
-	pros::lcd::set_text(1, "Hello PROS User!");
-	pros::lcd::register_btn1_cb(on_center_button);
 	sCamera.set_wifi_mode(true);
 	sCamera.set_exposure(79);
 }
@@ -79,15 +52,6 @@ void opcontrol() {
 	int count = 0;
 	int ccCount = 0;
 	while (true) {
-		// a ridiculously complicated print statement. originally returns three bits. each value is masked 
-		// via the bitwise AND operator and then bit shifted so that it is the only bit left.
-		pros::lcd::print(0, "%d %d %d", (pros::lcd::read_buttons() & LCD_BTN_LEFT) >> 2,
-		                 (pros::lcd::read_buttons() & LCD_BTN_CENTER) >> 1,
-		                 (pros::lcd::read_buttons() & LCD_BTN_RIGHT) >> 0);
-
-
-		// Movement assigning code //
-
 		// Get the largest green object
 		pros::vision_object tempobj = sCamera.get_by_sig(0, 1);
 
