@@ -16,10 +16,7 @@
 const bool DEBUG = false;
 const bool LOGGING_RATE = 100; // ms * 10, plus execution per loop time. ie 100 results in data appox. every second
 
-okapi::Motor mWheelBackLeft(20);
-okapi::Motor mWheelFrontLeft(11);
-okapi::Motor mWheelFrontRight(1);
-okapi::Motor mWheelBackRight(9);
+
 
 okapi::Controller master(okapi::ControllerId::master);
 pros::Vision sCamera(2, pros::E_VISION_ZERO_CENTER);
