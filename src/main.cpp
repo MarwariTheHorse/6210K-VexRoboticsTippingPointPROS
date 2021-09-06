@@ -2,12 +2,13 @@
 #include <fstream>
 
 // Motor + pneumatic port definitions
-#define WHEEL_LEFT_L 1
-#define WHEEL_LEFT_R 2
-#define WHEEL_RIGHT_L 3
-#define WHEEL_RIGHT_R 4
+#define WHEEL_LEFT_V 1
+#define WHEEL_LEFT_H 2
+#define WHEEL_RIGHT_V 3
+#define WHEEL_RIGHT_H 4
 #define WHEEL_BACK_L 5
 #define WHEEL_BACK_R 6
+
 #define LOCK_LEFT 7
 #define LOCK_RIGHT 8
 #define LIFT_LEFT 9
@@ -16,27 +17,27 @@
 const bool DEBUG = false;
 const bool LOGGING_RATE = 100; // ms * 10, plus execution per loop time. ie 100 results in data appox. every second
 
+// Motors(port, reversed, gearset, encoderUnits, logger(implied))
+okapi::Motor vLeftMotor(WHEEL_LEFT_V, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations)
+okapi::Motor hLeftMotor(WHEEL_LEFT_H, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations)
 
+okapi::Motor vRightMotor(WHEEL_RIGHT_V, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations)
+okapi::Motor hRightMotor(WHEEL_RIGHT_H, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations)
 
+okapi::Motor lBackMotor(WHEEL_BACK_L, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations)
+okapi::Motor rBackMotor(WHEEL_BACK_R, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations)
+
+// Motor Groups (For making the code simpler)
+okapi::MotorGroup leftMotor({*vLeftMotor, *hLeftMotor})
+okapi::MotorGroup rightMotor({*vRightMotor, *hRightMotor})
+okapi::MotorGroup backMotor({*lBackMotor, *rBackMotor})
+
+// Controllers
 okapi::Controller master(okapi::ControllerId::master);
+
+// Cameras
 pros::Vision sCamera(2, pros::E_VISION_ZERO_CENTER);
 pros::vision_signature colorCode = sCamera.signature_from_utility(1, -4275, -3275, -3774, -7043, -5763, -6402, 2.400, 0);
-
-/**
- * A callback function for LLEMU's center button.
- *
- * When this callback is fired, it will toggle line 2 of the LCD text between
- * "I was pressed!" and nothing.
- */
-void on_center_button() {
-	static bool pressed = false;
-	pressed = !pressed;
-	if (pressed) {
-		pros::lcd::set_text(2, "I was pressed!");
-	} else {
-		pros::lcd::clear_line(2);
-	}
-}
 
 /**
  * Runs when program is started. Blocks everything else.
@@ -44,9 +45,6 @@ void on_center_button() {
 void initialize() {
 	pros::lcd::initialize();
 	pros::lcd::set_text(1, "Hello PROS User!");
-	pros::lcd::register_btn1_cb(on_center_button);
-	sCamera.set_wifi_mode(true);
-	sCamera.set_exposure(79);
 }
 
 /**
@@ -69,7 +67,7 @@ void competition_initialize() {}
 void autonomous() {}
 
 void setDTSpeeds(){
-	// Store joysticks
+	// Store joysticks range = [-1, 1]
 	int joyLY = master.getAnalog(ControllerAnalog::leftY);
 	int joyRX = master.getAnalog(ControllerAnalog::rightX);
 
@@ -90,28 +88,18 @@ void setDTSpeeds(){
 	// Filter wheel speeds (We got none right now)
 
 	// Wheel speed assignments
-	mWheelFrontLeft.moveVelocity(leftSpeed);
-	mWheelFrontRight.moveVelocity(rightSpeed);
-	mWheelBackRight.moveVelocity(rightSpeed);
-	mWheelBackLeft.moveVelocity(leftSpeed);
+	leftMotor.moveVelocity(wheelLeftSpeed * 600) // Speed is velocity pct * gearbox
+	rightMotor.moveVelocity(wheelRightSpeed * 600)
+	backMotor.moveVelocity(wheelBackSpeed * 600)
 }
-
-
-
-
 
 /**
  * For operator control. Automatically runs after initialize if not connected 
  * to a field controller or etc.
  */
 void opcontrol() {
-	int count = 0;
-	int ccCount = 0;
 	while (true) {
 		setDTSpeeds();
-
-		count++;
-		if(count == LOGGING_RATE) count = 0;
 		pros::delay(10);
 	}
 }
