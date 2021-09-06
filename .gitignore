@@ -8,6 +8,7 @@
 
 # PROS
 bin/
+server/OpenNN/
 .vscode/
 compile_commands.json
 temp.log
