@@ -15,5 +15,8 @@ temp.errors
 *.ini
 .d/
 
+# Neural Network
+server/
+
 # Annoying files from Apple
 .DS_Store
