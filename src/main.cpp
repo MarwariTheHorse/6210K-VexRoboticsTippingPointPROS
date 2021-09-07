@@ -2,12 +2,12 @@
 #include <fstream>
 
 // Motor + pneumatic port definitions
-#define WHEEL_LEFT_V 1
-#define WHEEL_LEFT_H 2
-#define WHEEL_RIGHT_V 3
-#define WHEEL_RIGHT_H 4
-#define WHEEL_BACK_L 5
-#define WHEEL_BACK_R 6
+#define WHEEL_LEFT_F 11
+#define WHEEL_LEFT_R 12
+#define WHEEL_RIGHT_F 2
+#define WHEEL_RIGHT_R 1
+#define WHEEL_BACK_L 19
+#define WHEEL_BACK_R 9
 
 #define LOCK_LEFT 7
 #define LOCK_RIGHT 8
@@ -18,19 +18,19 @@ const bool DEBUG = false;
 const bool LOGGING_RATE = 100; // ms * 10, plus execution per loop time. ie 100 results in data appox. every second
 
 // Motors(port, reversed, gearset, encoderUnits, logger(implied))
-okapi::Motor vLeftMotor(WHEEL_LEFT_V, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations)
-okapi::Motor hLeftMotor(WHEEL_LEFT_H, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations)
+okapi::Motor fLeftMotor(WHEEL_LEFT_F, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations);
+okapi::Motor rLeftMotor(WHEEL_LEFT_R, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations);
 
-okapi::Motor vRightMotor(WHEEL_RIGHT_V, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations)
-okapi::Motor hRightMotor(WHEEL_RIGHT_H, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations)
+okapi::Motor fRightMotor(WHEEL_RIGHT_F, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations);
+okapi::Motor rRightMotor(WHEEL_RIGHT_R, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations);
 
-okapi::Motor lBackMotor(WHEEL_BACK_L, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations)
-okapi::Motor rBackMotor(WHEEL_BACK_R, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations)
+okapi::Motor lBackMotor(WHEEL_BACK_L, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations);
+okapi::Motor rBackMotor(WHEEL_BACK_R, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations);
 
 // Motor Groups (For making the code simpler)
-okapi::MotorGroup leftMotor({*vLeftMotor, *hLeftMotor})
-okapi::MotorGroup rightMotor({*vRightMotor, *hRightMotor})
-okapi::MotorGroup backMotor({*lBackMotor, *rBackMotor})
+okapi::MotorGroup rightMotor({fLeftMotor, rLeftMotor});
+okapi::MotorGroup leftMotor({fRightMotor, rRightMotor});
+okapi::MotorGroup backMotor({lBackMotor, rBackMotor});
 
 // Controllers
 okapi::Controller master(okapi::ControllerId::master);
@@ -68,29 +68,29 @@ void autonomous() {}
 
 void setDTSpeeds(){
 	// Store joysticks range = [-1, 1]
-	int joyLY = master.getAnalog(ControllerAnalog::leftY);
-	int joyRX = master.getAnalog(ControllerAnalog::rightX);
+	float joyLY = master.getAnalog(okapi::ControllerAnalog::leftY);
+	float joyRX = master.getAnalog(okapi::ControllerAnalog::rightX);
 
 	// Filter joysticks
-	if(math.abs(joyLY) < 10){
+	if(abs(joyLY) < .1){
 		joyLY = 0;
 	}
 
-	if(math.abs(joyRX) < 10){
+	if(abs(joyRX) < .1){
 		joyRX = 0;
 	}
 
 	// Convert joysticks to wheel speeds
-	int wheelLeftSpeed = joyLY + joyRX;
-	int wheelRightSpeed = joyLY - joyRX;
-	int wheelBackSpeed = (wheelLeftSpeed + wheelRightSpeed) / 2;
+	float wheelLeftSpeed = joyLY - joyRX;
+	float wheelRightSpeed = joyLY + joyRX;
+	float wheelBackSpeed = (wheelLeftSpeed + wheelRightSpeed) / 2;
 
 	// Filter wheel speeds (We got none right now)
 
 	// Wheel speed assignments
-	leftMotor.moveVelocity(wheelLeftSpeed * 600) // Speed is velocity pct * gearbox
-	rightMotor.moveVelocity(wheelRightSpeed * 600)
-	backMotor.moveVelocity(wheelBackSpeed * 600)
+	leftMotor.moveVelocity(wheelLeftSpeed * 600); // Speed is velocity pct * gearbox
+	rightMotor.moveVelocity(wheelRightSpeed * 600);
+	backMotor.moveVelocity(wheelBackSpeed * 600);
 }
 
 /**
