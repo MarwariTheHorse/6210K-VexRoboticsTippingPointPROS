@@ -87,13 +87,13 @@ void opcontrol() {
 				// Record training sensor data (obj_x, obj_width)
 				std::ofstream dataFile;
 				dataFile.open("/usd/nn_data.csv", std::ofstream::out | std::ofstream::app);
-				dataFile << greenX << ", " << width << std::endl;
+				dataFile << "in: " << greenX << " " << width << std::endl;
 				dataFile.close();
 
 				// Record output training data (left_wheel_speed, right_wheel_speed)
 				std::ofstream resultsFile;
 				resultsFile.open("/usd/nn_results.csv", std::ofstream::out | std::ofstream::app);
-				resultsFile << leftSpeed << ", " << rightSpeed << std::endl;
+				resultsFile << "out: " << leftSpeed << " " << rightSpeed << std::endl;
 				resultsFile.close();
 			}
 			if(RECORD_COPYCAT_DATA){
