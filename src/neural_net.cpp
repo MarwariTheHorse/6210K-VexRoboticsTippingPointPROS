@@ -8,26 +8,9 @@
 
 using namespace std;
 
+#include "neural_network.h"
+
 bool LOAD_FROM_NN_SAVE = true;
-
-class TrainingData
-{
-public:
-	TrainingData(const string filename);
-
-	bool isEof(void)
-	{
-		return m_trainingDataFile.eof();
-	}
-
-	// Interact with the input file
-	void getTopology(vector<unsigned> &topology);
-	unsigned getNextInputs(vector<double> &inputVals);
-	unsigned getTargetOutputs(vector<double> &targetOutputVals);
-
-private:
-	ifstream m_trainingDataFile;
-};
 
 // Add topology data to the vector passed into the function
 void TrainingData::getTopology(vector<unsigned> &topology)
@@ -106,93 +89,8 @@ unsigned TrainingData::getTargetOutputs(vector<double> &targetOutputVals)
     return targetOutputVals.size();
 }
 
-class NeuralSave
-{
-public:
-	NeuralSave(const string filename);
-
-	bool isEof(void)
-	{
-		return m_nnDataFile.eof();
-	}
-
-	// Interact with the input file
-	void getTopology(vector<unsigned> &topology);
-private:
-	ifstream m_nnDataFile;
-};
-
-NeuralSave::NeuralSave(const string filename){
-	m_nnDataFile.open(filename.c_str());
-}
-
-// Add topology data to the vector passed into the function
-void NeuralSave::getTopology(vector<unsigned> &topology)
-{
-	string line;
-	string label;
-
-	getline(m_nnDataFile, line); // Toplogy data > line
-	stringstream ss(line); // Do the string converty thing or whatever
-	ss >> label; // Store the clean stuff into the label variable
-
-	if(this->isEof() || label.compare("topology:") != 0) // If there is no topology abort
-	{
-		abort();
-	}
-
-	while(!ss.eof()) // Continue while not at the end of the ss
-	{
-		unsigned n;
-		ss >> n; // Store next value into the 32 bit int
-		topology.push_back(n); // Slap that bad boy right into that vector
-	}
-	return;
-}
-
-// A data structure for the links between each neuron
-struct Connection
-{
-	double weight;
-	double deltaWeight;
-};
-
-class Neuron;
-
-typedef vector<Neuron> Layer; // Translation: Layers are simply vectors of Neurons
-
-// ****************** class Neuron ******************
-
-class Neuron
-{
-public:
-	Neuron(unsigned numOutputs, unsigned myIndex);
-	void setOutputVal(double val) { m_outputVal = val; } // TODO: Would it be cleaner to merge this and the func below
-	double getOutputVal(void) const { return m_outputVal; }
-	void feedForward(const Layer &prevLayer);
-	void calcOutputGradients(double targetVals);
-	void calcHiddenGradients(const Layer &nextLayer);
-	void updateInputWeights(Layer &prevLayer);
-	vector<Connection> getWeights();
-	double getGradient();
-	void setGradient(double g) {m_gradient = g;};
-	void addConnection(Connection c) {m_outputWeights.push_back(c);};
-private:
-	static double eta; // [0.0...1.0] overall net training rate
-	static double alpha; // [0.0...n] multiplier of last weight change [momentum]
-	static double transferFunction(double x);
-	static double transferFunctionDerivative(double x);
-	static double randomWeight(void) { return rand() / double(RAND_MAX); }
-	double sumDOW(const Layer &nextLayer) const;
-	double m_outputVal;
-	vector<Connection> m_outputWeights;
-	unsigned m_myIndex;
-	double m_gradient;
-};
-
 double Neuron::eta = 0.15; // overall net learning rate
 double Neuron::alpha = 0.5; // momentum, multiplier of last deltaWeight, [0.0..n]
-
 
 vector<Connection> Neuron::getWeights(){
 	return m_outputWeights;
@@ -286,23 +184,6 @@ Neuron::Neuron(unsigned numOutputs, unsigned myIndex)
 
 	m_myIndex = myIndex;
 }
-// ****************** class Net ******************
-class Net
-{
-public:
-	Net(const vector<unsigned> &topology);
-	void feedForward(const vector<double> &inputVals);
-	void backProp(const vector<double> &targetVals);
-	void getResults(vector<double> &resultVals) const;
-	double getRecentAverageError(void) const { return m_recentAverageError; }
-	void save();
-	void load(string s);
-private:
-	vector<Layer> m_layers; //m_layers[layerNum][neuronNum]
-	double m_error;
-	double m_recentAverageError;
-	static double m_recentAverageSmoothingFactor;
-};
 
 double Net::m_recentAverageSmoothingFactor = 100.0; // Number of training samples to average over
 
@@ -450,7 +331,7 @@ void Net::load(string s)
 			double value2;
 			ss >> value;
 			ss >> value2; 
-			Connection c = {.weight = value, .deltaWeight = value2};
+			Connection c = {value, value2};
 			m_layers[layerCount][nCount].addConnection(c);
 		}
 	}
@@ -474,84 +355,4 @@ Net::Net(const vector<unsigned> &topology)
 		// Force the bias node's output value to 1.0. It's the last neuron created above
 		m_layers.back().back().setOutputVal(1.0);
 	}
-}
-
-void showVectorVals(string label, vector<double> &v)
-{
-	cout << label << " ";
-	for(unsigned i = 0; i < v.size(); ++i)
-	{
-		cout << v[i] << " ";
-	}
-	cout << endl;
-}
-
-int main()
-{
-	// Load the necessary file handlers
-	TrainingData trainData("trainingData.txt");
-		
-	vector<unsigned> topology;
-
-	string line;
-	string label;
-	string filename = "NNsave.txt";
-/*
-	ifstream nnDataFile;
-
-	nnDataFile.open(filename.c_str());
-
-	getline(nnDataFile, line); // Toplogy data > line
-	stringstream ss(line); // Do the string converty thing or whatever
-	ss >> label; // Store the clean stuff into the label variable
-
-	if(nnDataFile.eof() || label.compare("topology:") != 0) // If there is no topology abort
-	{
-		abort();
-	}
-
-	while(!ss.eof()) // Continue while not at the end of the ss
-	{
-		unsigned n;
-		ss >> n; // Store next value into the 32 bit int
-		topology.push_back(n); // Slap that bad boy right into that vector
-	}*/
-
-	// Get the topology from either the NN or the training data
-	if(!LOAD_FROM_NN_SAVE) trainData.getTopology(topology);
-
-	// Create the network and load data if necessary
-	Net myNet(topology);
-	if(LOAD_FROM_NN_SAVE) myNet.load("NNsave.txt");
-
-	/*// Begin training
-	vector<double> inputVals, targetVals, resultVals;
-	int trainingPass = 0;
-	while(!trainData.isEof())
-	{
-		++trainingPass;
-
-		// Get new input data and feed it forward:
-		if(trainData.getNextInputs(inputVals) != topology[0])
-			break;
-		myNet.feedForward(inputVals);
-
-		// Collect the net's actual results:
-		myNet.getResults(resultVals);
-
-		// Train the net what the outputs should have been:
-		trainData.getTargetOutputs(targetVals);
-		assert(targetVals.size() == topology.back());
-
-		myNet.backProp(targetVals);
-
-		// Report how well the training is working, average over recnet
-		     << myNet.getRecentAverageError() << endl;
-	}*/
-	myNet.save();
-
-	cout << endl << "Done" << endl;
-
-	
-
 }
