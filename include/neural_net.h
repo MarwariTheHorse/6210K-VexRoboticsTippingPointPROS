@@ -1,4 +1,3 @@
-using namespace std;
 #include <vector>
 #include <iostream>
 #include <cstdlib>
@@ -6,15 +5,22 @@ using namespace std;
 #include <cmath>
 #include <fstream>
 #include <sstream>
+
+using namespace std;
+
+// A data structure for the links between each neuron
+struct Connection
+{
+	double weight;
+	double deltaWeight;
+};
+
 class TrainingData
 {
 public:
 	TrainingData(const string filename);
 
-	bool isEof(void)
-	{
-		return m_trainingDataFile.eof();
-	}
+	bool isEof(void) {return m_trainingDataFile.eof();};
 
 	// Interact with the input file
 	void getTopology(vector<unsigned> &topology);
@@ -25,15 +31,7 @@ private:
 	ifstream m_trainingDataFile;
 };
 
-// A data structure for the links between each neuron
-struct Connection
-{
-	double weight;
-	double deltaWeight;
-};
-
 class Neuron;
-
 typedef vector<Neuron> Layer; // Translation: Layers are simply vectors of Neurons
 
 // ****************** class Neuron ******************
@@ -51,7 +49,7 @@ public:
 	vector<Connection> getWeights();
 	double getGradient();
 	void setGradient(double g) {m_gradient = g;};
-	void addConnection(Connection c) {m_outputWeights.push_back(c);};
+	void addConnection(int index, Connection c) {m_outputWeights[index] = c;};
 private:
 	static double eta; // [0.0...1.0] overall net training rate
 	static double alpha; // [0.0...n] multiplier of last weight change [momentum]
@@ -69,16 +67,17 @@ private:
 class Net
 {
 public:
-	Net(const vector<unsigned> &topology);
+	Net(vector<unsigned> &topology, const string filename);
 	void feedForward(const vector<double> &inputVals);
 	void backProp(const vector<double> &targetVals);
 	void getResults(vector<double> &resultVals) const;
 	double getRecentAverageError(void) const { return m_recentAverageError; }
 	void save();
-	void load(string s);
+	void load();
 private:
 	vector<Layer> m_layers; //m_layers[layerNum][neuronNum]
 	double m_error;
 	double m_recentAverageError;
 	static double m_recentAverageSmoothingFactor;
+	fstream nnDataFile;
 };

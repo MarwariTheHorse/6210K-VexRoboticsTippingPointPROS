@@ -1,27 +1,20 @@
 #include "main.h"
-#include <fstream>
-#include "neural_network.h"
-#include <vector>
-#include <iostream>
-#include <cstdlib>
-#include <cassert>
-#include <cmath>
-#include <sstream>
+#include "neural_net.h"
 
 const bool DEBUG = false;
-const bool RECORD_NN_DATA = true;
+const bool RECORD_NN_DATA = false;
 const bool RECORD_COPYCAT_DATA = true;
 const bool LOGGING_RATE = 100; // ms * 10, ie 100 results in data every second
 
 // Wheel Definitions
-okapi::Motor mWheelBackLeft(19);
-okapi::Motor mWheelFrontLeft(12);
+okapi::Motor mWheelBackLeft(2);
+okapi::Motor mWheelFrontLeft(14);
 okapi::Motor mWheelFrontRight(9);
 okapi::Motor mWheelBackRight(8);
 
 // Controlle and camera definitions + green is defined
-pros::Vision sCamera(2, pros::E_VISION_ZERO_CENTER);
-pros::vision_signature colorCode = sCamera.signature_from_utility(1, 10347, 10767, 10556, -1, 313, 156, 3.000, 0);
+pros::Vision sCamera(4, pros::E_VISION_ZERO_CENTER);
+pros::vision_signature colorCode = sCamera.signature_from_utility(1, -4915, -4609, -4762, -5121, -4807, -4964, 11.000, 0);
 
 Net* neuralNetwork;
 
@@ -29,32 +22,20 @@ Net* neuralNetwork;
  * Runs when program is started. Blocks everything else.
  */
 void initialize() {
+	std::cout << 0;
 	sCamera.set_wifi_mode(true);
-	sCamera.set_exposure(79);
+	if(pros::usd::is_installed()){
+		// Initialize the neural network
+		std::vector<unsigned int> topology; // Load the necessary file handlers
+		std::cout << 1;
+		TrainingData trainData("/usd/trainingData.txt");
+		std::cout << 2;
+		trainData.getTopology(topology);
+		neuralNetwork = new Net(topology, "/usd/NNsave.txt");
 
-	// // Initialize the neural network
-	// std::vector<unsigned> topology; // Load the necessary file handlers
-
-	// std::string line;
-	// std::string label;
-	// std::string filename = "usd/NNsave.txt";
-	// std::ifstream nnDataFile;
-
-	// nnDataFile.open(filename.c_str());
-	// getline(nnDataFile, line); // Toplogy data > line
-	// std::stringstream ss(line); // Do the string converty thing or whatever
-	// ss >> label; // Store the clean stuff into the label variable
-
-	// while(!ss.eof()) // Continue while not at the end of the ss
-	// {
-	// 		unsigned n;
-	// 		ss >> n; // Store next value into the 32 bit int
-	// 		topology.push_back(n); // Slap that bad boy right into that vector
-	// }
-
-	// // Create the network and load data if necessary
-	// neuralNetwork = new Net(topology);
-	// neuralNetwork->load("usd/NNsave.txt");
+		// Create the network and load data if necessary
+		neuralNetwork->load();
+	}
 }
 
 /**
@@ -93,7 +74,7 @@ void opcontrol() {
 
 		if(RECORD_NN_DATA){
 			// If there are no green object >= 30 pix, don't move
-			if(sCamera.get_object_count() == 0 || tempobj.width * tempobj.height < 30){
+			if(sCamera.get_object_count() == 0){
 				leftSpeed = 0;
 				rightSpeed = 0;
 			}
@@ -102,7 +83,6 @@ void opcontrol() {
 				leftSpeed = 127 - tempobj.width + tempobj.x_middle_coord * .5;
 				rightSpeed = -127 + tempobj.width + tempobj.x_middle_coord * .5;
 			}
-			std::cout << leftSpeed << ", " << rightSpeed << std::endl;
 		} else {
 			std::vector<double> inputs;
 			inputs.push_back(greenX);
@@ -110,7 +90,9 @@ void opcontrol() {
 			neuralNetwork->feedForward(inputs);
 			std::vector<double> results;
 			neuralNetwork->getResults(results);
-
+			cout << results[0] << " " << results[1];
+			leftSpeed = results[0] * 100;
+			rightSpeed = results[1] * 100;
 		}
 
 		mWheelFrontLeft.moveVelocity(leftSpeed);

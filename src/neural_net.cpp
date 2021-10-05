@@ -5,10 +5,9 @@
 #include <cmath>
 #include <fstream>
 #include <sstream>
+#include "neural_net.h"
 
 using namespace std;
-
-#include "neural_network.h"
 
 bool LOAD_FROM_NN_SAVE = true;
 
@@ -274,52 +273,43 @@ void Net::save()
 {
 	// Add vector (For each vector add the neurons, for each neuron add the connections, for each connection add weight and delta weight
 	for (Layer l : m_layers){
-		cout << "LAYER\n";
+		nnDataFile << "LAYER" << endl;
 		for (Neuron n : l){
-			cout << "NODE\n";
+			nnDataFile << "NODE" << endl;
 
 			// Gradient
-			cout << "GRADIENT " << n.getGradient() << "\n";
+			nnDataFile << "GRADIENT " << n.getGradient() << endl;
 
 			// Connections
 			vector<Connection> connections = n.getWeights();
 			for(Connection c : connections){
-				cout << "CONNECTION " << c.weight << " " << c.deltaWeight << "\n";
+				nnDataFile << "CONNECTION " << c.weight << " " << c.deltaWeight << endl;
 			}
 		}
 	}
 }
 
-void Net::load(string s)
+void Net::load()
 {
+	int layerCount = -1;
+	int nCount = -1;
+	int connectionIndex;
 	string line;
 	string label;
-
-	ifstream nnDataFile;
-
-	nnDataFile.open(s.c_str());
-
-	//while not end of file
-	//	if layer, append old layer and create new one
-	//	if node, add old node if there is one and make new one
-	//	if connection, load data into current node
-
-	while(!nnDataFile.eof()){
-		getline(nnDataFile, line);
+	
+	while(getline(nnDataFile, line)){
 		stringstream ss(line);
 		ss >> label;
-		Layer layer();
-		int layerCount = -1;
-		int nCount = 0;
-
+		
 		if(label.compare("LAYER") == 0){
 			layerCount++;
-			nCount = 0;
+			nCount = -1;
 		}
 		
 		if(label.compare("NODE") == 0){ 
 			// Save node into array thing
 			nCount++;
+			connectionIndex = 0;
 		}
 		if(label.compare("GRADIENT") == 0){
 			double value;
@@ -332,13 +322,17 @@ void Net::load(string s)
 			ss >> value;
 			ss >> value2; 
 			Connection c = {value, value2};
-			m_layers[layerCount][nCount].addConnection(c);
+			m_layers[layerCount][nCount].addConnection(connectionIndex, c);
+			connectionIndex++;
 		}
 	}
 }
 
-Net::Net(const vector<unsigned> &topology)
+Net::Net(vector<unsigned> &topology, const string filename)
 {
+	nnDataFile.open(filename.c_str());
+
+	// Made the neural network
 	unsigned numLayers = topology.size();
 	for(unsigned layerNum = 0; layerNum < numLayers; ++layerNum){
 		m_layers.push_back(Layer());
