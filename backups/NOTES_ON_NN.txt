@@ -1,0 +1,4 @@
+Some things to keep in mind:
+When the topology is wrong you will get the weird free(): error
+When the NNsave.txt file doesn't exist, the NN code cannot save it's state for some reason.
+I need to install git on here so that the code is backed up

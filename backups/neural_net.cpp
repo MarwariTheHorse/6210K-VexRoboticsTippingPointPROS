@@ -15,10 +15,7 @@ class TrainingData
 public:
 	TrainingData(const string filename);
 
-	bool isEof(void)
-	{
-		return m_trainingDataFile.eof();
-	}
+	bool isEof(void) {return m_trainingDataFile.eof();};
 
 	// Interact with the input file
 	void getTopology(vector<unsigned> &topology);
@@ -106,50 +103,6 @@ unsigned TrainingData::getTargetOutputs(vector<double> &targetOutputVals)
     return targetOutputVals.size();
 }
 
-class NeuralSave
-{
-public:
-	NeuralSave(const string filename);
-
-	bool isEof(void)
-	{
-		return m_nnDataFile.eof();
-	}
-
-	// Interact with the input file
-	void getTopology(vector<unsigned> &topology);
-private:
-	ifstream m_nnDataFile;
-};
-
-NeuralSave::NeuralSave(const string filename){
-	m_nnDataFile.open(filename.c_str());
-}
-
-// Add topology data to the vector passed into the function
-void NeuralSave::getTopology(vector<unsigned> &topology)
-{
-	string line;
-	string label;
-
-	getline(m_nnDataFile, line); // Toplogy data > line
-	stringstream ss(line); // Do the string converty thing or whatever
-	ss >> label; // Store the clean stuff into the label variable
-
-	if(this->isEof() || label.compare("topology:") != 0) // If there is no topology abort
-	{
-		abort();
-	}
-
-	while(!ss.eof()) // Continue while not at the end of the ss
-	{
-		unsigned n;
-		ss >> n; // Store next value into the 32 bit int
-		topology.push_back(n); // Slap that bad boy right into that vector
-	}
-	return;
-}
-
 // A data structure for the links between each neuron
 struct Connection
 {
@@ -176,7 +129,7 @@ public:
 	vector<Connection> getWeights();
 	double getGradient();
 	void setGradient(double g) {m_gradient = g;};
-	void addConnection(Connection c) {m_outputWeights.push_back(c);};
+	void addConnection(int index, Connection c) {m_outputWeights[index] = c;};
 private:
 	static double eta; // [0.0...1.0] overall net training rate
 	static double alpha; // [0.0...n] multiplier of last weight change [momentum]
@@ -286,22 +239,25 @@ Neuron::Neuron(unsigned numOutputs, unsigned myIndex)
 
 	m_myIndex = myIndex;
 }
+
+
 // ****************** class Net ******************
 class Net
 {
 public:
-	Net(const vector<unsigned> &topology);
+	Net(vector<unsigned> &topology, const string filename);
 	void feedForward(const vector<double> &inputVals);
 	void backProp(const vector<double> &targetVals);
 	void getResults(vector<double> &resultVals) const;
 	double getRecentAverageError(void) const { return m_recentAverageError; }
 	void save();
-	void load(string s);
+	void load();
 private:
 	vector<Layer> m_layers; //m_layers[layerNum][neuronNum]
 	double m_error;
 	double m_recentAverageError;
 	static double m_recentAverageSmoothingFactor;
+	fstream nnDataFile;
 };
 
 double Net::m_recentAverageSmoothingFactor = 100.0; // Number of training samples to average over
@@ -393,52 +349,43 @@ void Net::save()
 {
 	// Add vector (For each vector add the neurons, for each neuron add the connections, for each connection add weight and delta weight
 	for (Layer l : m_layers){
-		cout << "LAYER\n";
+		nnDataFile << "LAYER" << endl;
 		for (Neuron n : l){
-			cout << "NODE\n";
+			nnDataFile << "NODE" << endl;
 
 			// Gradient
-			cout << "GRADIENT " << n.getGradient() << "\n";
+			nnDataFile << "GRADIENT " << n.getGradient() << endl;
 
 			// Connections
 			vector<Connection> connections = n.getWeights();
 			for(Connection c : connections){
-				cout << "CONNECTION " << c.weight << " " << c.deltaWeight << "\n";
+				nnDataFile << "CONNECTION " << c.weight << " " << c.deltaWeight << endl;
 			}
 		}
 	}
 }
 
-void Net::load(string s)
+void Net::load()
 {
+	int layerCount = -1;
+	int nCount = -1;
+	int connectionIndex;
 	string line;
 	string label;
-
-	ifstream nnDataFile;
-
-	nnDataFile.open(s.c_str());
-
-	//while not end of file
-	//	if layer, append old layer and create new one
-	//	if node, add old node if there is one and make new one
-	//	if connection, load data into current node
-
-	while(!nnDataFile.eof()){
-		getline(nnDataFile, line);
+	
+	while(getline(nnDataFile, line)){
 		stringstream ss(line);
 		ss >> label;
-		Layer layer();
-		int layerCount = -1;
-		int nCount = 0;
-
+		
 		if(label.compare("LAYER") == 0){
 			layerCount++;
-			nCount = 0;
+			nCount = -1;
 		}
 		
 		if(label.compare("NODE") == 0){ 
 			// Save node into array thing
 			nCount++;
+			connectionIndex = 0;
 		}
 		if(label.compare("GRADIENT") == 0){
 			double value;
@@ -450,14 +397,18 @@ void Net::load(string s)
 			double value2;
 			ss >> value;
 			ss >> value2; 
-			Connection c = {.weight = value, .deltaWeight = value2};
-			m_layers[layerCount][nCount].addConnection(c);
+			Connection c = {value, value2};
+			m_layers[layerCount][nCount].addConnection(connectionIndex, c);
+			connectionIndex++;
 		}
 	}
 }
 
-Net::Net(const vector<unsigned> &topology)
+Net::Net(vector<unsigned> &topology, const string filename)
 {
+	nnDataFile.open(filename.c_str());
+
+	// Made the neural network
 	unsigned numLayers = topology.size();
 	for(unsigned layerNum = 0; layerNum < numLayers; ++layerNum){
 		m_layers.push_back(Layer());
@@ -474,6 +425,7 @@ Net::Net(const vector<unsigned> &topology)
 		// Force the bias node's output value to 1.0. It's the last neuron created above
 		m_layers.back().back().setOutputVal(1.0);
 	}
+
 }
 
 void showVectorVals(string label, vector<double> &v)
@@ -488,43 +440,27 @@ void showVectorVals(string label, vector<double> &v)
 
 int main()
 {
-	// Load the necessary file handlers
-	TrainingData trainData("trainingData.txt");
-		
-	vector<unsigned> topology;
-
-	string line;
-	string label;
-	string filename = "NNsave.txt";
-/*
-	ifstream nnDataFile;
-
-	nnDataFile.open(filename.c_str());
-
-	getline(nnDataFile, line); // Toplogy data > line
-	stringstream ss(line); // Do the string converty thing or whatever
-	ss >> label; // Store the clean stuff into the label variable
-
-	if(nnDataFile.eof() || label.compare("topology:") != 0) // If there is no topology abort
-	{
-		abort();
+	cout << "Use NNsave.txt? [Y/n]: ";
+	char answer;
+	cin >> answer;
+	if(answer == 'n' || answer == 'N'){
+		LOAD_FROM_NN_SAVE = false;
 	}
+	// Otherwise LFNNS is true by default
 
-	while(!ss.eof()) // Continue while not at the end of the ss
-	{
-		unsigned n;
-		ss >> n; // Store next value into the 32 bit int
-		topology.push_back(n); // Slap that bad boy right into that vector
-	}*/
+	vector<unsigned> topology;
+	TrainingData trainData("trainingData.txt");
 
-	// Get the topology from either the NN or the training data
-	if(!LOAD_FROM_NN_SAVE) trainData.getTopology(topology);
+	// Get the topology from the training data file
+	trainData.getTopology(topology);
 
 	// Create the network and load data if necessary
-	Net myNet(topology);
-	if(LOAD_FROM_NN_SAVE) myNet.load("NNsave.txt");
+	Net myNet(topology, "NNsave.txt");
 
-	/*// Begin training
+	// If we want to use a previously calculated NN, load the data
+	if(LOAD_FROM_NN_SAVE) myNet.load();
+	
+	// Begin training
 	vector<double> inputVals, targetVals, resultVals;
 	int trainingPass = 0;
 	while(!trainData.isEof())
@@ -544,14 +480,10 @@ int main()
 		assert(targetVals.size() == topology.back());
 
 		myNet.backProp(targetVals);
+	}
 
-		// Report how well the training is working, average over recnet
-		     << myNet.getRecentAverageError() << endl;
-	}*/
 	myNet.save();
 
-	cout << endl << "Done" << endl;
-
-	
-
+	cout << endl << "ERROR: " << myNet.getRecentAverageError() << endl;
+	cout << endl << "DATA COMPILED" << endl;
 }
