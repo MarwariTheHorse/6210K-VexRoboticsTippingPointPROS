@@ -67,10 +67,10 @@ void opcontrol() {
 	while (true) {
 		// Get the largest green object
 		pros::vision_object tempobj = sCamera.get_by_sig(0, 1);
-		int greenX = tempobj.x_middle_coord;
-		int width = tempobj.width;
-		int leftSpeed;
-		int rightSpeed;
+		double leftSpeed;
+		double rightSpeed;
+		double greenX;
+		double width;
 
 		if(RECORD_NN_DATA){
 			// If there are no green object >= 30 pix, don't move
@@ -84,15 +84,17 @@ void opcontrol() {
 				rightSpeed = -127 + tempobj.width + tempobj.x_middle_coord * .5;
 			}
 		} else {
+			greenX = tempobj.x_middle_coord;
+			width = tempobj.width;
 			std::vector<double> inputs;
-			inputs.push_back(greenX);
-			inputs.push_back(width);
+			inputs.push_back(greenX / 320);
+			inputs.push_back(width / 320);
 			neuralNetwork->feedForward(inputs);
 			std::vector<double> results;
 			neuralNetwork->getResults(results);
 			cout << results[0] << " " << results[1];
-			leftSpeed = results[0] * 100;
-			rightSpeed = results[1] * 100;
+			leftSpeed = results[0] * 127;
+			rightSpeed = results[1] * 127;
 		}
 
 		mWheelFrontLeft.moveVelocity(leftSpeed);
@@ -104,27 +106,27 @@ void opcontrol() {
 		// Steps: Store data into variables, write the group of data into the file
 		if(pros::usd::is_installed()){
 			if(RECORD_NN_DATA && count == 0){ // NN data runs on a delay because I'm not sure how long file interactions take
-				// TODO: measure how long file interactions take
-
-
-				// Record training sensor data (obj_x, obj_width)
 				std::ofstream dataFile;
+				greenX /= 320;
+				width /= 320;
+				leftSpeed /= 127;
+				rightSpeed /= 127;
 				dataFile.open("/usd/trainingData.txt", std::ofstream::out | std::ofstream::app);
 				dataFile << "in: " << greenX << " " << width << std::endl;
 				dataFile << "out: " << leftSpeed << " " << rightSpeed << std::endl;
 				dataFile.close();
 			}
-			// if(RECORD_COPYCAT_DATA){
-			// 	if(master[okapi::ControllerDigital::B].changedToPressed()){
-			// 		// Log stuff
-			// 		ccCount++;
-			// 		std::ofstream dataFile;
-			// 		dataFile.open("/usd/cc_data.csv", std::ofstream::out | std::ofstream::app);
-			// 		dataFile << ccCount << ", " << mWheelBackLeft.getPosition() << ", " 
-			// 			<< mWheelBackRight.getPosition() << ", " << std::endl;
-			// 		dataFile.close();
-			// 	}
-			// }
+			if(RECORD_COPYCAT_DATA){
+				if(master[okapi::ControllerDigital::B].changedToPressed()){
+					// Log stuff
+					ccCount++;
+					std::ofstream dataFile;
+					dataFile.open("/usd/cc_data.csv", std::ofstream::out | std::ofstream::app);
+					dataFile << ccCount << ", " << mWheelBackLeft.getPosition() << ", " 
+						<< mWheelBackRight.getPosition() << ", " << std::endl;
+					dataFile.close();
+				}
+			}
 		}
 
 		count++;
