@@ -1,9 +1,9 @@
 #include "main.h"
 #include "neural_net.h"
 
-const bool DEBUG = false;
-const bool RECORD_NN_DATA = false;
-const bool RECORD_COPYCAT_DATA = true;
+const bool DEBUG = false; // true = debugging mode. Not actually supported rn, but it's there just in case
+const bool RECORD_NN_DATA = false; // when false runs NN, when true gathers data
+const bool RECORD_COPYCAT_DATA = true; // When true it runs copycat code in the op loop
 const bool LOGGING_RATE = 100; // ms * 10, ie 100 results in data every second
 
 // Wheel Definitions
@@ -16,25 +16,23 @@ okapi::Motor mWheelBackRight(8);
 pros::Vision sCamera(4, pros::E_VISION_ZERO_CENTER);
 pros::vision_signature colorCode = sCamera.signature_from_utility(1, -4915, -4609, -4762, -5121, -4807, -4964, 11.000, 0);
 
+// A variable to store the future NN in
 Net* neuralNetwork;
 
 /**
  * Runs when program is started. Blocks everything else.
  */
 void initialize() {
-	std::cout << 0;
 	sCamera.set_wifi_mode(true);
 	if(pros::usd::is_installed()){
 		// Initialize the neural network
 		std::vector<unsigned int> topology; // Load the necessary file handlers
-		std::cout << 1;
-		TrainingData trainData("/usd/trainingData.txt");
-		std::cout << 2;
+		TrainingData trainData("/usd/trainingData.txt"); // Open the file
 		trainData.getTopology(topology);
-		neuralNetwork = new Net(topology, "/usd/NNsave.txt");
+		neuralNetwork = new Net(topology, "/usd/NNsave.txt"); // Store a Net inside of the NN variable
 
 		// Create the network and load data if necessary
-		neuralNetwork->load();
+		neuralNetwork->load(); // Loads the NN data from the NNsave.txt file
 	}
 }
 
@@ -62,11 +60,13 @@ void autonomous() {}
  * to a field controller or etc.
  */
 void opcontrol() {
-	int count = 0;
-	int ccCount = 0;
+	int count = 0; // Count for NN logging
+	int ccCount = 0; // Count for CC logging
 	while (true) {
 		// Get the largest green object
 		pros::vision_object tempobj = sCamera.get_by_sig(0, 1);
+
+		// Drivetrain variables
 		double leftSpeed;
 		double rightSpeed;
 		double greenX;
@@ -84,6 +84,7 @@ void opcontrol() {
 				rightSpeed = -127 + tempobj.width + tempobj.x_middle_coord * .5;
 			}
 		} else {
+			// Assign values based off of NN output
 			greenX = tempobj.x_middle_coord;
 			width = tempobj.width;
 			std::vector<double> inputs;
