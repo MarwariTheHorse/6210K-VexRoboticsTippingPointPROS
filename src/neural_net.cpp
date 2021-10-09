@@ -149,13 +149,18 @@ void Neuron::calcOutputGradients(double targetVals)
 double Neuron::transferFunction(double x)
 {
 	// // tanh - output range [-1.0..1.0]
-	return tanh(x);
+	if(this->isOutput) return tanh(x);
+	else return x/(1+std::exp(-x));
 }
 
 double Neuron::transferFunctionDerivative(double x)
 {
 	// // tanh derivative
-	return 1 / (cosh(x) * cosh(x));
+	if(this->isOutput) return 1 / (cosh(x) * cosh(x));
+	else{
+		double s = transferFunction(x);
+		return s + (1-s)/(1+exp(-x));
+	}
 }
 
 void Neuron::feedForward(const Layer &prevLayer)
@@ -172,6 +177,10 @@ void Neuron::feedForward(const Layer &prevLayer)
 	}
 
 	m_outputVal = Neuron::transferFunction(sum);
+}
+
+void Neuron::setIsOutput(bool b){
+	this->isOutput = b;
 }
 
 Neuron::Neuron(unsigned numOutputs, unsigned myIndex)
@@ -332,7 +341,7 @@ Net::Net(vector<unsigned> &topology, const string filename)
 {
 	nnDataFile.open(filename.c_str());
 
-	// Made the neural network
+	// Make the neural network
 	unsigned numLayers = topology.size();
 	for(unsigned layerNum = 0; layerNum < numLayers; ++layerNum){
 		m_layers.push_back(Layer());
@@ -344,6 +353,7 @@ Net::Net(vector<unsigned> &topology, const string filename)
 		// add a bias neuron to the layer:
 		for(unsigned neuronNum = 0; neuronNum <= topology[layerNum]; ++neuronNum){
 			m_layers.back().push_back(Neuron(numOutputs, neuronNum));
+			if(layerNum == numLayers - 1) m_layers[layerNum][neuronNum].setIsOutput(true);
 		}
 
 		// Force the bias node's output value to 1.0. It's the last neuron created above

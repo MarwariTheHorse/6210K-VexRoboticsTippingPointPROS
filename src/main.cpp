@@ -117,6 +117,7 @@ void opcontrol() {
 				dataFile << "out: " << leftSpeed << " " << rightSpeed << std::endl;
 				dataFile.close();
 			}
+			/*
 			if(RECORD_COPYCAT_DATA){
 				if(master[okapi::ControllerDigital::B].changedToPressed()){
 					// Log stuff
@@ -127,7 +128,7 @@ void opcontrol() {
 						<< mWheelBackRight.getPosition() << ", " << std::endl;
 					dataFile.close();
 				}
-			}
+			}*/
 		}
 
 		count++;

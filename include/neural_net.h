@@ -50,11 +50,13 @@ public:
 	double getGradient();
 	void setGradient(double g) {m_gradient = g;};
 	void addConnection(int index, Connection c) {m_outputWeights[index] = c;};
+	void setIsOutput(bool b);
 private:
+	bool isOutput;
 	static double eta; // [0.0...1.0] overall net training rate
 	static double alpha; // [0.0...n] multiplier of last weight change [momentum]
-	static double transferFunction(double x);
-	static double transferFunctionDerivative(double x);
+	double transferFunction(double x);
+	double transferFunctionDerivative(double x);
 	static double randomWeight(void) { return rand() / double(RAND_MAX); }
 	double sumDOW(const Layer &nextLayer) const;
 	double m_outputVal;
