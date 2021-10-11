@@ -1,11 +1,6 @@
-# 6210K-VexRoboticsTippingPointPROS
+# 6210K-VexRoboticsTippingPointPROS - LiftBot code
 The amazing code repo for all the PROS code of 2021-2022.
 
-NOTE: The code in this repo as of now is for the neural network test bot.
+This is the repo code for the liftbot.
 
-### Todos:
-- Write training code for the computer
-	- Loads NN or creates one, trains based off of loaded data, saves the updated NN
-- Write run-code for the robot
-	- Loads NN file, calculates #'s based off of it, goes.
-- Expariment with pneumatic gear changing transmission
+*Further elaboration to come in a later commit.*
