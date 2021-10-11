@@ -39,7 +39,7 @@ typedef vector<Neuron> Layer; // Translation: Layers are simply vectors of Neuro
 class Neuron
 {
 public:
-	Neuron(unsigned numOutputs, unsigned myIndex);
+	Neuron(unsigned numOutputs, unsigned myIndex, bool isOutput);
 	void setOutputVal(double val) { m_outputVal = val; } // TODO: Would it be cleaner to merge this and the func below
 	double getOutputVal(void) const { return m_outputVal; }
 	void feedForward(const Layer &prevLayer);
@@ -50,9 +50,7 @@ public:
 	double getGradient();
 	void setGradient(double g) {m_gradient = g;};
 	void addConnection(int index, Connection c) {m_outputWeights[index] = c;};
-	void setIsOutput(bool b);
 private:
-	bool isOutput;
 	static double eta; // [0.0...1.0] overall net training rate
 	static double alpha; // [0.0...n] multiplier of last weight change [momentum]
 	double transferFunction(double x);
@@ -63,6 +61,7 @@ private:
 	vector<Connection> m_outputWeights;
 	unsigned m_myIndex;
 	double m_gradient;
+	bool m_isOutput;
 };
 
 // ****************** class Net ******************

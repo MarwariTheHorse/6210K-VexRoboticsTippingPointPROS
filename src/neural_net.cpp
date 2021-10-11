@@ -149,14 +149,14 @@ void Neuron::calcOutputGradients(double targetVals)
 double Neuron::transferFunction(double x)
 {
 	// // tanh - output range [-1.0..1.0]
-	if(this->isOutput) return tanh(x);
+	if(m_isOutput) return tanh(x);
 	else return x/(1+std::exp(-x));
 }
 
 double Neuron::transferFunctionDerivative(double x)
 {
 	// // tanh derivative
-	if(this->isOutput) return 1 / (cosh(x) * cosh(x));
+	if(m_isOutput) return 1 / (cosh(x) * cosh(x));
 	else{
 		double s = transferFunction(x);
 		return s + (1-s)/(1+exp(-x));
@@ -179,11 +179,7 @@ void Neuron::feedForward(const Layer &prevLayer)
 	m_outputVal = Neuron::transferFunction(sum);
 }
 
-void Neuron::setIsOutput(bool b){
-	this->isOutput = b;
-}
-
-Neuron::Neuron(unsigned numOutputs, unsigned myIndex)
+Neuron::Neuron(unsigned numOutputs, unsigned myIndex, bool isOutput)
 {
 	for(unsigned c = 0; c < numOutputs; ++c){
 		m_outputWeights.push_back(Connection());
@@ -191,6 +187,7 @@ Neuron::Neuron(unsigned numOutputs, unsigned myIndex)
 	}
 
 	m_myIndex = myIndex;
+	m_isOutput = isOutput;
 }
 
 double Net::m_recentAverageSmoothingFactor = 100.0; // Number of training samples to average over
@@ -352,8 +349,7 @@ Net::Net(vector<unsigned> &topology, const string filename)
 		// We have made a new Layer, now fill it ith neurons, and
 		// add a bias neuron to the layer:
 		for(unsigned neuronNum = 0; neuronNum <= topology[layerNum]; ++neuronNum){
-			m_layers.back().push_back(Neuron(numOutputs, neuronNum));
-			if(layerNum == numLayers - 1) m_layers[layerNum][neuronNum].setIsOutput(true);
+			m_layers.back().push_back(Neuron(numOutputs, neuronNum, layerNum == numLayers - 1));
 		}
 
 		// Force the bias node's output value to 1.0. It's the last neuron created above
