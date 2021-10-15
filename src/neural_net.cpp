@@ -88,8 +88,15 @@ unsigned TrainingData::getTargetOutputs(vector<double> &targetOutputVals)
     return targetOutputVals.size();
 }
 
+class Neuron;
+
+typedef vector<Neuron> Layer; // Translation: Layers are simply vectors of Neurons
+
+// ****************** class Neuron ******************
+
 double Neuron::eta = 0.15; // overall net learning rate
 double Neuron::alpha = 0.5; // momentum, multiplier of last deltaWeight, [0.0..n]
+
 
 vector<Connection> Neuron::getWeights(){
 	return m_outputWeights;
@@ -148,15 +155,17 @@ void Neuron::calcOutputGradients(double targetVals)
 
 double Neuron::transferFunction(double x)
 {
-	// // tanh - output range [-1.0..1.0]
+	// tanh - output range [-1.0..1.0] - Replaced with the swish function
+	// return tanh(x);
 	if(m_isOutput) return tanh(x);
-	else return x/(1+std::exp(-x));
+	else return x/(1+exp(-x));
 }
 
 double Neuron::transferFunctionDerivative(double x)
 {
-	// // tanh derivative
-	if(m_isOutput) return 1 / (cosh(x) * cosh(x));
+	// tanh derivative - replaced with the swish derivative
+	// return 1.0 - x * x;
+	if(m_isOutput) return 1/(cosh(x) * cosh(x));
 	else{
 		double s = transferFunction(x);
 		return s + (1-s)/(1+exp(-x));
@@ -338,7 +347,7 @@ Net::Net(vector<unsigned> &topology, const string filename)
 {
 	nnDataFile.open(filename.c_str());
 
-	// Make the neural network
+	// Made the neural network
 	unsigned numLayers = topology.size();
 	for(unsigned layerNum = 0; layerNum < numLayers; ++layerNum){
 		m_layers.push_back(Layer());
@@ -355,4 +364,5 @@ Net::Net(vector<unsigned> &topology, const string filename)
 		// Force the bias node's output value to 1.0. It's the last neuron created above
 		m_layers.back().back().setOutputVal(1.0);
 	}
+
 }

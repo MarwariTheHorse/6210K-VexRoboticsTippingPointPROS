@@ -3,7 +3,7 @@
 
 const bool DEBUG = false; // true = debugging mode. Not actually supported rn, but it's there just in case
 const bool RECORD_NN_DATA = false; // when false runs NN, when true gathers data
-const bool RECORD_COPYCAT_DATA = true; // When true it runs copycat code in the op loop
+const bool RECORD_COPYCAT_DATA = false; // When true it runs copycat code in the op loop
 const bool LOGGING_RATE = 100; // ms * 10, ie 100 results in data every second
 
 // Wheel Definitions
@@ -17,16 +17,15 @@ pros::Vision sCamera(4, pros::E_VISION_ZERO_CENTER);
 pros::vision_signature colorCode = sCamera.signature_from_utility(1, -4915, -4609, -4762, -5121, -4807, -4964, 11.000, 0);
 
 // A variable to store the future NN in
-Net* neuralNetwork;
+Net *neuralNetwork;
 
 /**
  * Runs when program is started. Blocks everything else.
  */
 void initialize() {
-	sCamera.set_wifi_mode(true);
 	if(pros::usd::is_installed()){
 		// Initialize the neural network
-		std::vector<unsigned int> topology; // Load the necessary file handlers
+		std::vector<unsigned> topology; // Load the necessary file handlers
 		TrainingData trainData("/usd/trainingData.txt"); // Open the file
 		trainData.getTopology(topology);
 		neuralNetwork = new Net(topology, "/usd/NNsave.txt"); // Store a Net inside of the NN variable
@@ -82,6 +81,10 @@ void opcontrol() {
 			else{
 				leftSpeed = 127 - tempobj.width + tempobj.x_middle_coord * .5;
 				rightSpeed = -127 + tempobj.width + tempobj.x_middle_coord * .5;
+				if(leftSpeed > 127) leftSpeed = 127;
+				if(leftSpeed < -127) leftSpeed = -127;
+				if(rightSpeed > 127) rightSpeed = 127;
+				if(rightSpeed < -127) rightSpeed = -127;
 			}
 		} else {
 			// Assign values based off of NN output
@@ -93,7 +96,7 @@ void opcontrol() {
 			neuralNetwork->feedForward(inputs);
 			std::vector<double> results;
 			neuralNetwork->getResults(results);
-			cout << results[0] << " " << results[1];
+			std::cout << results[0] << " " << results[1] << endl;
 			leftSpeed = results[0] * 127;
 			rightSpeed = results[1] * 127;
 		}
@@ -108,6 +111,8 @@ void opcontrol() {
 		if(pros::usd::is_installed()){
 			if(RECORD_NN_DATA && count == 0){ // NN data runs on a delay because I'm not sure how long file interactions take
 				std::ofstream dataFile;
+				greenX = tempobj.x_middle_coord;
+				width = tempobj.width;
 				greenX /= 320;
 				width /= 320;
 				leftSpeed /= 127;

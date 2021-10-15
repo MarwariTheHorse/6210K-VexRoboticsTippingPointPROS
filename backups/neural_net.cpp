@@ -119,7 +119,7 @@ typedef vector<Neuron> Layer; // Translation: Layers are simply vectors of Neuro
 class Neuron
 {
 public:
-	Neuron(unsigned numOutputs, unsigned myIndex);
+	Neuron(unsigned numOutputs, unsigned myIndex, bool isOutput);
 	void setOutputVal(double val) { m_outputVal = val; } // TODO: Would it be cleaner to merge this and the func below
 	double getOutputVal(void) const { return m_outputVal; }
 	void feedForward(const Layer &prevLayer);
@@ -133,14 +133,15 @@ public:
 private:
 	static double eta; // [0.0...1.0] overall net training rate
 	static double alpha; // [0.0...n] multiplier of last weight change [momentum]
-	static double transferFunction(double x);
-	static double transferFunctionDerivative(double x);
+	double transferFunction(double x);
+	double transferFunctionDerivative(double x);
 	static double randomWeight(void) { return rand() / double(RAND_MAX); }
 	double sumDOW(const Layer &nextLayer) const;
 	double m_outputVal;
 	vector<Connection> m_outputWeights;
 	unsigned m_myIndex;
 	double m_gradient;
+	bool m_isOutput;
 };
 
 double Neuron::eta = 0.15; // overall net learning rate
@@ -204,14 +205,21 @@ void Neuron::calcOutputGradients(double targetVals)
 
 double Neuron::transferFunction(double x)
 {
-	// tanh - output range [-1.0..1.0]
-	return tanh(x);
+	// tanh - output range [-1.0..1.0] - Replaced with the swish function
+	// return tanh(x);
+	if(m_isOutput) return tanh(x);
+	else return x/(1+exp(-x));
 }
 
 double Neuron::transferFunctionDerivative(double x)
 {
-	// tanh derivative
-	return 1.0 - x * x;
+	// tanh derivative - replaced with the swish derivative
+	// return 1.0 - x * x;
+	if(m_isOutput) return 1/(cosh(x) * cosh(x));
+	else{
+		double s = transferFunction(x);
+		return s + (1-s)/(1+exp(-x));
+	}
 }
 
 void Neuron::feedForward(const Layer &prevLayer)
@@ -230,7 +238,7 @@ void Neuron::feedForward(const Layer &prevLayer)
 	m_outputVal = Neuron::transferFunction(sum);
 }
 
-Neuron::Neuron(unsigned numOutputs, unsigned myIndex)
+Neuron::Neuron(unsigned numOutputs, unsigned myIndex, bool isOutput)
 {
 	for(unsigned c = 0; c < numOutputs; ++c){
 		m_outputWeights.push_back(Connection());
@@ -238,6 +246,7 @@ Neuron::Neuron(unsigned numOutputs, unsigned myIndex)
 	}
 
 	m_myIndex = myIndex;
+	m_isOutput = isOutput;
 }
 
 
@@ -419,7 +428,7 @@ Net::Net(vector<unsigned> &topology, const string filename)
 		// We have made a new Layer, now fill it ith neurons, and
 		// add a bias neuron to the layer:
 		for(unsigned neuronNum = 0; neuronNum <= topology[layerNum]; ++neuronNum){
-			m_layers.back().push_back(Neuron(numOutputs, neuronNum));
+			m_layers.back().push_back(Neuron(numOutputs, neuronNum, layerNum == numLayers - 1));
 		}
 
 		// Force the bias node's output value to 1.0. It's the last neuron created above
@@ -440,7 +449,7 @@ void showVectorVals(string label, vector<double> &v)
 
 int main()
 {
-	cout << "Use NNsave.txt? [Y/n]: ";
+	cout << "Use NNsave.txt? [y/n]: ";
 	char answer;
 	cin >> answer;
 	if(answer == 'n' || answer == 'N'){
