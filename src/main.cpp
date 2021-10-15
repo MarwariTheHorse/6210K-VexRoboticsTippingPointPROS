@@ -1,6 +1,8 @@
 #include "main.h"
 #include <fstream>
 
+// TODO: Read the NOTE:'s left on the github commit from 10/15/2021 3:44
+
 // Motor + pneumatic port definitions
 #define WHEEL_LEFT_F 11
 #define WHEEL_LEFT_R 12
