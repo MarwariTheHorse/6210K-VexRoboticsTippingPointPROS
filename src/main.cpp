@@ -1,24 +1,23 @@
 #include "main.h"
 #include <fstream>
 
-// TODO: Read the NOTE:'s left on the github commit from 10/15/2021 3:44
-
 // Motor + pneumatic port definitions
-#define WHEEL_LEFT_F 11
-#define WHEEL_LEFT_R 12
+#define WHEEL_LEFT_F 2
+#define WHEEL_LEFT_R 11
 
-#define WHEEL_RIGHT_F 2
-#define WHEEL_RIGHT_R 1
+#define WHEEL_RIGHT_F 12
+#define WHEEL_RIGHT_R 19
 
-#define WHEEL_BACK_L 19
-#define WHEEL_BACK_R 9
+#define WHEEL_BACK_L 11
+#define WHEEL_BACK_R 20
 
-#define LIFT 3
+#define LIFT 4
 
-#define GRIP 4
+#define GRIP 1
 
 const bool DEBUG = false;
 const bool LOGGING_RATE = 100; // ms * 10, plus execution per loop time. ie 100 results in data appox. every second
+const bool TORQUE_THRESHOLD = 1.575;
 int countRender = 0;
 
 // Motors(port, reversed, gearset, encoderUnits, logger(implied))
@@ -28,8 +27,8 @@ okapi::Motor fRightMotor(WHEEL_RIGHT_F, true, okapi::AbstractMotor::gearset::blu
 okapi::Motor rRightMotor(WHEEL_RIGHT_R, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations);
 okapi::Motor lBackMotor(WHEEL_BACK_L, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations);
 okapi::Motor rBackMotor(WHEEL_BACK_R, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations);
-okapi::Motor lift(LIFT, false, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
-okapi::Motor grip(GRIP, false, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
+okapi::Motor lift(LIFT, true, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
+okapi::Motor grip(GRIP, true, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
 
 // Motor Groups (For making the code simpler)
 okapi::MotorGroup rightMotor({fLeftMotor, rLeftMotor});
@@ -41,7 +40,8 @@ okapi::Controller master(okapi::ControllerId::master);
 
 // Lift variables
 int liftState;
-int gripState;
+int gripState = 1;
+double gripHoldPosition;
 bool prevL1;
 bool prevL2;
 bool prevR1;
@@ -55,35 +55,25 @@ void setLift()
 
 	// Upper button
 	if(buttonL1 && !prevL1){
-		prevL1 = true;
-		switch(liftState){
-			case 0: liftState = 1; break;
-			case 1: // Same as below
-			case 2: liftState = 3; break;
-			case 3: liftState = 2; break;
-		}
+		liftState++;
 	}
 
 	// Lower button
 	if(buttonL2 && !prevL2){
-		prevL2 = true;
-		switch(liftState){
-			case 0: liftState = 2; break;
-			case 1:	// Same as below
-			case 2: liftState = 0; break;
-			case 3: liftState = 1; break;
-		}
+		liftState--;
 	}
+
+	if(liftState < 0) liftState = 0;
+	if(liftState > 2) liftState = 2;
 
 	// Assign position with vel of 80
 	double pos;
 	switch(liftState){
 		case 0: pos = 0; break;
 		case 1: pos = .5; break;
-		case 2: pos = 1.3; break;
-		case 3: pos = 1.5; break;
+		case 2: pos = 1.7; break;
 	}
-	lift.moveAbsolute(pos, 80)
+	lift.moveAbsolute(pos, 80);
 
 	// Update
 	prevL1 = buttonL1;
@@ -124,22 +114,26 @@ void setGrip(){
 	bool buttonR2 = master.getDigital(okapi::ControllerDigital::R2);
 
 	// Upper button - Lift the grip
-	if(buttonR1 && !prevR1){gripState = 1;}
-	// Lower button - lower the grip
-	if(buttonR2 && !prevR2){gripState = 2;}
-	// Torque threshold TODO: Write this code
-	if(){gripState = 0;}
+	if(buttonR1 && !prevR1){
+		gripState = 1;
+		grip.moveAbsolute(-2, 100);
+	}
+	// Lower button - Start lowering the lift
+	if(buttonR2 && !prevR2){
+		if(gripState != 0){
+			gripState = 2;
+			grip.moveVelocity(-100);
+		}
+	}
+	// Torque threshold
+	if(std::abs(grip.getTorque()) > TORQUE_THRESHOLD && gripState == 2){
+		gripState = 0;
+		gripHoldPosition = grip.getPosition() + .05; // Shift the grip out .05 rev so that the motor doesn't overheat
+	}
 
-	// Set actual motor speeds TODO: Write this code
-	if(gripState == 1){
-		grip.moveVelocity(100 * skjsakljf) // TODO: Replace gibberish by red gearbox multiplier,
-		// TODO: Why do we have to multiply by kdjfa;kfjads if we pass the gearbox type into the constructor???
-	}
-	if(gripState == 2){
-		grip.moveVelocity(100 * skjsakljf) // TODO: Replace gibberish by red gearbox multiplier,
-	}
+	// Make sure the grip holds its position
 	if(gripState == 0){
-
+		grip.moveAbsolute(gripHoldPosition, 100);
 	}
 
 	// Update variables
@@ -151,15 +145,30 @@ void renderControllerDisplay()
 {
 	master.clear();
 	master.setText(0, 0, "Running...");
-	master.setText(1, 0, "liftState: %f", liftState);
-	pros::delay(1000);
+	// master.setText(1, 0, "liftState: %f", liftState);
 }
 
 void renderBrainDisplay() {}
 
 void initialize() {
+	// Initialize stuff
 	pros::lcd::initialize();
 	pros::lcd::set_text(1, "Hello PROS User!");
+	
+	// Tare grip
+	grip.moveVelocity(100);
+	while(std::abs(grip.getTorque()) < TORQUE_THRESHOLD){pros::delay(10);}
+	grip.moveVelocity(0);
+	pros::delay(100);
+	grip.tarePosition();
+	grip.moveAbsolute(-2, 100);
+
+	// Tare lift
+	lift.moveVelocity(-100);
+	while(std::abs(lift.getTorque()) < TORQUE_THRESHOLD){pros::delay(10);}
+	lift.moveVelocity(0);
+	pros::delay(100);
+	lift.tarePosition();
 }
 
 void competition_initialize() {}
@@ -173,13 +182,9 @@ void opcontrol() {
 		setDTSpeeds();
 		setLift();
 		setGrip();
-		if(countRender == 0){
-			renderControllerDisplay();
-			renderBrainDisplay();
-		}
 
 		countRender++;
-		countRender % 100; // 100 counts of 10 == 1000ms == 1s
+		countRender %= 100; // 100 counts of 10 == 1000ms == 1s
 		pros::delay(10);
 	}
 }
