@@ -53,15 +53,8 @@ void setLift()
 	bool buttonL1 = master.getDigital(okapi::ControllerDigital::L1);
 	bool buttonL2 = master.getDigital(okapi::ControllerDigital::L2);
 
-	// Upper button
-	if(buttonL1 && !prevL1){
-		liftState++;
-	}
-
-	// Lower button
-	if(buttonL2 && !prevL2){
-		liftState--;
-	}
+	if(buttonL1 && !prevL1) liftState++; // Upper button
+	if(buttonL2 && !prevL2) liftState--; // Lower button
 
 	if(liftState < 0) liftState = 0;
 	if(liftState > 2) liftState = 2;
