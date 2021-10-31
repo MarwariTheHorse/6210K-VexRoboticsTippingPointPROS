@@ -3,7 +3,7 @@
 
 // Motor + pneumatic port definitions
 #define WHEEL_LEFT_F 2
-#define WHEEL_LEFT_R 11
+#define WHEEL_LEFT_R 13
 
 #define WHEEL_RIGHT_F 12
 #define WHEEL_RIGHT_R 19
@@ -12,7 +12,6 @@
 #define WHEEL_BACK_R 20
 
 #define LIFT 4
-
 #define GRIP 1
 
 const bool DEBUG = false;
@@ -49,28 +48,32 @@ bool prevR2;
 
 void setLift()
 {
-	// Store controller state
-	bool buttonL1 = master.getDigital(okapi::ControllerDigital::L1);
-	bool buttonL2 = master.getDigital(okapi::ControllerDigital::L2);
+	if(master.getDigital(okapi::ControllerDigital::R1)) lift.moveVelocity(600);
+	else if(master.getDigital(okapi::ControllerDigital::R2)) lift.moveVelocity(-600);
+	else lift.moveVelocity(0);
 
-	if(buttonL1 && !prevL1) liftState++; // Upper button
-	if(buttonL2 && !prevL2) liftState--; // Lower button
+	// // Store controller state
+	// bool buttonR1 = master.getDigital(okapi::ControllerDigital::R1);
+	// bool buttonR2 = master.getDigital(okapi::ControllerDigital::R2);
 
-	if(liftState < 0) liftState = 0;
-	if(liftState > 2) liftState = 2;
+	// if(buttonR1 && !prevR1) liftState++; // Upper button
+	// if(buttonR2 && !prevR2) liftState--; // Lower button
 
-	// Assign position with vel of 80
-	double pos;
-	switch(liftState){
-		case 0: pos = 0; break;
-		case 1: pos = .5; break;
-		case 2: pos = 1.7; break;
-	}
-	lift.moveAbsolute(pos, 80);
+	// if(liftState < 0) liftState = 0;
+	// if(liftState > 2) liftState = 2;
 
-	// Update
-	prevL1 = buttonL1;
-	prevL2 = buttonL2;
+	// // Assign position with vel of 80
+	// double pos;
+	// switch(liftState){
+	// 	case 0: pos = 0; break;
+	// 	case 1: pos = .5; break;
+	// 	case 2: pos = 1.7; break;
+	// }
+	// lift.moveAbsolute(pos, 80);
+
+	// // Update
+	// prevR1 = buttonR1;
+	// prevR2 = buttonR2;
 }
 
 void setDTSpeeds()
@@ -103,16 +106,16 @@ void setDTSpeeds()
 
 void setGrip(){
 	// Store controller state
-	bool buttonR1 = master.getDigital(okapi::ControllerDigital::R1);
-	bool buttonR2 = master.getDigital(okapi::ControllerDigital::R2);
+	bool buttonL1 = master.getDigital(okapi::ControllerDigital::L1);
+	bool buttonL2 = master.getDigital(okapi::ControllerDigital::L2);
 
 	// Upper button - Lift the grip
-	if(buttonR1 && !prevR1){
+	if(buttonL1 && !prevL1){
 		gripState = 1;
 		grip.moveAbsolute(-2, 100);
 	}
 	// Lower button - Start lowering the lift
-	if(buttonR2 && !prevR2){
+	if(buttonL2 && !prevL2){
 		if(gripState != 0){
 			gripState = 2;
 			grip.moveVelocity(-100);
@@ -130,8 +133,8 @@ void setGrip(){
 	}
 
 	// Update variables
-	prevR1 = buttonR1;
-	prevR2 = buttonR2;
+	prevL1 = buttonL1;
+	prevL2 = buttonL2;
 }
 
 void renderControllerDisplay()
@@ -156,12 +159,13 @@ void initialize() {
 	grip.tarePosition();
 	grip.moveAbsolute(-2, 100);
 
-	// Tare lift
-	lift.moveVelocity(-100);
-	while(std::abs(lift.getTorque()) < TORQUE_THRESHOLD){pros::delay(10);}
-	lift.moveVelocity(0);
-	pros::delay(100);
-	lift.tarePosition();
+	// // Tare lift
+	// lift.moveVelocity(-100);
+	// while(std::abs(lift.getTorque()) < TORQUE_THRESHOLD){pros::delay(10);}
+	// lift.moveVelocity(0);
+	// pros::delay(100);
+	// lift.tarePosition();
+	lift.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
 }
 
 void competition_initialize() {}
