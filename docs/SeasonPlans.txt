@@ -4,19 +4,15 @@ Skills focused robot
 The Goals: GET INTO STATE > GET INTO WORLDS
 
 Where are we right now:
-Joey's CAD design
-A wheel
-We know what we want to build
+Beginner robot
 
 Robot design statement
-Our robot will have a fast, strong triangle drivetrain, a forlift, pneumatic locking system, robot-lifting hooks
+Our robot will have a fast, strong triangle drivetrain, a four-bar lift, and robot hanging capabilities
 
 Drivetrain: 6 motors, 2 per wheels
-Forklift: 2 motors (Has hanging capacity, forklift arms bend up so that we don't disturb the goals, flicks out via robot movement forces at start)
-Pneumatic Locking system: The Goal rests in the forklift at a slight angle towards the robot. The pole is tilted into a U shape, that closes around the pole when activated. This U lock stablizes the tall goal and keeps the small goals from sliding out while we are moving.
-Robot lifting hook: On the back of the forklift. When forklift goes down, this goes down with it.
-
+Four-bar: 1 motor (Has hanging capacity)
+Grip: 1 motor to hold the goal in the four-bar
 Programming Goals:
 Driver Program Goals: Make it as easy as possible for the driver to drive and the programmer to program.
 Auton Goals: Make a smooth and consistent auton using all necessary sensors form the beginning
-Comp. Auton: Score a goal or two and mess up the other team's auoton
+Comp. Auton: Score a goal or two and mess up the other team's auoton, or go for win point
