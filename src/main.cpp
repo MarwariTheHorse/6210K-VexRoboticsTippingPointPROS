@@ -37,6 +37,9 @@ okapi::MotorGroup backMotor({lBackMotor, rBackMotor});
 // Controllers
 okapi::Controller master(okapi::ControllerId::master);
 
+// Sensors
+okapi:: // TODO: Add the sensors
+
 // Lift variables
 int liftState;
 int gripState = 1;
@@ -49,7 +52,68 @@ bool prevR2;
 // Globals
 char autonMode = 'N'; // Stands for none
 
-// Auton assist methods
+// Auton assist methods //
+void driveViaDist(double dist)
+{
+	dist *= 39.3701 / (3 * pros::pi); // To in. then to rev
+	backMotor.moveRelative(dist, 80);
+	rightMotor.moveRelative(dist, 80);
+	leftMotor.moveRelative(dist, 80);
+	while(!leftMotor.isStopped()) pros::delay(10);
+}
+
+void driveViaIMU(double dist, double heading) // TODO: get this from last year's code
+{
+	dist *= 39.3701 / (3 * pros::pi); // To in. then to rev
+}
+
+void grab() // NOTE: Grip should be in holding, allowing it to grip via this simple piece of code
+{
+	grip.moveVelocity(-100);
+	if(std::abs(grip.getTorque()) > TORQUE_THRESHOLD){
+		grip.moveVelocity(0);
+	}
+}
+
+void ungrab() // TODO: Write this code
+{
+	grip.moveAbsolute(-2, 80);
+}
+
+void driveViaGPS()
+{
+
+}
+
+void driveViaTime(double ms, double vel){
+	leftMotor.moveVelocity(vel);
+	rightMotor.moveVelocity(vel);
+	backMotor.moveVelocity(vel);
+	pros::delay(ms);
+	leftMotor.moveVelocity(0);
+	rightMotor.moveVelocity(0);
+	backMotor.moveVelocity(0);
+}
+
+void turnViaIMUTo()
+{
+	// TODO: Find and use turning code from last year
+}
+
+void liftMin() lift.moveAbsolute(0);
+void liftSmall() lift.moveAbsolute(.5); // 0, .5, 1.7
+void liftMax() lift.moveAbsolute(1.7);
+void liftScore() lift.moveAbsolute(.5);
+
+void scoreGoal()
+{
+	// Lower the lift
+	liftScore();
+	// Release the goal
+	ungrab();
+	// Lift the lift back to max
+	liftMax();
+}
 
 void skillsAuton()
 {
@@ -58,58 +122,87 @@ void skillsAuton()
 	//////////////////////
 
 	// Drive to the goal
+	const BACK_WHEEL_DIST_1 = 100;
+	driveViaIMU(BACK_WHEEL_DIST_1); // 100mm = 10cm
 
 	// Grab the goal
+	grab();
 
 	// Lift the goal a little
+	liftSmall();
 
 	/////////////////////////////
 	// Drive to the other side //
 	/////////////////////////////
 
+	// Back up 
+	driveViaIMU(BACK_WHEEL_DIST_1*2);
+
 	// Turn towards gap between yellow
+	turnViaIMUTo(-90);
 
 	// Drive to the gap
+	driveViaGPS(3.5);
 
 	// Turn to perpendicular
+	turnViaIMUTo(0);
 
-	// Drive through gap
+	// Drive to other side of goal
+	driveViaIMU(3.0);
+
+	// Turn to goal
+	turnViaIMUTo(-90);
 
 	///////////////////////////////
 	// Swipe goal out of the way //
 	///////////////////////////////
 
-	// Turn to align with where the annoying goal is
-
 	// Lift our goal up as we approach the annoying goal
+	liftMax();
 
-	// Lower goal
+	// Hit the goal
+	driveViaTime(500);
+
+	// Lower goal (Manual code that we only use once)
 
 	// Rotate to swipe the annoying goal off the ramp
+	turnViaIMUTo(-45);
 
 	///////////////////////////////////
 	// Score goal 1 in bridge center //
 	///////////////////////////////////
 
-	// Alight with scoring spot
+	// Alighn with scoring spot
+	driveViaIMU(1.5);
+	turnViaIMUTo(-90);
 
 	// Lift goal then approach
+	liftMax();
+	driveViaTime(500);
 
 	// Score
+	scoreGoal(); // TODO: Lower goal, release goal
 
 	/////////////////////////////////////////////////
 	// Turn around, grab tall yellow, and score it //
 	/////////////////////////////////////////////////
 
 	// Do a 180
+	turnViaIMUTo(90);
 
 	// Lower lift
+	liftMin();
 
 	// Approach, grip, and lift goal
+	driveViaIMU(1.5);
+	grab();
+	liftSmall();
 
 	// Do a 180
+	turnViaIMUTo(-90);
 
-	// Lift goal as we approach the ramp
+	// Lift goal approach the ramp
+	liftMax();
 
 	// Score the tall goal
 
@@ -224,11 +317,9 @@ void setGrip(){
 		grip.moveAbsolute(-2, 100);
 	}
 	// Lower button - Start lowering the lift
-	if(buttonL2 && !prevL2){
-		if(gripState != 0){
-			gripState = 2;
-			grip.moveVelocity(-100);
-		}
+	if(buttonL2 && !prevL2 && gripState != 0){
+		gripState = 2;
+		grip.moveVelocity(-100);
 	}
 	// Torque threshold
 	if(std::abs(grip.getTorque()) > TORQUE_THRESHOLD && gripState == 2){
