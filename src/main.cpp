@@ -46,6 +46,115 @@ bool prevL2;
 bool prevR1;
 bool prevR2;
 
+// Globals
+char autonMode = 'N'; // Stands for none
+
+// Auton assist methods
+
+void skillsAuton()
+{
+	//////////////////////
+	// Grab nearby goal //
+	//////////////////////
+
+	// Drive to the goal
+
+	// Grab the goal
+
+	// Lift the goal a little
+
+	/////////////////////////////
+	// Drive to the other side //
+	/////////////////////////////
+
+	// Turn towards gap between yellow
+
+	// Drive to the gap
+
+	// Turn to perpendicular
+
+	// Drive through gap
+
+	///////////////////////////////
+	// Swipe goal out of the way //
+	///////////////////////////////
+
+	// Turn to align with where the annoying goal is
+
+	// Lift our goal up as we approach the annoying goal
+
+	// Lower goal
+
+	// Rotate to swipe the annoying goal off the ramp
+
+	///////////////////////////////////
+	// Score goal 1 in bridge center //
+	///////////////////////////////////
+
+	// Alight with scoring spot
+
+	// Lift goal then approach
+
+	// Score
+
+	/////////////////////////////////////////////////
+	// Turn around, grab tall yellow, and score it //
+	/////////////////////////////////////////////////
+
+	// Do a 180
+
+	// Lower lift
+
+	// Approach, grip, and lift goal
+
+	// Do a 180
+
+	// Lift goal as we approach the ramp
+
+	// Score the tall goal
+
+	////////////////////////////////////////////////////////
+	// Turn around, grab another yellow, and score it too //
+	////////////////////////////////////////////////////////
+
+	// Back up
+
+	// Turn towards a yellow goal
+
+	// Approach, grip, then lift goal a litte
+
+	///////////////////////////////////////////////////////////////////
+	// Grab nearby color goal, drive to the other side, and score it //
+	///////////////////////////////////////////////////////////////////
+
+	// Turn towards the color goal
+
+	// Approach, grip, then lift the goal a litte
+
+	// Turn and approach the ramp
+
+	// Lower lift and score
+
+	/////////////////////////////////////////
+	// Grab the last yellow and score that //
+	/////////////////////////////////////////
+
+	// Back up then turn towards the final yellow
+
+	// Approach, grip, and lift the yellow
+
+	// Turn around and approach the ramp
+
+	// Lower the lift and score
+
+	////////////////////////
+	// Hang on the bridge //
+	////////////////////////
+
+	// Lower the arm and apply pneumatic brake
+
+}
+
 void setLift()
 {
 	if(master.getDigital(okapi::ControllerDigital::R1)) lift.moveVelocity(600);
@@ -139,9 +248,6 @@ void setGrip(){
 
 void renderControllerDisplay()
 {
-	master.clear();
-	master.setText(0, 0, "Running...");
-	// master.setText(1, 0, "liftState: %f", liftState);
 }
 
 void renderBrainDisplay() {}
@@ -168,11 +274,30 @@ void initialize() {
 	lift.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
 }
 
-void competition_initialize() {}
+void competition_initialize()
+{
+	// Render the prompt
+	master.setText(0, 0, "Select a mode:");
+	master.setText(1, 0, "X:Auton");
+
+	// Get the choice
+	while(autonMode == 'N'){
+		if(master.getDigital(okapi::ControllerDigital::X)){
+			autonMode = 'X';
+		}
+		if(master.getDigital(okapi::ControllerDigital::B)){
+			break;
+		}
+	}
+	master.clear();
+}
 
 void disabled() {}
 
-void autonomous() {}
+void autonomous() {
+	if(autonMode = 'X') skillsAuton();
+}
+
 
 void opcontrol() {
 	while (true) {
