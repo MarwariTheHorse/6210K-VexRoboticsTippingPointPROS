@@ -13,9 +13,6 @@
 
 #define LIFT 4
 #define GRIP 1
-#define VISION 6
-#define GYRO 8
-#define PISTON 'H'
 
 const bool DEBUG = false;
 const bool LOGGING_RATE = 100; // ms * 10, plus execution per loop time. ie 100 results in data appox. every second
@@ -41,11 +38,8 @@ okapi::MotorGroup backMotor({lBackMotor, rBackMotor});
 okapi::Controller master(okapi::ControllerId::master);
 
 // Sensors
-pros::Vision vision (VISION); // TODO: Add the sensors
-void initializePin() {
-	pros::ADIDigitalOut piston(PISTON);
-}
-okapi::IMU IMU(GYRO);
+okapi:: // TODO: Add the sensors
+
 // Lift variables
 int liftState;
 int gripState = 1;
@@ -61,7 +55,7 @@ char autonMode = 'N'; // Stands for none
 // Auton assist methods //
 void driveViaDist(double dist)
 {
-	dist *= 39.3701 / (2.75 * PI); // To in. then to rev
+	dist *= 39.3701 / (3 * pros::pi); // To in. then to rev
 	backMotor.moveRelative(dist, 80);
 	rightMotor.moveRelative(dist, 80);
 	leftMotor.moveRelative(dist, 80);
@@ -70,11 +64,7 @@ void driveViaDist(double dist)
 
 void driveViaIMU(double dist, double heading) // TODO: get this from last year's code
 {
-	dist *= 39.3701 / (2.75 * PI); // To in. then to rev
-	backMotor.moveRelative(dist, 80);
-	rightMotor.moveRelative(dist, 80);
-	leftMotor.moveRelative(dist, 80);
-	if(IMU.get() + 1 > heading || IMU.get() - 1 < heading) pros::delay(1);
+	dist *= 39.3701 / (3 * pros::pi); // To in. then to rev
 }
 
 void grab() // NOTE: Grip should be in holding, allowing it to grip via this simple piece of code
@@ -90,10 +80,10 @@ void ungrab() // TODO: Write this code
 	grip.moveAbsolute(-2, 80);
 }
 
-/*void driveViaGPS()
+void driveViaGPS()
 {
 
-}*/
+}
 
 void driveViaTime(double ms, double vel){
 	leftMotor.moveVelocity(vel);
@@ -108,14 +98,12 @@ void driveViaTime(double ms, double vel){
 void turnViaIMUTo()
 {
 	// TODO: Find and use turning code from last year
-
 }
 
-void liftMin() {lift.moveAbsolute(0, 90);}
-void liftSmall() {lift.moveAbsolute(.5, 90);} // 0, .5, 1.7
-void liftMax() {lift.moveAbsolute(1.7, 90);}
-void liftScore() {lift.moveAbsolute(.5, 90);}
-void liftHang() {lift.moveAbsolute(.7, 90);} // needs tweaking
+void liftMin() lift.moveAbsolute(0);
+void liftSmall() lift.moveAbsolute(.5); // 0, .5, 1.7
+void liftMax() lift.moveAbsolute(1.7);
+void liftScore() lift.moveAbsolute(.5);
 
 void scoreGoal()
 {
@@ -127,29 +115,14 @@ void scoreGoal()
 	liftMax();
 }
 
-void hang()
-{
-	liftMax();
-	// Drive until hit the ramp
-	liftHang();
-	pros::ADIDigitalOut piston(PISTON);
-	piston.set_value(true);
-	
-}
-
-void testPiston() {
-	pros::ADIDigitalOut piston(PISTON);
-	piston.set_value(true);
-}
 void skillsAuton()
 {
-	/*
 	//////////////////////
 	// Grab nearby goal //
 	//////////////////////
 
 	// Drive to the goal
-	const int BACK_WHEEL_DIST_1 = 100;
+	const BACK_WHEEL_DIST_1 = 100;
 	driveViaIMU(BACK_WHEEL_DIST_1); // 100mm = 10cm
 
 	// Grab the goal
@@ -271,10 +244,8 @@ void skillsAuton()
 	// Hang on the bridge //
 	////////////////////////
 
-	hang();
+	// Lower the arm and apply pneumatic brake
 
-*/
-	pros::delay(1);
 }
 
 void setLift()
@@ -428,6 +399,5 @@ void opcontrol() {
 		countRender++;
 		countRender %= 100; // 100 counts of 10 == 1000ms == 1s
 		pros::delay(10);
-		if(master.getDigital(okapi::ControllerDigital::B)) testPiston();
 	}
 }
