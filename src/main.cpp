@@ -13,9 +13,11 @@
 
 #define LIFT 4
 #define GRIP 1
+
+#define PISTON 'H'
+
 #define VISION 6
 #define GYRO 8
-#define PISTON 'H'
 
 const bool DEBUG = false;
 const bool LOGGING_RATE = 100; // ms * 10, plus execution per loop time. ie 100 results in data appox. every second
@@ -37,29 +39,36 @@ okapi::MotorGroup rightMotor({fLeftMotor, rLeftMotor});
 okapi::MotorGroup leftMotor({fRightMotor, rRightMotor});
 okapi::MotorGroup backMotor({lBackMotor, rBackMotor});
 
+// Pneumatics
+pros::ADIDigitalOut piston(PISTON);
+
 // Controllers
 okapi::Controller master(okapi::ControllerId::master);
 
 // Sensors
-pros::Vision vision (VISION); // TODO: Add the sensors
-void initializePin() {
-	pros::ADIDigitalOut piston(PISTON);
-}
+pros::Vision vision (VISION);
 okapi::IMU IMU(GYRO);
+
 // Lift variables
 int liftState;
 int gripState = 1;
 double gripHoldPosition;
+
+// Anti-doubles
 bool prevL1;
 bool prevL2;
 bool prevR1;
 bool prevR2;
+bool prevB;
+
+double pistonTime1 = 0;
+double pistonTime2 = -1000;
 
 // Globals
 char autonMode = 'N'; // Stands for none
 
 // Auton assist methods //
-void driveViaDist(double dist)
+void driveViaDist(double dist) // Untested
 {
 	dist *= 39.3701 / (2.75 * PI); // To in. then to rev
 	backMotor.moveRelative(dist, 80);
@@ -68,7 +77,7 @@ void driveViaDist(double dist)
 	while(!leftMotor.isStopped()) pros::delay(10);
 }
 
-void driveViaIMU(double dist, double heading) // TODO: get this from last year's code
+void driveViaIMU(double dist, double heading) // Untested TODO: get this from last year's code
 {
 	dist *= 39.3701 / (2.75 * PI); // To in. then to rev
 	backMotor.moveRelative(dist, 80);
@@ -89,11 +98,6 @@ void ungrab() // TODO: Write this code
 {
 	grip.moveAbsolute(-2, 80);
 }
-
-/*void driveViaGPS()
-{
-
-}*/
 
 void driveViaTime(double ms, double vel){
 	leftMotor.moveVelocity(vel);
@@ -129,18 +133,11 @@ void scoreGoal()
 
 void hang()
 {
-	liftMax();
-	// Drive until hit the ramp
 	liftHang();
-	pros::ADIDigitalOut piston(PISTON);
+	// TODO: Add a waitUntil lift is done here because otherwise, async
 	piston.set_value(true);
-	
 }
 
-void testPiston() {
-	pros::ADIDigitalOut piston(PISTON);
-	piston.set_value(true);
-}
 void skillsAuton()
 {
 	/*
@@ -282,29 +279,6 @@ void setLift()
 	if(master.getDigital(okapi::ControllerDigital::R1)) lift.moveVelocity(600);
 	else if(master.getDigital(okapi::ControllerDigital::R2)) lift.moveVelocity(-600);
 	else lift.moveVelocity(0);
-
-	// // Store controller state
-	// bool buttonR1 = master.getDigital(okapi::ControllerDigital::R1);
-	// bool buttonR2 = master.getDigital(okapi::ControllerDigital::R2);
-
-	// if(buttonR1 && !prevR1) liftState++; // Upper button
-	// if(buttonR2 && !prevR2) liftState--; // Lower button
-
-	// if(liftState < 0) liftState = 0;
-	// if(liftState > 2) liftState = 2;
-
-	// // Assign position with vel of 80
-	// double pos;
-	// switch(liftState){
-	// 	case 0: pos = 0; break;
-	// 	case 1: pos = .5; break;
-	// 	case 2: pos = 1.7; break;
-	// }
-	// lift.moveAbsolute(pos, 80);
-
-	// // Update
-	// prevR1 = buttonR1;
-	// prevR2 = buttonR2;
 }
 
 void setDTSpeeds()
@@ -366,6 +340,22 @@ void setGrip(){
 	prevL2 = buttonL2;
 }
 
+void setPiston()
+{
+	bool buttonB = master.getDigital(okapi::ControllerDigital::B);
+	if(buttonB && !prevB){
+		pistonTime1 = pistonTime2;
+		pistonTime2 = pros::millis();
+		if(pistonTime2 - pistonTime1 < 500){
+			pistonState = !pistonState;
+			piston.set_value(pistonState ? 4095 : 0); // Set output to 5V or 0V
+			pistonTime1 -= 2000; // Fudge the numbers to that it doesn't double trigger
+			pistonTime2 -= 1000;
+		}
+	}
+	prevB = buttonB;
+}
+
 void renderControllerDisplay()
 {
 }
@@ -418,12 +408,12 @@ void autonomous() {
 	if(autonMode = 'X') skillsAuton();
 }
 
-
 void opcontrol() {
 	while (true) {
 		setDTSpeeds();
 		setLift();
 		setGrip();
+		setPiston();
 
 		countRender++;
 		countRender %= 100; // 100 counts of 10 == 1000ms == 1s
