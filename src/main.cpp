@@ -63,6 +63,7 @@ bool prevB;
 
 double pistonTime1 = 0;
 double pistonTime2 = -1000;
+bool pistonState;
 
 // Globals
 char autonMode = 'N'; // Stands for none
@@ -71,9 +72,9 @@ char autonMode = 'N'; // Stands for none
 void driveViaDist(double dist) // Untested
 {
 	dist *= 39.3701 / (2.75 * PI); // To in. then to rev
-	backMotor.moveRelative(dist, 80);
-	rightMotor.moveRelative(dist, 80);
-	leftMotor.moveRelative(dist, 80);
+	backMotor.moveRelative(dist, 600);
+	rightMotor.moveRelative(dist, 600);
+	leftMotor.moveRelative(dist, 600);
 	while(!leftMotor.isStopped()) pros::delay(10);
 }
 
@@ -109,10 +110,8 @@ void driveViaTime(double ms, double vel){
 	backMotor.moveVelocity(0);
 }
 
-void turnViaIMUTo()
+void turnViaIMUTo() // write from last year's code
 {
-	// TODO: Find and use turning code from last year
-
 }
 
 void liftMin() {lift.moveAbsolute(0, 90);}
@@ -271,7 +270,14 @@ void skillsAuton()
 	hang();
 
 */
-	pros::delay(1);
+
+
+}
+
+void compAuton()
+{
+	driveViaDist(1.5);
+	grab();
 }
 
 void setLift()
@@ -365,7 +371,6 @@ void renderBrainDisplay() {}
 void initialize() {
 	// Initialize stuff
 	pros::lcd::initialize();
-	pros::lcd::set_text(1, "Hello PROS User!");
 	
 	// Tare grip
 	grip.moveVelocity(100);
@@ -375,37 +380,30 @@ void initialize() {
 	grip.tarePosition();
 	grip.moveAbsolute(-2, 100);
 
-	// // Tare lift
-	// lift.moveVelocity(-100);
-	// while(std::abs(lift.getTorque()) < TORQUE_THRESHOLD){pros::delay(10);}
-	// lift.moveVelocity(0);
-	// pros::delay(100);
-	// lift.tarePosition();
 	lift.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
+
+	// Render the prompt
+	master.setText(0, 0, "Select a mode:");
+	master.setText(1, 0, "X:Auton/A:Comp");
+
+	// Get the choice
+	while(autonMode == 'N'){
+		if(master.getDigital(okapi::ControllerDigital::X)) autonMode = 'X';
+		if(master.getDigital(okapi::ControllerDigital::A)) autonMode = 'A';
+		if(master.getDigital(okapi::ControllerDigital::B)) break;
+	}
+	master.clear();
 }
 
 void competition_initialize()
 {
-	// Render the prompt
-	master.setText(0, 0, "Select a mode:");
-	master.setText(1, 0, "X:Auton");
-
-	// Get the choice
-	while(autonMode == 'N'){
-		if(master.getDigital(okapi::ControllerDigital::X)){
-			autonMode = 'X';
-		}
-		if(master.getDigital(okapi::ControllerDigital::B)){
-			break;
-		}
-	}
-	master.clear();
 }
 
 void disabled() {}
 
 void autonomous() {
-	if(autonMode = 'X') skillsAuton();
+	if(autonMode == 'X') skillsAuton();
+	if(autonMode == 'A') compAuton();
 }
 
 void opcontrol() {
@@ -418,6 +416,5 @@ void opcontrol() {
 		countRender++;
 		countRender %= 100; // 100 counts of 10 == 1000ms == 1s
 		pros::delay(10);
-		if(master.getDigital(okapi::ControllerDigital::B)) testPiston();
 	}
 }
