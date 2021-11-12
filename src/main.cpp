@@ -413,8 +413,6 @@ void opcontrol() {
 		setGrip();
 		setPiston();
 
-		countRender++;
-		countRender %= 100; // 100 counts of 10 == 1000ms == 1s
 		pros::delay(10);
 	}
 }
