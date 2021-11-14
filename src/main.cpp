@@ -65,6 +65,8 @@ double pistonTime1 = 0;
 double pistonTime2 = -1000;
 bool pistonState;
 
+double lastVibrate = 0;
+
 // Globals
 char autonMode = 'N'; // Stands for none
 
@@ -271,13 +273,22 @@ void skillsAuton()
 
 */
 
-
+	driveViaDist(.5);
+	pros::delay(750); // TODO: Replace this line with something involving getActualVelocity();
+	driveViaDist(-.5);
 }
 
-void compAuton()
+void compLeftAuton()
 {
 	driveViaDist(1.5);
+	pros::delay(1000);
 	grab();
+	driveViaDist(-1.5);
+}
+
+void compRightAuton()
+{
+
 }
 
 void setLift()
@@ -362,6 +373,13 @@ void setPiston()
 	prevB = buttonB;
 }
 
+void setVibrate(){
+	if(pros::millis() - lastVibrate > 750 && lift.getPosition() > 1){
+		master.rumble(".");
+		lastVibrate = pros::millis();
+	}
+}
+
 void renderControllerDisplay()
 {
 }
@@ -371,6 +389,7 @@ void renderBrainDisplay() {}
 void initialize() {
 	// Initialize stuff
 	pros::lcd::initialize();
+	pros::lcd::set_text(1, "TEST");
 	
 	// Tare grip
 	grip.moveVelocity(100);
@@ -390,6 +409,7 @@ void initialize() {
 	while(autonMode == 'N'){
 		if(master.getDigital(okapi::ControllerDigital::X)) autonMode = 'X';
 		if(master.getDigital(okapi::ControllerDigital::A)) autonMode = 'A';
+		if(master.getDigital(okapi::ControllerDigital::left)) autonMode = '<';
 		if(master.getDigital(okapi::ControllerDigital::B)) break;
 	}
 	master.clear();
@@ -403,7 +423,8 @@ void disabled() {}
 
 void autonomous() {
 	if(autonMode == 'X') skillsAuton();
-	if(autonMode == 'A') compAuton();
+	if(autonMode == '<') compLeftAuton();
+	if(autonMode == '>') compRightAuton();
 }
 
 void opcontrol() {
@@ -412,6 +433,7 @@ void opcontrol() {
 		setLift();
 		setGrip();
 		setPiston();
+		setVibrate();
 
 		pros::delay(10);
 	}
