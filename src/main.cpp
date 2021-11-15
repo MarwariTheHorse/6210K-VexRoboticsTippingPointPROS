@@ -394,7 +394,6 @@ void renderBrainDisplay() {}
 void initialize() {
 	// Initialize stuff
 	pros::lcd::initialize();
-	pros::lcd::set_text(1, "TEST");
 	
 	// Tare grip
 	grip.moveVelocity(100);
@@ -408,7 +407,6 @@ void initialize() {
 
 	// Render the prompt
 	master.setText(0, 0, "Select a mode:");
-	master.setText(1, 0, "X:Auton/A:Comp");
 
 	// Get the choice
 	while(autonMode == 'N'){
@@ -447,7 +445,6 @@ void opcontrol() {
 		setGrip();
 		setPiston();
 		setVibrate();
-
 		pros::delay(10);
 	}
 }
