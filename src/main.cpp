@@ -20,9 +20,8 @@
 #define GYRO 8
 
 const bool DEBUG = false;
-const bool LOGGING_RATE = 100; // ms * 10, plus execution per loop time. ie 100 results in data appox. every second
 const bool TORQUE_THRESHOLD = 1.575;
-int countRender = 0;
+const bool LOGGING_RATE = 100; // ms * 10, plus execution per loop time. ie 100 results in data appox. every second
 
 // Motors(port, reversed, gearset, encoderUnits, logger(implied))
 okapi::Motor fLeftMotor(WHEEL_LEFT_F, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations);
@@ -273,22 +272,28 @@ void skillsAuton()
 
 */
 
+}
+
+void compLeftAuton()
+{
 	driveViaDist(.5);
 	pros::delay(750); // TODO: Replace this line with something involving getActualVelocity();
 	driveViaDist(-.5);
 }
 
-void compLeftAuton()
+void compForwardAuton()
 {
 	driveViaDist(1.5);
-	pros::delay(1000);
+	pros::delay(750);
 	grab();
+	pros::delay(1000);
 	driveViaDist(-1.5);
 }
 
 void compRightAuton()
 {
-
+	// The line below is a filler line right now, but actually works quite nicely
+	compLeftAuton();
 }
 
 void setLift()
@@ -407,10 +412,17 @@ void initialize() {
 
 	// Get the choice
 	while(autonMode == 'N'){
-		if(master.getDigital(okapi::ControllerDigital::X)) autonMode = 'X';
+		// Letter buttons
 		if(master.getDigital(okapi::ControllerDigital::A)) autonMode = 'A';
-		if(master.getDigital(okapi::ControllerDigital::left)) autonMode = '<';
 		if(master.getDigital(okapi::ControllerDigital::B)) break;
+		if(master.getDigital(okapi::ControllerDigital::X)) autonMode = 'X';
+		if(master.getDigital(okapi::ControllerDigital::Y)) autonMode = 'Y';
+
+		// Arrow buttons
+		if(master.getDigital(okapi::ControllerDigital::left)) autonMode = '<';
+		if(master.getDigital(okapi::ControllerDigital::right)) autonMode = '>';
+		if(master.getDigital(okapi::ControllerDigital::up)) autonMode = '^';
+		if(master.getDigital(okapi::ControllerDigital::down)) autonMode = 'V';
 	}
 	master.clear();
 }
@@ -425,6 +437,7 @@ void autonomous() {
 	if(autonMode == 'X') skillsAuton();
 	if(autonMode == '<') compLeftAuton();
 	if(autonMode == '>') compRightAuton();
+	if(autonMode == '^') compForwardAuton();
 }
 
 void opcontrol() {
