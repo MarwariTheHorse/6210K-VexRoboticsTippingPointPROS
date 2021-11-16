@@ -69,8 +69,15 @@ double lastVibrate = 0;
 // Globals
 char autonMode = 'N'; // Stands for none
 
+int sgn(double d)
+{
+	if(d < 0){return -1;}
+	if(d > 0){return 1;}
+	return 0;
+}
+
 // Auton assist methods //
-void driveViaDist(double dist) // Untested
+void driveViaDist(double dist)
 {
 	dist *= 39.3701 / (2.75 * PI); // To in. then to rev
 	backMotor.moveRelative(dist, 600);
@@ -79,13 +86,85 @@ void driveViaDist(double dist) // Untested
 	while(!leftMotor.isStopped()) pros::delay(10);
 }
 
-void driveViaIMU(double dist, double heading) // Untested TODO: get this from last year's code
+void driveViaIMU(double dist, double angle) // Untested TODO: get this from last year's code
 {
 	dist *= 39.3701 / (2.75 * PI); // To in. then to rev
-	backMotor.moveRelative(dist, 80);
-	rightMotor.moveRelative(dist, 80);
-	leftMotor.moveRelative(dist, 80);
-	if(IMU.get() + 1 > heading || IMU.get() - 1 < heading) pros::delay(1);
+	int rotation;
+	int speed;
+	// reset all motor encoders to zero
+	// 10000 units is equal to 56" of travel
+	backMotor.tarePosition();
+	leftMotor.tarePosition();
+	rightMotor.tarePosition();
+	int d = 0;
+	if(d < dist){
+		while (d < dist){
+			speed = 240;
+			rotation = (angle - IMU.get()) * 3;
+			leftMotor.moveVelocity(speed - rotation);
+			rightMotor.moveVelocity(speed + rotation);
+			backMotor.moveVelocity(speed);
+			pros::delay(5);
+			d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
+		}
+	}else{
+		while (d > dist){
+			speed = -240;
+			rotation = (angle - IMU.get()) * 3;
+			leftMotor.moveVelocity(speed - rotation);
+			rightMotor.moveVelocity(speed + rotation);
+			pros::delay(5);
+			d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
+		}
+	}
+	leftMotor.moveVelocity(0);
+	rightMotor.moveVelocity(0);
+	backMotor.moveVelocity(0);
+}
+
+void driveViaTime(double ms, double vel){
+	leftMotor.moveVelocity(vel);
+	rightMotor.moveVelocity(vel);
+	backMotor.moveVelocity(vel);
+	pros::delay(ms);
+	leftMotor.moveVelocity(0);
+	rightMotor.moveVelocity(0);
+	backMotor.moveVelocity(0);
+}
+
+void turnViaIMU(double angle)
+{
+	IMU.reset();
+	double error = angle - IMU.get();
+	int rotation;
+	backMotor.moveVelocity(0);
+	while(std::fabs(error) > 10) // keeps turning until within 10 degrees of objective
+	{
+		if (std::fabs(error) < 40){
+		// if within 40 degrees of objective, the motors start slowing
+		// and the speed never drops below 20
+		rotation = (6 * error);
+		} else {
+		// otherwise maintain fast turning speed of 90
+		rotation = 270 * sgn(error);
+		}
+
+		rightMotor.moveVelocity(rotation);
+		leftMotor.moveVelocity(-rotation);
+
+		pros::delay(5);
+		error = angle - IMU.get();
+		std::string imuMeasurement = std::to_string(IMU.get());
+		master.setText(0, 0, "IMU:" + imuMeasurement);
+	}
+	// these next lines attempt to slow down the robot's rotational momentum
+	// might be better just to put the motors into braking mode
+	rotation = -15 * sgn(error);
+	leftMotor.moveVelocity(rotation);
+	rightMotor.moveVelocity(-rotation);
+	pros::delay(50);
+	leftMotor.moveVelocity(0);
+	rightMotor.moveVelocity(0);
 }
 
 void grab() // NOTE: Grip should be in holding, allowing it to grip via this simple piece of code
@@ -99,20 +178,6 @@ void grab() // NOTE: Grip should be in holding, allowing it to grip via this sim
 void ungrab() // TODO: Write this code
 {
 	grip.moveAbsolute(-2, 80);
-}
-
-void driveViaTime(double ms, double vel){
-	leftMotor.moveVelocity(vel);
-	rightMotor.moveVelocity(vel);
-	backMotor.moveVelocity(vel);
-	pros::delay(ms);
-	leftMotor.moveVelocity(0);
-	rightMotor.moveVelocity(0);
-	backMotor.moveVelocity(0);
-}
-
-void turnViaIMUTo() // write from last year's code
-{
 }
 
 void liftMin() {lift.moveAbsolute(0, 90);}
@@ -140,6 +205,7 @@ void hang()
 
 void skillsAuton()
 {
+	driveViaIMU(1, 0);
 	/*
 	//////////////////////
 	// Grab nearby goal //
