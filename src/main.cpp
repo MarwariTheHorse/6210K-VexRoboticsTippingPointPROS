@@ -321,7 +321,7 @@ void setDTSpeeds()
 	// Convert joysticks to wheel speeds
 	double wheelLeftSpeed = joyLY - joyRX;
 	double wheelRightSpeed = joyLY + joyRX;
-	double wheelBackSpeed = (wheelLeftSpeed + wheelRightSpeed) / 2;
+	double wheelBackSpeed = joyLY;
 
 	// Filter wheel speeds (We got none right now)
 
