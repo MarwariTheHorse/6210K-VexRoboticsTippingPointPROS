@@ -169,10 +169,8 @@ void turnViaIMU(double angle)
 
 void grab() // NOTE: Grip should be in holding, allowing it to grip via this simple piece of code
 {
-	grip.moveVelocity(-100);
-	if(std::abs(grip.getTorque()) > TORQUE_THRESHOLD){
-		grip.moveVelocity(0);
-	}
+	grip.moveAbsolute(-3.5, 100);
+	pros::delay(750);
 }
 
 void ungrab() // TODO: Write this code
@@ -205,7 +203,12 @@ void hang()
 
 void skillsAuton()
 {
-	driveViaIMU(1, 0);
+	driveViaIMU(.1, 0);
+	grab();
+	driveViaIMU(-.2, 0);
+	turnViaIMU(-45);
+	driveViaIMU(1, -45);
+
 	/*
 	//////////////////////
 	// Grab nearby goal //
