@@ -206,8 +206,10 @@ void skillsAuton()
 	driveViaIMU(.1, 0);
 	grab();
 	driveViaIMU(-.2, 0);
+	lift.moveAbsolute(.4, 100); //make it not scrape the ground so it can move
 	turnViaIMU(-45);
 	driveViaIMU(1, -45);
+	turnViaIMU(-45);
 
 	/*
 	//////////////////////
