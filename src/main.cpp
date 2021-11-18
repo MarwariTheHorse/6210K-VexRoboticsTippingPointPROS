@@ -186,9 +186,9 @@ void liftHang() {lift.moveAbsolute(.7, 90);} // needs tweaking
 
 void scoreGoal()
 {
-	// Lower the lift
-	liftScore();
-	// Release the goal
+	//Ensure lift is up
+	liftMax();
+	// Release Goal
 	ungrab();
 	// Lift the lift back to max
 	liftMax();
@@ -197,118 +197,116 @@ void scoreGoal()
 void hang()
 {
 	liftHang();
+	while(lift.getPosition() > .7){
+		pros::delay(10);
+	}
 	// TODO: Add a waitUntil lift is done here because otherwise, async
 	piston.set_value(true);
 }
-
+// Uncommented is for 11/20 tournament and scores 110 points
 void skillsAuton()
 {
-	driveViaIMU(.1, 0);
-	grab();
-	driveViaIMU(-.2, 0);
-	lift.moveAbsolute(.4, 100); //make it not scrape the ground so it can move
-	turnViaIMU(-45);
-	driveViaIMU(1, -45);
-	turnViaIMU(-45);
-
-	/*
 	//////////////////////
 	// Grab nearby goal //
 	//////////////////////
 
 	// Drive to the goal
-	const int BACK_WHEEL_DIST_1 = 100;
-	driveViaIMU(BACK_WHEEL_DIST_1); // 100mm = 10cm
+	driveViaIMU(.1, 0);
 
 	// Grab the goal
 	grab();
 
 	// Lift the goal a little
-	liftSmall();
+	driveViaIMU(-.2, 0);
+	lift.moveAbsolute(.4, 100); //make it not scrape the ground so it can move
 
 	/////////////////////////////
 	// Drive to the other side //
 	/////////////////////////////
 
-	// Back up 
-	driveViaIMU(BACK_WHEEL_DIST_1*2);
-
 	// Turn towards gap between yellow
-	turnViaIMUTo(-90);
+	turnViaIMU(-45);
 
 	// Drive to the gap
-	driveViaGPS(3.5);
+	driveViaIMU(1, -45);
 
 	// Turn to perpendicular
-	turnViaIMUTo(0);
-
+	turnViaIMU(-45);
+	
 	// Drive to other side of goal
-	driveViaIMU(3.0);
+	driveViaIMU(1, -90);
 
 	// Turn to goal
-	turnViaIMUTo(-90);
+	turnViaIMU(45);
 
 	///////////////////////////////
-	// Swipe goal out of the way //
+	// Swipe goal out of the way (De-tilt the ramp) //
 	///////////////////////////////
-
-	// Lift our goal up as we approach the annoying goal
-	liftMax();
 
 	// Hit the goal
-	driveViaTime(500);
+	driveViaTime(600, 90);
 
-	// Lower goal (Manual code that we only use once)
-
-	// Rotate to swipe the annoying goal off the ramp
-	turnViaIMUTo(-45);
+	// De-tilt and back up to center on the ramp
+	lift.moveRelative(.5, 100);
+	driveViaDist(-.5);
+	turnViaIMU(-45);
 
 	///////////////////////////////////
 	// Score goal 1 in bridge center //
 	///////////////////////////////////
 
-	// Alighn with scoring spot
-	driveViaIMU(1.5);
-	turnViaIMUTo(-90);
-
 	// Lift goal then approach
 	liftMax();
-	driveViaTime(500);
+	driveViaTime(500, 100);
 
 	// Score
-	scoreGoal(); // TODO: Lower goal, release goal
-
+	scoreGoal();
+/*
+	//////////////////////////////
+	// Get tall yellow and hang //
+	//////////////////////////////
+	driveViaIMU(-.5, -90);
+	turnViaIMU(180);
+	liftMin();
+	driveViaIMU(.5, 90);
+	pros::delay(10);
+	grab();
+	liftMax();
+	pros::delay(10);
+	leftMotor.moveVelocity(100);
+	rightMotor.moveVelocity(100);
+	backMotor.moveVelocity(100);
+	pros::delay(1000);
+	hang();
+	leftMotor.moveVelocity(0);
+	rightMotor.moveVelocity(0);
+	backMotor.moveVelocity(0);
+	*/
+	
+/*
+FUTURE AUTON FOR AFTER 11/20
 	/////////////////////////////////////////////////
-	// Turn around, grab tall yellow, and score it //
+	// Turn around, grab one yellow, and score it //
 	/////////////////////////////////////////////////
 
-	// Do a 180
-	turnViaIMUTo(90);
+	// Go to the goal
 
 	// Lower lift
-	liftMin();
 
 	// Approach, grip, and lift goal
-	driveViaIMU(1.5);
-	grab();
-	liftSmall();
+	
 
 	// Do a 180
-	turnViaIMUTo(-90);
 
 	// Lift goal approach the ramp
-	liftMax();
 
-	// Score the tall goal
-
+	// Score the  goal
+	
 	////////////////////////////////////////////////////////
-	// Turn around, grab another yellow, and score it too //
+	// Turn around, grab blue by the auton line //
 	////////////////////////////////////////////////////////
-
-	// Back up
-
-	// Turn towards a yellow goal
-
+	//Back up and turn
+	
 	// Approach, grip, then lift goal a litte
 
 	///////////////////////////////////////////////////////////////////
