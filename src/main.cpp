@@ -194,7 +194,7 @@ void scoreGoal()
 	liftMax();
 }
 
-void hang()
+void judas()
 {
 	liftHang();
 	while(lift.getPosition() > .7){
@@ -261,10 +261,11 @@ void skillsAuton()
 
 	// Score
 	scoreGoal();
-/*
+/* This section is the 11/20 auton
 	//////////////////////////////
-	// Get tall yellow and hang //
+	// Get tall yellow and judas //
 	//////////////////////////////
+
 	driveViaIMU(-.5, -90);
 	turnViaIMU(180);
 	liftMin();
@@ -273,12 +274,12 @@ void skillsAuton()
 	grab();
 	liftMax();
 	pros::delay(10);
-	leftMotor.moveVelocity(100);
+	leftMotor.moveVelocity(100); // So that it runs up against the ramp and enables the ability to judas
 	rightMotor.moveVelocity(100);
 	backMotor.moveVelocity(100);
 	pros::delay(1000);
-	hang();
-	leftMotor.moveVelocity(0);
+	judas();
+	leftMotor.moveVelocity(0); // Don't kill the motors
 	rightMotor.moveVelocity(0);
 	backMotor.moveVelocity(0);
 	*/
@@ -334,10 +335,10 @@ FUTURE AUTON FOR AFTER 11/20
 	// Lower the lift and score
 
 	////////////////////////
-	// Hang on the bridge //
+	// judas on the bridge //
 	////////////////////////
 
-	hang();
+	judas();
 
 */
 
