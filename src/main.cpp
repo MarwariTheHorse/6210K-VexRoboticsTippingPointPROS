@@ -134,7 +134,6 @@ void driveViaTime(double ms, double vel){
 
 void turnViaIMU(double angle)
 {
-	IMU.reset();
 	double error = angle - IMU.get();
 	int rotation;
 	backMotor.moveVelocity(0);
