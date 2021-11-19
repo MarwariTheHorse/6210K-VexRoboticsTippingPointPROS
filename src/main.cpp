@@ -86,7 +86,7 @@ void driveViaDist(double dist)
 	while(!leftMotor.isStopped()) pros::delay(10);
 }
 
-void driveViaIMU(double dist, double angle) // Untested TODO: get this from last year's code
+void driveViaIMU(double dist, double heading) // Untested TODO: get this from last year's code
 {
 	dist *= 39.3701 / (2.75 * PI); // To in. then to rev
 	int rotation;
@@ -100,7 +100,7 @@ void driveViaIMU(double dist, double angle) // Untested TODO: get this from last
 	if(d < dist){
 		while (d < dist){
 			speed = 240;
-			rotation = (angle - imu.get()) * 3;
+			rotation = (heading - imu.get()) * 3;
 			leftMotor.moveVelocity(speed - rotation);
 			rightMotor.moveVelocity(speed + rotation);
 			backMotor.moveVelocity(speed);
@@ -110,7 +110,7 @@ void driveViaIMU(double dist, double angle) // Untested TODO: get this from last
 	}else{
 		while (d > dist){
 			speed = -240;
-			rotation = (angle - imu.get()) * 3;
+			rotation = (heading - imu.get()) * 3;
 			leftMotor.moveVelocity(speed - rotation);
 			rightMotor.moveVelocity(speed + rotation);
 			pros::delay(5);
@@ -132,9 +132,9 @@ void driveViaTime(double ms, double vel){
 	backMotor.moveVelocity(0);
 }
 
-void turnViaIMU(double angle)
+void turnViaIMU(double heading)
 {
-	double error = angle - imu.get();
+	double error = heading - imu.get();
 	int rotation;
 	backMotor.moveVelocity(0);
 	while(std::fabs(error) > 10) // keeps turning until within 10 degrees of objective
@@ -152,7 +152,7 @@ void turnViaIMU(double angle)
 		leftMotor.moveVelocity(-rotation);
 
 		pros::delay(5);
-		error = angle - imu.get();
+		error = heading - imu.get();
 		std::string imuMeasurement = std::to_string(imu.get());
 		master.setText(0, 0, "IMU:" + imuMeasurement);
 	}
@@ -178,7 +178,7 @@ void ungrab() // TODO: Write this code
 }
 
 void liftMin() {lift.moveAbsolute(0, 90);}
-void liftSmall() {lift.moveAbsolute(.5, 90);} // 0, .5, 1.7
+void liftSmall() {lift.moveAbsolute(.2, 90);} // 0, .5, 1.7
 void liftMax() {lift.moveAbsolute(1.7, 90);}
 void liftScore() {lift.moveAbsolute(.5, 90);}
 void liftHang() {lift.moveAbsolute(.7, 90);} // needs tweaking
@@ -230,25 +230,25 @@ void skillsAuton()
 	driveViaIMU(1, -45);
 
 	// Turn to perpendicular
-	turnViaIMU(-45);
+	turnViaIMU(-90);
 	
 	// Drive to other side of goal
 	driveViaIMU(1, -90);
 
-	// Turn to goal
-	turnViaIMU(45);
+	// Turn to ramp
+	turnViaIMU(-45);
 
 	///////////////////////////////
 	// Swipe goal out of the way (De-tilt the ramp) //
 	///////////////////////////////
 
-	// Hit the goal
-	driveViaTime(600, 90);
+	// Hit the ramp
+	driveViaTime(600, -45);
 
 	// De-tilt and back up to center on the ramp
 	lift.moveRelative(.5, 100);
 	driveViaDist(-.5);
-	turnViaIMU(-45);
+	turnViaIMU(-90);
 
 	///////////////////////////////////
 	// Score goal 1 in bridge center //
