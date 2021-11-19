@@ -216,35 +216,36 @@ void skillsAuton()
 	grab();
 
 	// Lift the goal a little
-	driveViaIMU(-.2, 0);
-	lift.moveAbsolute(.4, 100); //make it not scrape the ground so it can move
+	driveViaIMU(-.4, 0);
+	ungrab();
+	driveViaIMU(.1, 0);
+	grab();
+	lift.moveAbsolute(.2, 100); //make it not scrape the ground so it can move
 
 	/////////////////////////////
 	// Drive to the other side //
 	/////////////////////////////
-
 	// Turn towards gap between yellow
 	turnViaIMU(-45);
 
 	// Drive to the gap
-	driveViaIMU(1, -45);
+	driveViaIMU(.8, -45); // Previously 1
 
-	// Turn to perpendicular
+	// Turn to perpendiculars
 	turnViaIMU(-90);
-	
-	// Drive to other side of goal
-	driveViaIMU(1, -90);
 
+	// Drive to other side of goal
+	driveViaIMU(1.2, -90);
 	// Turn to ramp
-	turnViaIMU(-45);
+	turnViaIMU(-60);
 
 	///////////////////////////////
 	// Swipe goal out of the way (De-tilt the ramp) //
 	///////////////////////////////
 
 	// Hit the ramp
-	driveViaTime(600, -45);
-
+	driveViaTime(2000, 500);
+/*
 	// De-tilt and back up to center on the ramp
 	lift.moveRelative(.5, 100);
 	driveViaDist(-.5);
@@ -260,6 +261,7 @@ void skillsAuton()
 
 	// Score
 	scoreGoal();
+*/
 /* This section is the 11/20 auton
 	//////////////////////////////
 	// Get tall yellow and judas //
