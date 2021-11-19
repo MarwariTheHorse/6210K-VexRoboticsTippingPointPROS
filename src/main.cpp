@@ -46,7 +46,7 @@ okapi::Controller master(okapi::ControllerId::master);
 
 // Sensors
 pros::Vision vision (VISION);
-okapi::IMU IMU(GYRO);
+okapi::IMU imu(GYRO);
 
 // Lift variables
 int liftState;
@@ -100,7 +100,7 @@ void driveViaIMU(double dist, double angle) // Untested TODO: get this from last
 	if(d < dist){
 		while (d < dist){
 			speed = 240;
-			rotation = (angle - IMU.get()) * 3;
+			rotation = (angle - imu.get()) * 3;
 			leftMotor.moveVelocity(speed - rotation);
 			rightMotor.moveVelocity(speed + rotation);
 			backMotor.moveVelocity(speed);
@@ -110,7 +110,7 @@ void driveViaIMU(double dist, double angle) // Untested TODO: get this from last
 	}else{
 		while (d > dist){
 			speed = -240;
-			rotation = (angle - IMU.get()) * 3;
+			rotation = (angle - imu.get()) * 3;
 			leftMotor.moveVelocity(speed - rotation);
 			rightMotor.moveVelocity(speed + rotation);
 			pros::delay(5);
@@ -134,7 +134,7 @@ void driveViaTime(double ms, double vel){
 
 void turnViaIMU(double angle)
 {
-	double error = angle - IMU.get();
+	double error = angle - imu.get();
 	int rotation;
 	backMotor.moveVelocity(0);
 	while(std::fabs(error) > 10) // keeps turning until within 10 degrees of objective
@@ -152,8 +152,8 @@ void turnViaIMU(double angle)
 		leftMotor.moveVelocity(-rotation);
 
 		pros::delay(5);
-		error = angle - IMU.get();
-		std::string imuMeasurement = std::to_string(IMU.get());
+		error = angle - imu.get();
+		std::string imuMeasurement = std::to_string(imu.get());
 		master.setText(0, 0, "IMU:" + imuMeasurement);
 	}
 	// these next lines attempt to slow down the robot's rotational momentum
@@ -463,6 +463,12 @@ void renderBrainDisplay() {}
 void initialize() {
 	// Initialize stuff
 	pros::lcd::initialize();
+
+	// Calibrate IMU
+	master.setText(0, 0, "Calibrating...");
+	imu.calibrate();
+	while (imu.isCalibrating()){pros::delay(10);}
+	master.clear();
 	
 	// Tare grip
 	grip.moveVelocity(100);
