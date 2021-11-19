@@ -123,18 +123,12 @@ void driveViaIMU(double dist, double heading) // Untested TODO: get this from la
 }
 
 void driveViaTime(double ms, double vel, double heading){
-
-	int rotation;
-	int speed;
-	// reset all motor encoders to zero
-	// 10000 units is equal to 56" of travel
 	double startTime = pros::millis();
 	while (pros::millis() - startTime < ms){
-		speed = vel;
-		rotation = (heading - imu.get()) * 3;
-		leftMotor.moveVelocity(speed - rotation);
-		rightMotor.moveVelocity(speed + rotation);
-		backMotor.moveVelocity(speed);
+		int rotation = (heading - imu.get()) * 3;
+		leftMotor.moveVelocity(vel - rotation);
+		rightMotor.moveVelocity(vel + rotation);
+		backMotor.moveVelocity(vel);
 		pros::delay(5);
 	}
 	leftMotor.moveVelocity(0);
