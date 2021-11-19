@@ -235,7 +235,7 @@ void skillsAuton()
 	turnViaIMU(-90);
 
 	// Drive to other side of goal
-	driveViaIMU(1.2, -90);
+	driveViaIMU(1, -90);
 	// Turn to ramp
 	turnViaIMU(-60);
 
@@ -244,13 +244,13 @@ void skillsAuton()
 	///////////////////////////////
 
 	// Hit the ramp
-	driveViaTime(2000, 500);
-/*
+	driveViaTime(2000, 450);
+	pros::delay(10);
 	// De-tilt and back up to center on the ramp
 	lift.moveRelative(.5, 100);
 	driveViaDist(-.5);
 	turnViaIMU(-90);
-
+/*
 	///////////////////////////////////
 	// Score goal 1 in bridge center //
 	///////////////////////////////////
