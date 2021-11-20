@@ -66,6 +66,12 @@ bool pistonState;
 
 double lastVibrate = 0;
 
+// TODOS:
+// Finish writing auton methods
+// Improve the movement methods so that they are run by controllers
+// Extend the auton
+// Sensor fusion
+
 // Globals
 char autonMode = 'N'; // Stands for none
 
@@ -134,6 +140,30 @@ void driveViaTime(double ms, double vel, double heading){
 	leftMotor.moveVelocity(0);
 	rightMotor.moveVelocity(0);
 	backMotor.moveVelocity(0);
+}
+
+void driveViaGPS(int locx, int locy)
+{
+	/*  Note: We are probably going to have to rotate our headings by 90 cw so that deg match mathematical deg
+
+		Pseudocode:
+
+		// Heading for the entire movement
+		if y = 0 and sgn(x) == 1: heading = 0
+		elif y = 0 and sgn(x) == -1: heading = 180
+		else heading = arctan(y/x)
+		if sgn(y) == -1: heading += 180
+
+		while(dist > .2){
+			dist = sqrt(xdiff^2 + ydiff^2)
+			speed = 500 * sgn(dist);
+			rotation = (heading - imu.get()) * 3; // NOTE: We are using the gyro to maintain gps heading rn
+			leftMotor.moveVelocity(speed - rotation);
+			rightMotor.moveVelocity(speed + rotation);
+			backMotor.moveVelocity(speed);
+			pros::delay(5);
+		}
+	*/
 }
 
 void turnViaIMU(double heading)
