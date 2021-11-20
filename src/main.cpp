@@ -157,8 +157,6 @@ void turnViaIMU(double heading)
 
 		pros::delay(5);
 		error = heading - imu.get();
-		std::string imuMeasurement = std::to_string(imu.get());
-		master.setText(0, 0, "IMU:" + imuMeasurement);
 	}
 	// these next lines attempt to slow down the robot's rotational momentum
 	// might be better just to put the motors into braking mode
