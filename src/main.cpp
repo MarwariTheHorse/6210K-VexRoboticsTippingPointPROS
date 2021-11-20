@@ -275,7 +275,7 @@ void skillsAuton()
 	turnViaIMU(90);
 	liftMin();
 	while(lift.getPosition() > .1) pros::delay(10);
-	driveViaIMU(.5, 90);
+	driveViaIMU(.75, 90);
 	pros::delay(10);
 	grab();
 
@@ -287,9 +287,9 @@ void skillsAuton()
 
 	//Yeet those stupid rings outta the way
 	turnViaIMU(0);
-	driveViaTime(2000, 300, 0);
+	driveViaIMU(1, 0);
 	pros::delay(1000);
-	driveViaTime(2000, -300, 0);
+	driveViaIMU(-1, 0);
 	turnViaIMU(90);
 	
 	// Judas
