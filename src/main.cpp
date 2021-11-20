@@ -147,7 +147,7 @@ void turnViaIMU(double heading)
 	double error = heading - imu.get();
 	int rotation;
 	backMotor.moveVelocity(0);
-	while(std::fabs(error) > 10) // keeps turning until within 10 degrees of objective
+	while(std::fabs(error) > 5) // keeps turning until within 10 degrees of objective
 	{
 		if (std::fabs(error) < 40){
 		// if within 40 degrees of objective, the motors start slowing
@@ -189,7 +189,7 @@ void ungrab() // TODO: Write this code
 
 void liftMin() {lift.moveAbsolute(0, 90);}
 void liftSmall() {lift.moveAbsolute(.2, 90);} // 0, .5, 1.7
-void liftMax() {lift.moveAbsolute(2.1, 90);}
+void liftMax() {lift.moveAbsolute(2.12, 90);}
 void liftScore() {lift.moveAbsolute(.5, 90);}
 void liftHang() {lift.moveAbsolute(1.1, 90);} // needs tweaking
 
@@ -247,27 +247,27 @@ void skillsAuton()
 	// Drive to other side of goal
 	driveViaIMU(1, -90);
 	// Turn to ramp
-	turnViaIMU(-53);
+	turnViaIMU(-50);
 
 	///////////////////////////////
 	// Swipe goal out of the way (De-tilt the ramp) //
 	///////////////////////////////
 
 	// Hit the ramp
-	driveViaTime(2000, 400, -53);
-	lift.moveRelative(.3, 100);
-	while(lift.getPosition() < .3) pros::delay(10);
+	driveViaTime(2000, 400, -50);
+	lift.moveRelative(.5, 100);
+	while(lift.getPosition() < .5) pros::delay(10);
 	// De-tilt and back up to center on the ramp
-	driveViaIMU(-.8, -53);
+	driveViaIMU(-.75, -50);
 	turnViaIMU(-90);
-
+	driveViaTime(1000, 100, -90);
 	///////////////////////////////////
 	// Score goal 1 in bridge center //
 	///////////////////////////////////
 
 	// Lift goal then approach
 	liftMax();
-	while(lift.getPosition() < 2) pros::delay(10);
+	while(lift.getPosition() < 2.1) pros::delay(10);
 	driveViaTime(3000, 600, -90);
 
 	// Slap that bad boy onto the ramp
