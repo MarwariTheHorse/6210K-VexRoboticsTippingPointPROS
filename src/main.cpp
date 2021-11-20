@@ -141,7 +141,7 @@ void turnViaIMU(double heading)
 	double error = heading - imu.get();
 	int rotation;
 	backMotor.moveVelocity(0);
-	while(std::fabs(error) > 10) // keeps turning until within 10 degrees of objective
+	while(std::fabs(error) > 5) // keeps turning until within 10 degrees of objective
 	{
 		if (std::fabs(error) < 40){
 		// if within 40 degrees of objective, the motors start slowing
@@ -181,9 +181,9 @@ void ungrab() // TODO: Write this code
 
 void liftMin() {lift.moveAbsolute(0, 90);}
 void liftSmall() {lift.moveAbsolute(.2, 90);} // 0, .5, 1.7
-void liftMax() {lift.moveAbsolute(1.7, 90);}
+void liftMax() {lift.moveAbsolute(2.12, 90);}
 void liftScore() {lift.moveAbsolute(.5, 90);}
-void liftHang() {lift.moveAbsolute(.7, 90);} // needs tweaking
+void liftHang() {lift.moveAbsolute(1.1, 90);} // needs tweaking
 
 void scoreGoal()
 {
@@ -198,7 +198,7 @@ void scoreGoal()
 void judas()
 {
 	liftHang();
-	while(lift.getPosition() > .7){
+	while(lift.getPosition() > 1.1){
 		pros::delay(10);
 	}
 	// TODO: Add a waitUntil lift is done here because otherwise, async
@@ -217,12 +217,12 @@ void skillsAuton()
 	// Grab the goal
 	grab();
 
-	// Lift the goal a little
-	driveViaIMU(-.4, 0);
+	// Get better grip
+	driveViaIMU(-.45, 0);
 	ungrab();
-	driveViaIMU(.1, 0);
+	driveViaIMU(.05, 0);
 	grab();
-	lift.moveAbsolute(.2, 100); //make it not scrape the ground so it can move
+	lift.moveAbsolute(.2, 100); //make it not scrape the ground so we can move
 
 	/////////////////////////////
 	// Drive to the other side //
@@ -233,59 +233,77 @@ void skillsAuton()
 	// Drive to the gap
 	driveViaIMU(.8, -45); // Previously 1
 
-	// Turn to perpendiculars
+	// Turn to perpendicular
 	turnViaIMU(-90);
 
 	// Drive to other side of goal
-	driveViaIMU(1.2, -90);
+	driveViaIMU(1, -90);
 	// Turn to ramp
-	turnViaIMU(-60);
+	turnViaIMU(-50);
 
 	///////////////////////////////
 	// Swipe goal out of the way (De-tilt the ramp) //
 	///////////////////////////////
 
 	// Hit the ramp
-	driveViaTime(2000, 500);
-/*
-	// De-tilt and back up to center on the ramp
+	driveViaTime(2000, 400, -50);
 	lift.moveRelative(.5, 100);
-	driveViaDist(-.5);
+	while(lift.getPosition() < .5) pros::delay(10);
+	// De-tilt and back up to center on the ramp
+	driveViaIMU(-.75, -50);
 	turnViaIMU(-90);
-
+	driveViaTime(1000, 100, -90);
 	///////////////////////////////////
 	// Score goal 1 in bridge center //
 	///////////////////////////////////
 
 	// Lift goal then approach
 	liftMax();
-	driveViaTime(500, 100);
+	while(lift.getPosition() < 2.1) pros::delay(10);
+	driveViaTime(3000, 600, -90);
 
-	// Score
+	// Slap that bad boy onto the ramp
 	scoreGoal();
-*/
-/* This section is the 11/20 auton
+
+// This section is the 11/20 auton
 	//////////////////////////////
 	// Get tall yellow and judas //
 	//////////////////////////////
 
-	driveViaIMU(-.5, -90);
-	turnViaIMU(180);
+	// Grab yellow
+	driveViaIMU(-.4, -90);
+	turnViaIMU(90);
 	liftMin();
+	while(lift.getPosition() > .1) pros::delay(10);
 	driveViaIMU(.5, 90);
 	pros::delay(10);
 	grab();
+
+	// Lift a bit
+	lift.moveAbsolute(.7, 90);
+
+	//Drive forward some
+	driveViaIMU(.4, 90);
+
+	//Yeet those stupid rings outta the way
+	turnViaIMU(0);
+	driveViaTime(2000, 300, 0);
+	pros::delay(1000);
+	driveViaTime(2000, -300, 0);
+	turnViaIMU(90);
+	
+	// Judas
 	liftMax();
 	pros::delay(10);
-	leftMotor.moveVelocity(100); // So that it runs up against the ramp and enables the ability to judas
-	rightMotor.moveVelocity(100);
-	backMotor.moveVelocity(100);
-	pros::delay(1000);
+	leftMotor.moveVelocity(600); // So that it runs up against the ramp and enables the ability to judas
+	rightMotor.moveVelocity(600);
+	backMotor.moveVelocity(600);
+	pros::delay(3000);
 	judas();
 	leftMotor.moveVelocity(0); // Don't kill the motors
 	rightMotor.moveVelocity(0);
 	backMotor.moveVelocity(0);
-	*/
+
 	
 /*
 FUTURE AUTON FOR AFTER 11/20
