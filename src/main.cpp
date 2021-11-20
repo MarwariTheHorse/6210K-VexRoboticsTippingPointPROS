@@ -181,9 +181,9 @@ void ungrab() // TODO: Write this code
 
 void liftMin() {lift.moveAbsolute(0, 90);}
 void liftSmall() {lift.moveAbsolute(.2, 90);} // 0, .5, 1.7
-void liftMax() {lift.moveAbsolute(2.12, 90);}
+void liftMax() {lift.moveAbsolute(1.85, 90);}
 void liftScore() {lift.moveAbsolute(.5, 90);}
-void liftHang() {lift.moveAbsolute(1.1, 90);} // needs tweaking
+void liftHang() {lift.moveAbsolute(.9, 90);} // theoretically overshoots by .2
 
 void scoreGoal()
 {
@@ -198,11 +198,11 @@ void scoreGoal()
 void judas()
 {
 	liftHang();
-	while(lift.getPosition() > 1.1){
+	while(lift.getPosition() > 1.4){
 		pros::delay(10);
 	}
-	// TODO: Add a waitUntil lift is done here because otherwise, async
 	piston.set_value(true);
+	while(lift.getPosition() > 1) pros::delay(10);
 }
 // Uncommented is for 11/20 tournament and scores 110 points
 void skillsAuton()
@@ -247,8 +247,8 @@ void skillsAuton()
 
 	// Hit the ramp
 	driveViaTime(2000, 400, -50);
-	lift.moveRelative(.5, 100);
-	while(lift.getPosition() < .5) pros::delay(10);
+	lift.moveRelative(.7, 100);
+	while(lift.getPosition() < .65) pros::delay(10);
 	// De-tilt and back up to center on the ramp
 	driveViaIMU(-.75, -50);
 	turnViaIMU(-90);
@@ -259,7 +259,7 @@ void skillsAuton()
 
 	// Lift goal then approach
 	liftMax();
-	while(lift.getPosition() < 2.1) pros::delay(10);
+	while(lift.getPosition() < 1.75) pros::delay(10);
 	driveViaTime(3000, 600, -90);
 
 	// Slap that bad boy onto the ramp
@@ -289,7 +289,7 @@ void skillsAuton()
 	turnViaIMU(0);
 	driveViaIMU(1, 0);
 	pros::delay(1000);
-	driveViaIMU(-1, 0);
+	driveViaIMU(-.8, 0);
 	turnViaIMU(90);
 	
 	// Judas
@@ -303,7 +303,9 @@ void skillsAuton()
 	leftMotor.moveVelocity(0); // Don't kill the motors
 	rightMotor.moveVelocity(0);
 	backMotor.moveVelocity(0);
-
+	lift.setBrakeMode(okapi::AbstractMotor::brakeMode::coast);
+	lift.moveVelocity(0);
+	pros::delay(60000);
 	
 /*
 FUTURE AUTON FOR AFTER 11/20
@@ -374,11 +376,11 @@ void compLeftAuton()
 
 void compForwardAuton()
 {
-	driveViaDist(1.5);
+	driveViaIMU(1.5, 0);
 	pros::delay(750);
 	grab();
 	pros::delay(1000);
-	driveViaDist(-1.5);
+	driveViaIMU(-1.5, 0);
 }
 
 void compRightAuton()
