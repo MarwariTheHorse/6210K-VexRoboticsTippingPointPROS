@@ -99,7 +99,7 @@ void driveViaIMU(double dist, double heading) // Untested TODO: get this from la
 	int d = 0;
 	if(d < dist){
 		while (d < dist){
-			speed = 240;
+			speed = 500;
 			rotation = (heading - imu.get()) * 3;
 			leftMotor.moveVelocity(speed - rotation);
 			rightMotor.moveVelocity(speed + rotation);
@@ -109,7 +109,7 @@ void driveViaIMU(double dist, double heading) // Untested TODO: get this from la
 		}
 	}else{
 		while (d > dist){
-			speed = -240;
+			speed = -500;
 			rotation = (heading - imu.get()) * 3;
 			leftMotor.moveVelocity(speed - rotation);
 			rightMotor.moveVelocity(speed + rotation);
@@ -376,11 +376,12 @@ void compLeftAuton()
 
 void compForwardAuton()
 {
-	driveViaIMU(1.5, 0);
-	pros::delay(750);
+	driveViaIMU(1.8, 0);
+	pros::delay(500); // Originally 750
 	grab();
+	pros::delay(250); // Originally not here
 	pros::delay(1000);
-	driveViaIMU(-1.5, 0);
+	driveViaIMU(-1.8, 0);
 }
 
 void compRightAuton()
