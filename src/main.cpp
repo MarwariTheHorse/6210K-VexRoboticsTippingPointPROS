@@ -67,10 +67,10 @@ bool pistonState;
 double lastVibrate = 0;
 
 // TODOS:
-// Finish writing auton methods
-// Improve the movement methods so that they are run by controllers
-// Extend the auton
-// Sensor fusion
+// Finish writing auton methods - Caleb
+// Improve the movement methods so that they are run by controllers - Caleb
+// Complete the auton - Joey
+// Sensor fusion - Caleb
 
 // Globals
 char autonMode = 'N'; // Stands for none
@@ -97,6 +97,7 @@ void driveViaIMU(double dist, double heading) // Untested TODO: get this from la
 	dist *= 39.3701 / (2.75 * PI); // To in. then to rev
 	int rotation;
 	int speed;
+	okapi::EKFFilter kFilter;
 	// reset all motor encoders to zero
 	// 10000 units is equal to 56" of travel
 	backMotor.tarePosition();
@@ -106,7 +107,7 @@ void driveViaIMU(double dist, double heading) // Untested TODO: get this from la
 	if(d < dist){
 		while (d < dist){
 			speed = 500;
-			rotation = (heading - imu.get()) * 3;
+			rotation = (heading - kFilter.filter(imu.get())) * 3;
 			leftMotor.moveVelocity(speed - rotation);
 			rightMotor.moveVelocity(speed + rotation);
 			backMotor.moveVelocity(speed);
@@ -116,7 +117,7 @@ void driveViaIMU(double dist, double heading) // Untested TODO: get this from la
 	}else{
 		while (d > dist){
 			speed = -500;
-			rotation = (heading - imu.get()) * 3;
+			rotation = (heading - kFilter.filter(imu.get())) * 3;
 			leftMotor.moveVelocity(speed - rotation);
 			rightMotor.moveVelocity(speed + rotation);
 			pros::delay(5);
@@ -130,8 +131,9 @@ void driveViaIMU(double dist, double heading) // Untested TODO: get this from la
 
 void driveViaTime(double ms, double vel, double heading){
 	double startTime = pros::millis();
+	okapi::EKFFilter kFilter;
 	while (pros::millis() - startTime < ms){
-		int rotation = (heading - imu.get()) * 3;
+		int rotation = (heading - kFilter.filter(imu.get())) * 3;
 		leftMotor.moveVelocity(vel - rotation);
 		rightMotor.moveVelocity(vel + rotation);
 		backMotor.moveVelocity(vel);
@@ -168,7 +170,8 @@ void driveViaGPS(int locx, int locy)
 
 void turnViaIMU(double heading)
 {
-	double error = heading - imu.get();
+	okapi::EKFFilter kFilter;
+	double error = heading - kFilter.filter(imu.get());
 	int rotation;
 	backMotor.moveVelocity(0);
 	while(std::fabs(error) > 5) // keeps turning until within 10 degrees of objective
@@ -186,7 +189,7 @@ void turnViaIMU(double heading)
 		leftMotor.moveVelocity(-rotation);
 
 		pros::delay(5);
-		error = heading - imu.get();
+		error = heading - kFilter.filter(imu.get());
 	}
 	// these next lines attempt to slow down the robot's rotational momentum
 	// might be better just to put the motors into braking mode
