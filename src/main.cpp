@@ -19,6 +19,10 @@
 #define VISION 6
 #define GYRO 8
 
+#define GPS 0
+#define GPS_OFFSET_X 0
+#define GPS_OFFSET_Y 0
+
 const bool DEBUG = false;
 const bool TORQUE_THRESHOLD = 1.575;
 const bool LOGGING_RATE = 100; // ms * 10, plus execution per loop time. ie 100 results in data appox. every second
@@ -47,6 +51,7 @@ okapi::Controller master(okapi::ControllerId::master);
 // Sensors
 pros::Vision vision (VISION);
 okapi::IMU imu(GYRO);
+pros::Gps gps(GPS, GPS_OFFSET_X, GPS_OFFSET_Y);
 
 // Lift variables
 int liftState;
@@ -71,6 +76,7 @@ double lastVibrate = 0;
 // Improve the movement methods so that they are run by controllers - Caleb
 // Complete the auton - Joey
 // Sensor fusion - Caleb
+// Fancy brain interface w/KryptoKnAIghts logo
 
 // Globals
 char autonMode = 'N'; // Stands for none
@@ -144,28 +150,43 @@ void driveViaTime(double ms, double vel, double heading){
 	backMotor.moveVelocity(0);
 }
 
-void driveViaGPS(int locx, int locy)
+void driveViaGPS(double locx, double locy)
 {
-	/*  Note: We are probably going to have to rotate our headings by 90 cw so that deg match mathematical deg
+	// Data smoothing filters
+	okapi::EKFFilter kFilterHeading;
+	okapi::EKFFilter kFilterDist;
 
-		Pseudocode:
+	// Variables for the function
+	double heading;
+	double xDiff = locx - gps.get_status().x;
+	double yDiff = locy - gps.get_status().y;
+	double dist = std::sqrt(std::pow(xDiff, 2) + std::pow(yDiff, 2));
 
-		// Heading for the entire movement
-		if y = 0 and sgn(x) == 1: heading = 0
-		elif y = 0 and sgn(x) == -1: heading = 180
-		else heading = arctan(y/x)
-		if sgn(y) == -1: heading += 180
+	// Properly calculate the desired heading using inverse tangent (aka arctan())
+	if (yDiff == 0 && sgn(xDiff) == 1) heading = 0;
+	else if (yDiff == 0 && sgn(xDiff) == -1) heading = 180;
+	else heading = std::atan(yDiff/xDiff);
+	if (sgn(yDiff) == -1) heading += 180;
 
-		while(dist > .2){
-			dist = sqrt(xdiff^2 + ydiff^2)
-			speed = 500 * sgn(dist);
-			rotation = (heading - imu.get()) * 3; // NOTE: We are using the gyro to maintain gps heading rn
-			leftMotor.moveVelocity(speed - rotation);
-			rightMotor.moveVelocity(speed + rotation);
-			backMotor.moveVelocity(speed);
-			pros::delay(5);
-		}
-	*/
+	// Untill we reach our destination, set the speed
+	while(dist > .1){
+		// Update the distance
+		dist = kFilterDist.filter(std::sqrt(std::pow(xDiff, 2) + std::pow(yDiff, 2)));
+		// Calculate our speed, which is a constant for now
+		int speed = 300 * sgn(dist); // TODO: PID this eventually
+		// Get the rotation from the gps
+		double rotation = (heading - kFilterHeading.filter(gps.get_heading())) * 3; // NOTE: We can use gyro to maintain heading if gps sucks
+		// Assign the calculated wheel values
+		leftMotor.moveVelocity(speed - rotation);
+		rightMotor.moveVelocity(speed + rotation);
+		backMotor.moveVelocity(speed);
+		pros::delay(5); // Delay for the other tasks
+	}
+
+	// Stop the robot after the movement is near the target location
+	leftMotor.moveVelocity(0);
+	rightMotor.moveVelocity(0);
+	backMotor.moveVelocity(0);
 }
 
 void turnViaIMU(double heading)
@@ -240,6 +261,10 @@ void judas()
 // Uncommented is for 11/20 tournament and scores 110 points
 void skillsAuton()
 {
+	// Configure the GPS for skills
+	gps.set_position(1.524, -1.0668, 90);
+
+
 	//////////////////////
 	// Grab nearby goal //
 	//////////////////////
@@ -465,23 +490,11 @@ void setGrip(){
 
 	// Upper button - Lift the grip
 	if(buttonL1 && !prevL1){
-		gripState = 1;
 		grip.moveAbsolute(-2, 100);
 	}
 	// Lower button - Start lowering the lift
-	if(buttonL2 && !prevL2 && gripState != 0){
-		gripState = 2;
-		grip.moveVelocity(-100);
-	}
-	// Torque threshold
-	if(std::abs(grip.getTorque()) > TORQUE_THRESHOLD && gripState == 2){
-		gripState = 0;
-		gripHoldPosition = grip.getPosition() + .05; // Shift the grip out .05 rev so that the motor doesn't overheat
-	}
-
-	// Make sure the grip holds its position
-	if(gripState == 0){
-		grip.moveAbsolute(gripHoldPosition, 100);
+	if(buttonL2 && !prevL2){
+		grip.moveAbsolute(-3.5, 100);
 	}
 
 	// Update variables
