@@ -17,9 +17,9 @@
 #define VISION 6
 #define GYRO 8
 
-#define GPS 0
-#define GPS_OFFSET_X 0
-#define GPS_OFFSET_Y 0
+#define GPS_PORT 7
+#define GPS_OFFSET_X 1
+#define GPS_OFFSET_Y -1
 
 okapi::Motor fLeftMotor(WHEEL_LEFT_F, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations);
 okapi::Motor rLeftMotor(WHEEL_LEFT_R, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations);
@@ -44,4 +44,4 @@ okapi::Controller master(okapi::ControllerId::master);
 // Sensors
 pros::Vision vision (VISION);
 okapi::IMU imu(GYRO);
-pros::Gps gps(GPS, GPS_OFFSET_X, GPS_OFFSET_Y);
+pros::GPS gps(GPS_PORT, GPS_OFFSET_X, GPS_OFFSET_Y);

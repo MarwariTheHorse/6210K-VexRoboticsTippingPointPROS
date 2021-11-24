@@ -24,4 +24,4 @@ extern okapi::Controller master;
 // Sensors
 extern pros::Vision vision;
 extern okapi::IMU imu;
-extern pros::Gps gps;
+extern pros::GPS gps;

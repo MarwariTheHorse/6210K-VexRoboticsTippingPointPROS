@@ -24,7 +24,7 @@ void driveViaIMU(double dist, double rotation)
 	if(d < dist){
 		while (d < dist){
 			speed = 500;
-			aSpeed = (rotation - kFilter.filter(imu.get())) * 3;
+			aSpeed = (rotation - kFilter.filter(imu.get())) * 30;
 			leftMotor.moveVelocity(speed - aSpeed);
 			rightMotor.moveVelocity(speed + aSpeed);
 			backMotor.moveVelocity(speed);
@@ -34,7 +34,7 @@ void driveViaIMU(double dist, double rotation)
 	}else{
 		while (d > dist){
 			speed = -500;
-			aSpeed = (rotation - kFilter.filter(imu.get())) * 3;
+			aSpeed = (rotation - kFilter.filter(imu.get())) * 30;
 			leftMotor.moveVelocity(speed - aSpeed);
 			rightMotor.moveVelocity(speed + aSpeed);
 			pros::delay(5);
@@ -50,7 +50,7 @@ void driveViaTime(double ms, double vel, double rotation){
 	double startTime = pros::millis();
 	okapi::EKFFilter kFilter;
 	while (pros::millis() - startTime < ms){
-		int aSpeed = (rotation - kFilter.filter(imu.get())) * 3;
+		int aSpeed = (rotation - kFilter.filter(imu.get())) * 30;
 		leftMotor.moveVelocity(vel - aSpeed);
 		rightMotor.moveVelocity(vel + aSpeed);
 		backMotor.moveVelocity(vel);
@@ -70,14 +70,15 @@ void driveViaGPS(double locx, double locy)
 
 	// Variables for the function
 	double targetRotation;
-	double xDiff = locx - gps.get_status().x;
-	double yDiff = locy - gps.get_status().y;
+	auto status = gps.get_status();
+	double xDiff = locx - status.x;
+	double yDiff = locy - status.y;
 	double dist = std::sqrt(std::pow(xDiff, 2) + std::pow(yDiff, 2));
 
 	// Properly calculate the desired heading using inverse tangent (aka arctan())
-	if (yDiff == 0 && sgn(xDiff) == 1) targetRotation = 0;
-	else if (yDiff == 0 && sgn(xDiff) == -1) targetRotation = 180;
-	else targetRotation = std::atan(yDiff/xDiff);
+	if (xDiff == 0 && sgn(yDiff) == 1) targetRotation = 90;
+	else if (xDiff == 0 && sgn(yDiff) == -1) targetRotation = 270;
+	else targetRotation = std::atan(yDiff/xDiff) * 180 / PI;
 	if (sgn(yDiff) == -1) targetRotation += 180;
 
 	// Create a PID distance controller
@@ -87,15 +88,16 @@ void driveViaGPS(double locx, double locy)
 	// Until we reach our destination, set the speed
 	while(dist > .1){
 		// Update the distance
-		xDiff = locx - gps.get_status().x;
-		yDiff = locy - gps.get_status().y;
+		status = gps.get_status();
+		xDiff = locx - status.x;
+		yDiff = locy - status.y;
 		dist = kFilterDist.filter(std::sqrt(std::pow(xDiff, 2) + std::pow(yDiff, 2)));
 
 		// Calculate our speed, which is a constant for now
-		double speed = distController.step(dist);
+		double speed = distController.step(dist) + 10; // 10 is added for testing's sake
 
 		// Get the rotation from the gps
-		double angularSpeed = (targetRotation - kFilterRot.filter(gps.get_rotation())) * 3; // NOTE: We can use gyro to maintain heading if gps sucks
+		double angularSpeed = (targetRotation - kFilterRot.filter(gps.get_rotation())) * 30; // NOTE: We can use gyro to maintain heading if gps sucks
 
 		// Assign the calculated wheel values
 		leftMotor.moveVelocity(speed - angularSpeed);

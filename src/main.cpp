@@ -37,7 +37,6 @@ char autonMode = 'N'; // Stands for none
 void skillsAuton()
 {
 	// Configure the GPS for skills
-	gps.set_position(1.524, -1.0668, 90); // x, y, rot
 
 	//////////////////////
 	// Grab nearby goal //
@@ -225,7 +224,8 @@ void compRightAuton()
 
 void experimental()
 {
-	turnViaIMU(180);
+	gps.initialize_full(-1.524, -1.2192, 0, 1, -1);
+	driveViaGPS(1.2192, -1.2192);
 }
 
 void setLift()
@@ -308,7 +308,6 @@ void setVibrate(){
 void initialize() {
 	// Initialize stuff
 	pros::lcd::initialize();
-
 
 	// Calibrate IMU
 	master.setText(0, 0, "Calibrating...");
