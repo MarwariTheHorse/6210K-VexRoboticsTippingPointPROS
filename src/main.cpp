@@ -442,7 +442,7 @@ void compRightAuton()
 
 void experimental()
 {
-	turnViaIMUPID(180);
+	turnViaIMU(180);
 }
 
 void setLift()
