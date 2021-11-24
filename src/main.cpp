@@ -222,6 +222,23 @@ void turnViaIMU(double heading)
 	rightMotor.moveVelocity(0);
 }
 
+void turnViaIMUPID(double heading)
+{
+	okapi::EKFFilter kFilter; // Kalman filter for IMU
+	auto turnController = okapi::IterativeControllerFactory::posPID(.003, .0004, .0001);
+	turnController.setTarget(heading);
+	backMotor.moveVelocity(0);
+	while(std::abs(heading - kFilter.filter(imu.get())) > 3){
+		double controllerInput = kFilter.getOutput();
+		double output = turnController.step(controllerInput);
+		leftMotor.controllerSet(-output);
+		rightMotor.controllerSet(output);
+		pros::delay(5);
+	}
+	leftMotor.moveVelocity(0);
+	rightMotor.moveVelocity(0);
+}
+
 void grab() // NOTE: Grip should be in holding, allowing it to grip via this simple piece of code
 {
 	grip.moveAbsolute(-3.5, 100);
@@ -448,6 +465,11 @@ void compRightAuton()
 	compLeftAuton();
 }
 
+void experimental()
+{
+	turnViaIMUPID(180);
+}
+
 void setLift()
 {
 	if(master.getDigital(okapi::ControllerDigital::R1)) lift.moveVelocity(600);
@@ -535,6 +557,11 @@ void initialize() {
 	// Initialize stuff
 	pros::lcd::initialize();
 
+	// Wheel settings
+	leftMotor.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
+	rightMotor.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
+	backMotor.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
+
 	// Calibrate IMU
 	master.setText(0, 0, "Calibrating...");
 	imu.calibrate();
@@ -582,6 +609,7 @@ void autonomous() {
 	if(autonMode == '<') compLeftAuton();
 	if(autonMode == '>') compRightAuton();
 	if(autonMode == '^') compForwardAuton();
+	if(autonMode == 'A') experimental();
 }
 
 void opcontrol() {
