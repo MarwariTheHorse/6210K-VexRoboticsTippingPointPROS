@@ -72,8 +72,7 @@ bool pistonState;
 double lastVibrate = 0;
 
 // TODOS:
-// Finish writing auton methods - Caleb
-// Improve the movement methods so that they are run by controllers - Caleb
+// Improve the movement methods so that they are run by controllers, along with "SettledUntil" - Caleb
 // Complete the auton - Joey
 // Sensor fusion - Caleb
 // Fancy brain interface w/KryptoKnAIghts logo
@@ -81,7 +80,7 @@ double lastVibrate = 0;
 // Globals
 char autonMode = 'N'; // Stands for none
 
-int sgn(double d)
+int sgn(double d) // Mimimcs the mathematical sgn function
 {
 	if(d < 0){return -1;}
 	if(d > 0){return 1;}
@@ -89,19 +88,11 @@ int sgn(double d)
 }
 
 // Auton assist methods //
-void driveViaDist(double dist)
-{
-	dist *= 39.3701 / (2.75 * PI); // To in. then to rev
-	backMotor.moveRelative(dist, 600);
-	rightMotor.moveRelative(dist, 600);
-	leftMotor.moveRelative(dist, 600);
-	while(!leftMotor.isStopped()) pros::delay(10);
-}
 
-void driveViaIMU(double dist, double heading) // Untested TODO: get this from last year's code
+void driveViaIMU(double dist, double rotation)
 {
 	dist *= 39.3701 / (2.75 * PI); // To in. then to rev
-	int rotation;
+	int aSpeed;
 	int speed;
 	okapi::EKFFilter kFilter;
 	// reset all motor encoders to zero
@@ -113,9 +104,9 @@ void driveViaIMU(double dist, double heading) // Untested TODO: get this from la
 	if(d < dist){
 		while (d < dist){
 			speed = 500;
-			rotation = (heading - kFilter.filter(imu.get())) * 3;
-			leftMotor.moveVelocity(speed - rotation);
-			rightMotor.moveVelocity(speed + rotation);
+			aSpeed = (rotation - kFilter.filter(imu.get())) * 3;
+			leftMotor.moveVelocity(speed - aSpeed);
+			rightMotor.moveVelocity(speed + aSpeed);
 			backMotor.moveVelocity(speed);
 			pros::delay(5);
 			d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
@@ -123,9 +114,9 @@ void driveViaIMU(double dist, double heading) // Untested TODO: get this from la
 	}else{
 		while (d > dist){
 			speed = -500;
-			rotation = (heading - kFilter.filter(imu.get())) * 3;
-			leftMotor.moveVelocity(speed - rotation);
-			rightMotor.moveVelocity(speed + rotation);
+			aSpeed = (rotation - kFilter.filter(imu.get())) * 3;
+			leftMotor.moveVelocity(speed - aSpeed);
+			rightMotor.moveVelocity(speed + aSpeed);
 			pros::delay(5);
 			d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
 		}
@@ -135,13 +126,13 @@ void driveViaIMU(double dist, double heading) // Untested TODO: get this from la
 	backMotor.moveVelocity(0);
 }
 
-void driveViaTime(double ms, double vel, double heading){
+void driveViaTime(double ms, double vel, double rotation){
 	double startTime = pros::millis();
 	okapi::EKFFilter kFilter;
 	while (pros::millis() - startTime < ms){
-		int rotation = (heading - kFilter.filter(imu.get())) * 3;
-		leftMotor.moveVelocity(vel - rotation);
-		rightMotor.moveVelocity(vel + rotation);
+		int aSpeed = (rotation - kFilter.filter(imu.get())) * 3;
+		leftMotor.moveVelocity(vel - aSpeed);
+		rightMotor.moveVelocity(vel + aSpeed);
 		backMotor.moveVelocity(vel);
 		pros::delay(5);
 	}
@@ -150,36 +141,47 @@ void driveViaTime(double ms, double vel, double heading){
 	backMotor.moveVelocity(0);
 }
 
+// UNTESTED
 void driveViaGPS(double locx, double locy)
 {
 	// Data smoothing filters
-	okapi::EKFFilter kFilterHeading;
+	okapi::EKFFilter kFilterRot;
 	okapi::EKFFilter kFilterDist;
 
 	// Variables for the function
-	double heading;
+	double targetRotation;
 	double xDiff = locx - gps.get_status().x;
 	double yDiff = locy - gps.get_status().y;
 	double dist = std::sqrt(std::pow(xDiff, 2) + std::pow(yDiff, 2));
 
 	// Properly calculate the desired heading using inverse tangent (aka arctan())
-	if (yDiff == 0 && sgn(xDiff) == 1) heading = 0;
-	else if (yDiff == 0 && sgn(xDiff) == -1) heading = 180;
-	else heading = std::atan(yDiff/xDiff);
-	if (sgn(yDiff) == -1) heading += 180;
+	if (yDiff == 0 && sgn(xDiff) == 1) targetRotation = 0;
+	else if (yDiff == 0 && sgn(xDiff) == -1) targetRotation = 180;
+	else targetRotation = std::atan(yDiff/xDiff);
+	if (sgn(yDiff) == -1) targetRotation += 180;
 
-	// Untill we reach our destination, set the speed
+	// Create a PID distance controller
+	auto distController = okapi::IterativeControllerFactory::posPID(.001, .0001, .0001);
+	distController.setTarget(0);
+
+	// Until we reach our destination, set the speed
 	while(dist > .1){
 		// Update the distance
+		xDiff = locx - gps.get_status().x;
+		yDiff = locy - gps.get_status().y;
 		dist = kFilterDist.filter(std::sqrt(std::pow(xDiff, 2) + std::pow(yDiff, 2)));
+
 		// Calculate our speed, which is a constant for now
-		int speed = 300 * sgn(dist); // TODO: PID this eventually
+		double speed = distController.step(dist);
+
 		// Get the rotation from the gps
-		double rotation = (heading - kFilterHeading.filter(gps.get_heading())) * 3; // NOTE: We can use gyro to maintain heading if gps sucks
+		double angularSpeed = (targetRotation - kFilterRot.filter(gps.get_rotation())) * 3; // NOTE: We can use gyro to maintain heading if gps sucks
+
 		// Assign the calculated wheel values
-		leftMotor.moveVelocity(speed - rotation);
-		rightMotor.moveVelocity(speed + rotation);
+		leftMotor.moveVelocity(speed - angularSpeed);
+		rightMotor.moveVelocity(speed + angularSpeed);
 		backMotor.moveVelocity(speed);
+
 		pros::delay(5); // Delay for the other tasks
 	}
 
@@ -189,47 +191,18 @@ void driveViaGPS(double locx, double locy)
 	backMotor.moveVelocity(0);
 }
 
-void turnViaIMU(double heading)
+void turnViaIMU(double rotation)
 {
-	okapi::EKFFilter kFilter;
-	double error = heading - kFilter.filter(imu.get());
-	int rotation;
-	backMotor.moveVelocity(0);
-	while(std::fabs(error) > 5) // keeps turning until within 10 degrees of objective
-	{
-		if (std::fabs(error) < 40){
-		// if within 40 degrees of objective, the motors start slowing
-		// and the speed never drops below 20
-		rotation = (6 * error);
-		} else {
-		// otherwise maintain fast turning speed of 90
-		rotation = 270 * sgn(error);
-		}
-
-		rightMotor.moveVelocity(rotation);
-		leftMotor.moveVelocity(-rotation);
-
-		pros::delay(5);
-		error = heading - kFilter.filter(imu.get());
-	}
-	// these next lines attempt to slow down the robot's rotational momentum
-	// might be better just to put the motors into braking mode
-	rotation = -15 * sgn(error);
-	leftMotor.moveVelocity(rotation);
-	rightMotor.moveVelocity(-rotation);
-	pros::delay(50);
-	leftMotor.moveVelocity(0);
-	rightMotor.moveVelocity(0);
-}
-
-void turnViaIMUPID(double heading)
-{
+	// Initialize things
 	okapi::EKFFilter kFilter; // Kalman filter for IMU
-	auto turnController = okapi::IterativeControllerFactory::posPID(.003, .0004, .0001);
-	turnController.setTarget(heading);
-	backMotor.moveVelocity(0);
-	while(std::abs(heading - kFilter.filter(imu.get())) > 3){
+	auto turnController = okapi::IterativeControllerFactory::posPID(.003, .0004, .0001); // PID for angular speed
+	turnController.setTarget(rotation); // Prepare for the upcoming maneuver
+
+	backMotor.moveVelocity(0); // There is not reason for the back motor to move when turning
+	while(std::abs(rotation - kFilter.filter(imu.get())) > 3){ // We accept make range of 6 deg of error
+		// Controller should give values based off of the previously filtered angle
 		double controllerInput = kFilter.getOutput();
+		// The resulting controller value will be used for turning speed
 		double output = turnController.step(controllerInput);
 		leftMotor.controllerSet(-output);
 		rightMotor.controllerSet(output);
@@ -237,15 +210,16 @@ void turnViaIMUPID(double heading)
 	}
 	leftMotor.moveVelocity(0);
 	rightMotor.moveVelocity(0);
+
 }
 
-void grab() // NOTE: Grip should be in holding, allowing it to grip via this simple piece of code
+void grab()
 {
 	grip.moveAbsolute(-3.5, 100);
 	pros::delay(750);
 }
 
-void ungrab() // TODO: Write this code
+void ungrab() // NOTE: This has no wait, unlike the function above
 {
 	grip.moveAbsolute(-2, 80);
 }
@@ -266,6 +240,7 @@ void scoreGoal()
 	liftMax();
 }
 
+// TODO: Pretty sure this is still UNTESTED / not ready
 void judas()
 {
 	liftHang();
@@ -275,12 +250,11 @@ void judas()
 	piston.set_value(true);
 	while(lift.getPosition() > 1) pros::delay(10);
 }
-// Uncommented is for 11/20 tournament and scores 110 points
+
 void skillsAuton()
 {
 	// Configure the GPS for skills
-	gps.set_position(1.524, -1.0668, 90);
-
+	gps.set_position(1.524, -1.0668, 90); // x, y, rot
 
 	//////////////////////
 	// Grab nearby goal //
@@ -324,6 +298,7 @@ void skillsAuton()
 	driveViaTime(2000, 400, -50);
 	lift.moveRelative(.7, 100);
 	while(lift.getPosition() < .65) pros::delay(10);
+
 	// De-tilt and back up to center on the ramp
 	driveViaIMU(-.75, -50);
 	turnViaIMU(-90);
@@ -444,9 +419,9 @@ FUTURE AUTON FOR AFTER 11/20
 
 void compLeftAuton()
 {
-	driveViaDist(.5);
+	driveViaIMU(.5, 0);
 	pros::delay(750); // TODO: Replace this line with something involving getActualVelocity();
-	driveViaDist(-.5);
+	driveViaIMU(-.5, 0);
 }
 
 void compForwardAuton()
@@ -547,20 +522,10 @@ void setVibrate(){
 	}
 }
 
-void renderControllerDisplay()
-{
-}
-
-void renderBrainDisplay() {}
-
 void initialize() {
 	// Initialize stuff
 	pros::lcd::initialize();
 
-	// Wheel settings
-	leftMotor.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
-	rightMotor.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
-	backMotor.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
 
 	// Calibrate IMU
 	master.setText(0, 0, "Calibrating...");
@@ -576,7 +541,12 @@ void initialize() {
 	grip.tarePosition();
 	grip.moveAbsolute(-2, 100);
 
+	// Everything holds
+	leftMotor.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
+	rightMotor.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
+	backMotor.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
 	lift.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
+	grip.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
 
 	// Render the prompt
 	master.setText(0, 0, "Select a mode:");
@@ -598,6 +568,7 @@ void initialize() {
 	master.clear();
 }
 
+// Not a clue on what someone would use thing dumb thing for
 void competition_initialize()
 {
 }
@@ -619,6 +590,6 @@ void opcontrol() {
 		setGrip();
 		setPiston();
 		setVibrate();
-		pros::delay(10);
+		pros::delay(5);
 	}
 }
