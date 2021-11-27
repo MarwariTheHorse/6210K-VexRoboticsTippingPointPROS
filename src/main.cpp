@@ -224,12 +224,8 @@ void compRightAuton()
 
 void experimental()
 {
-<<<<<<< HEAD
-	turnViaIMU(180);
-=======
 	gps.initialize_full(-1.524, -1.2192, 0, 1, -1);
 	driveViaGPS(1.2192, -1.2192);
->>>>>>> 061d2adc672c0abbc190b022fafecfabd64c732b
 }
 
 void setLift()
