@@ -224,7 +224,7 @@ void compRightAuton()
 
 void experimental()
 {
-	gps.initialize_full(-1.524, -1.2192, 0, 1, -1);
+	gps.initialize_full(-1.2192, -1.2192, 90, 1, -1);
 	driveViaGPS(1.2192, -1.2192);
 }
 
@@ -372,6 +372,7 @@ void opcontrol() {
 		setGrip();
 		setPiston();
 		setVibrate();
+		updateFilters();
 		pros::delay(5);
 	}
 }
