@@ -5,8 +5,8 @@
 
 const bool DEBUG = false;
 const bool TORQUE_THRESHOLD = 1.575;
-const int LIFT_MAX_POSITION = 3;
-const int LIFT_MIN_POSITION = 1.875;
+const double LIFT_MAX_POSITION = 2.1; // 2.5 - 3.0
+const double LIFT_MIN_POSITION = .1;
 const bool LOGGING_RATE = 100; // ms * 10, plus execution per loop time. ie 100 results in data appox. every second
 
 // Lift variables
@@ -26,12 +26,6 @@ double pistonTime2 = -1000;
 bool pistonState;
 
 double lastVibrate = 0;
-
-// TODOS:
-// Improve the movement methods so that they are run by controllers, along with "SettledUntil" - Caleb
-// Complete the auton - Joey
-// Sensor fusion - Caleb
-// Fancy brain interface w/KryptoKnAIghts logo
 
 // Globals
 char autonMode = 'N'; // Stands for none
@@ -99,7 +93,7 @@ void skillsAuton()
 	// Slap that bad boy onto the ramp
 	scoreGoal();
 
-// This section is the 11/20 auton
+	// This section is the 11/20 auton
 	//////////////////////////////
 	// Get tall yellow and judas //
 	//////////////////////////////
@@ -215,7 +209,13 @@ void compForwardAuton()
 	grab();
 	pros::delay(250); // Originally not here
 	pros::delay(1000);
-	driveViaIMU(-1.8, 0);
+	leftMotor.moveVelocity(-300);
+	rightMotor.moveVelocity(-300);
+	backMotor.moveVelocity(-300);
+	pros::delay(2000);
+	leftMotor.moveVelocity(0);
+	rightMotor.moveVelocity(0);
+	backMotor.moveVelocity(0);
 }
 
 void compRightAuton()
@@ -325,6 +325,13 @@ void initialize() {
 	grip.tarePosition();
 	grip.moveAbsolute(-2, 100);
 
+	// Tare lift
+	lift.moveVelocity(-100);
+	while(std::abs(lift.getTorque()) < TORQUE_THRESHOLD){pros::delay(10);}
+	lift.moveVelocity(0);
+	pros::delay(100);
+	lift.tarePosition();
+
 	// Everything holds
 	leftMotor.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
 	rightMotor.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
@@ -351,12 +358,6 @@ void initialize() {
 	}
 	master.clear();
 
-	// Tare lift
-	lift.moveVelocity(-100);
-	while(std::abs(lift.getTorque()) < TORQUE_THRESHOLD){pros::delay(10);}
-	lift.moveVelocity(0);
-	pros::delay(100);
-	lift.tarePosition();
 }
 
 // Not a clue on what someone would use thing dumb thing for

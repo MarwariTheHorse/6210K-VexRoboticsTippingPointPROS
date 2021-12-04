@@ -10,7 +10,7 @@
 #define WHEEL_BACK_R 20
 
 #define LIFT 4
-#define GRIP 1
+#define GRIP 3
 
 #define PISTON 'H'
 

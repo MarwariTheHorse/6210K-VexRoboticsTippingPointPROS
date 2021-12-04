@@ -39,7 +39,7 @@ void driveViaIMU(double dist, double rotation)
 	if(d < dist){
 		while (d < dist){
 			speed = 500;
-			aSpeed = (rotation - kFilter.filter(imu.get())) * 30;
+			aSpeed = (rotation - kFilter.filter(imu.get())) * 20; // Was at 30
 			leftMotor.moveVelocity(speed - aSpeed);
 			rightMotor.moveVelocity(speed + aSpeed);
 			backMotor.moveVelocity(speed);
@@ -49,9 +49,10 @@ void driveViaIMU(double dist, double rotation)
 	}else{
 		while (d > dist){
 			speed = -500;
-			aSpeed = (rotation - kFilter.filter(imu.get())) * 30;
+			aSpeed = (rotation - kFilter.filter(imu.get())) * 20; // Was at 30
 			leftMotor.moveVelocity(speed - aSpeed);
 			rightMotor.moveVelocity(speed + aSpeed);
+			backMotor.moveVelocity(speed);
 			pros::delay(5);
 			d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
 		}
