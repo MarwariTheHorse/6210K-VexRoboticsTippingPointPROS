@@ -5,6 +5,8 @@
 
 const bool DEBUG = false;
 const bool TORQUE_THRESHOLD = 1.575;
+const int LIFT_MAX_POSITION = 3;
+const int LIFT_MIN_POSITION = 1.875;
 const bool LOGGING_RATE = 100; // ms * 10, plus execution per loop time. ie 100 results in data appox. every second
 
 // Lift variables
@@ -230,8 +232,8 @@ void experimental()
 
 void setLift()
 {
-	if(master.getDigital(okapi::ControllerDigital::R1)) lift.moveVelocity(600);
-	else if(master.getDigital(okapi::ControllerDigital::R2)) lift.moveVelocity(-600);
+	if(master.getDigital(okapi::ControllerDigital::R1) && lift.getPosition() < LIFT_MAX_POSITION) lift.moveVelocity(600);
+	else if(master.getDigital(okapi::ControllerDigital::R2) && lift.getPosition() > LIFT_MIN_POSITION) lift.moveVelocity(-600);
 	else lift.moveVelocity(0);
 }
 
@@ -348,6 +350,13 @@ void initialize() {
 		if(master.getDigital(okapi::ControllerDigital::down)) autonMode = 'V';
 	}
 	master.clear();
+
+	// Tare lift
+	lift.moveVelocity(-100);
+	while(std::abs(lift.getTorque()) < TORQUE_THRESHOLD){pros::delay(10);}
+	lift.moveVelocity(0);
+	pros::delay(100);
+	lift.tarePosition();
 }
 
 // Not a clue on what someone would use thing dumb thing for
