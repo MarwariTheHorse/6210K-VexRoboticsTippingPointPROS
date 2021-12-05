@@ -30,6 +30,7 @@ double lastVibrate = 0;
 // Globals
 char autonMode = 'N'; // Stands for none
 
+// Autons
 void skillsAuton()
 {
 	// Configure the GPS for skills
@@ -204,18 +205,11 @@ void compLeftAuton()
 
 void compForwardAuton()
 {
-	driveViaIMU(1.8, 0);
-	pros::delay(500); // Originally 750
+	driveViaIMU(1.5, 0);
+	pros::delay(750);
 	grab();
-	pros::delay(250); // Originally not here
 	pros::delay(1000);
-	leftMotor.moveVelocity(-300);
-	rightMotor.moveVelocity(-300);
-	backMotor.moveVelocity(-300);
-	pros::delay(2000);
-	leftMotor.moveVelocity(0);
-	rightMotor.moveVelocity(0);
-	backMotor.moveVelocity(0);
+	driveViaIMU(-1.5, 0);
 }
 
 void compRightAuton()
@@ -224,12 +218,14 @@ void compRightAuton()
 	compLeftAuton();
 }
 
+// For screwing around
 void experimental()
 {
 	gps.initialize_full(-1.2192, -1.2192, 90, 1, -1);
 	driveViaGPS(1.2192, -1.2192);
 }
 
+// opcontrol
 void setLift()
 {
 	if(master.getDigital(okapi::ControllerDigital::R1) && lift.getPosition() < LIFT_MAX_POSITION) lift.moveVelocity(600);
@@ -307,6 +303,7 @@ void setVibrate(){
 	}
 }
 
+// PROS-called functions
 void initialize() {
 	// Initialize stuff
 	pros::lcd::initialize();
@@ -360,7 +357,6 @@ void initialize() {
 
 }
 
-// Not a clue on what someone would use thing dumb thing for
 void competition_initialize()
 {
 }
