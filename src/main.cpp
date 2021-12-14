@@ -9,21 +9,15 @@ const double LIFT_MAX_POSITION = 2.1; // 2.5 - 3.0
 const double LIFT_MIN_POSITION = .1;
 const bool LOGGING_RATE = 100; // ms * 10, plus execution per loop time. ie 100 results in data appox. every second
 
-// Lift variables
+// State variables
 int liftState;
 int gripState = 1;
+bool hookState;
 double gripHoldPosition;
 
 // Anti-doubles
-bool prevL1;
-bool prevL2;
-bool prevR1;
-bool prevR2;
+bool prevUp;
 bool prevB;
-
-double pistonTime1 = 0;
-double pistonTime2 = -1000;
-bool pistonState;
 
 double lastVibrate = 0;
 
@@ -262,38 +256,13 @@ void setDTSpeeds()
 }
 
 void setGrip(){
-	// Store controller state
-	bool buttonL1 = master.getDigital(okapi::ControllerDigital::L1);
-	bool buttonL2 = master.getDigital(okapi::ControllerDigital::L2);
-
-	// Upper button - Lift the grip
-	if(buttonL1 && !prevL1){
-		grip.moveAbsolute(-2, 100);
+	// Grip variables
+	if(master.getDigital(okapi::ControllerDigital::L1) && grip.get_value()){
+		grip.set_value(false);
 	}
-	// Lower button - Start lowering the lift
-	if(buttonL2 && !prevL2){
-		grip.moveAbsolute(-3.5, 100);
+	if(master.getDigital(okapi::ControllerDigital::L2) && !grip.get_value()){
+		grip.set_value(true);
 	}
-
-	// Update variables
-	prevL1 = buttonL1;
-	prevL2 = buttonL2;
-}
-
-void setPiston()
-{
-	bool buttonB = master.getDigital(okapi::ControllerDigital::B);
-	if(buttonB && !prevB){
-		pistonTime1 = pistonTime2;
-		pistonTime2 = pros::millis();
-		if(pistonTime2 - pistonTime1 < 500){
-			pistonState = !pistonState;
-			piston.set_value(pistonState ? 4095 : 0); // Set output to 5V or 0V
-			pistonTime1 -= 2000; // Fudge the numbers to that it doesn't double trigger
-			pistonTime2 -= 1000;
-		}
-	}
-	prevB = buttonB;
 }
 
 void setVibrate(){
@@ -301,6 +270,27 @@ void setVibrate(){
 		master.rumble(".");
 		lastVibrate = pros::millis();
 	}
+}
+
+void setHook(){
+	// Store controller state
+	bool buttonUp = master.getDigital(okapi::ControllerDigital::up);
+
+	// State changer
+	if(buttonUp && !prevUp){
+		hookState = !hookState;
+	}
+	// Upper button - Lift the grip
+	if(!hookState){
+		hook.moveAbsolute(-2, 100);
+	}
+	// Lower button - Start lowering the lift
+	if(hookState){
+		hook.moveAbsolute(-3.5, 100);
+	}
+
+	// Update variables
+	prevUp = buttonUp;
 }
 
 // PROS-called functions
@@ -375,9 +365,8 @@ void opcontrol() {
 	while (true) {
 		setDTSpeeds();
 		setLift();
-		setGrip();
-		setPiston();
 		setVibrate();
+		setGrip();
 		updateFilters();
 		pros::delay(5);
 	}

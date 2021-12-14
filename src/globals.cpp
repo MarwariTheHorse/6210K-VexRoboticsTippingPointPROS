@@ -10,9 +10,8 @@
 #define WHEEL_BACK_R 20
 
 #define LIFT 4
-#define GRIP 3
-
-#define PISTON 'H'
+#define HOOK 1
+#define GRIP 'A'
 
 #define VISION 6
 #define GYRO 8
@@ -28,15 +27,12 @@ okapi::Motor rRightMotor(WHEEL_RIGHT_R, true, okapi::AbstractMotor::gearset::blu
 okapi::Motor lBackMotor(WHEEL_BACK_L, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations);
 okapi::Motor rBackMotor(WHEEL_BACK_R, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations);
 okapi::Motor lift(LIFT, true, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
-okapi::Motor grip(GRIP, true, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
+okapi::Motor hook(HOOK, false, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
 
 // Motor Groups (For making the code simpler)
 okapi::MotorGroup rightMotor({fLeftMotor, rLeftMotor});
 okapi::MotorGroup leftMotor({fRightMotor, rRightMotor});
 okapi::MotorGroup backMotor({lBackMotor, rBackMotor});
-
-// Pneumatics
-pros::ADIDigitalOut piston(PISTON);
 
 // Controllers
 okapi::Controller master(okapi::ControllerId::master);
@@ -45,3 +41,6 @@ okapi::Controller master(okapi::ControllerId::master);
 pros::Vision vision (VISION);
 okapi::IMU imu(GYRO);
 pros::GPS gps(GPS_PORT, GPS_OFFSET_X, GPS_OFFSET_Y);
+
+// Pneumatics
+pros::ADIPort grip(GRIP)

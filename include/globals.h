@@ -8,15 +8,12 @@ extern okapi::Motor rRightMotor;
 extern okapi::Motor lBackMotor;
 extern okapi::Motor rBackMotor;
 extern okapi::Motor lift;
-extern okapi::Motor grip;
+extern okapi::Motor hook;
 
 // Motor Groups (For making the code simpler)
 extern okapi::MotorGroup rightMotor;
 extern okapi::MotorGroup leftMotor;
 extern okapi::MotorGroup backMotor;
-
-// Pneumatics
-extern pros::ADIDigitalOut piston;
 
 // Controllers
 extern okapi::Controller master;
@@ -25,3 +22,6 @@ extern okapi::Controller master;
 extern pros::Vision vision;
 extern okapi::IMU imu;
 extern pros::GPS gps;
+
+// Pneumatics
+extern pros::ADIPort grip;
