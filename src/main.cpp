@@ -282,7 +282,7 @@ void setHook(){
 	}
 	// Upper button - Lift the grip
 	if(!hookState){
-		hook.moveAbsolute(-2, 100);
+		hook.moveAbsolute(0, 100);
 	}
 	// Lower button - Start lowering the lift
 	if(hookState){

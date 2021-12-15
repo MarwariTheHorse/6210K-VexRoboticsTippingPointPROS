@@ -1,16 +1,17 @@
 #include "main.h"
+
 // Motor + pneumatic port definitions
-#define WHEEL_LEFT_F 2
+#define WHEEL_LEFT_F 14
 #define WHEEL_LEFT_R 13
 
 #define WHEEL_RIGHT_F 12
-#define WHEEL_RIGHT_R 19
+#define WHEEL_RIGHT_R 11
 
-#define WHEEL_BACK_L 11
+#define WHEEL_BACK_L 8
 #define WHEEL_BACK_R 20
 
-#define LIFT 4
-#define HOOK 1
+#define LIFT 19
+#define HOOK 6
 #define GRIP 'A'
 
 #define VISION 6
