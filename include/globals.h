@@ -24,4 +24,4 @@ extern okapi::IMU imu;
 extern pros::GPS gps;
 
 // Pneumatics
-extern pros::ADIPort grip;
+extern pros::ADIDigitalOut grip;

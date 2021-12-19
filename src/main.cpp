@@ -4,14 +4,14 @@
 #include "globals.h"
 
 const bool DEBUG = false;
-const bool TORQUE_THRESHOLD = 1.575;
+const bool TORQUE_THRESHOLD = 1.99;
 const double LIFT_MAX_POSITION = 2.1; // 2.5 - 3.0
-const double LIFT_MIN_POSITION = .1;
+const double LIFT_MIN_POSITION = .09;
 const bool LOGGING_RATE = 100; // ms * 10, plus execution per loop time. ie 100 results in data appox. every second
 
 // State variables
 int liftState;
-int gripState = 1;
+bool gripState = false;
 bool hookState;
 double gripHoldPosition;
 
@@ -25,6 +25,7 @@ double lastVibrate = 0;
 char autonMode = 'N'; // Stands for none
 
 // Autons
+/*
 void skillsAuton()
 {
 	// Configure the GPS for skills
@@ -186,7 +187,6 @@ FUTURE AUTON FOR AFTER 11/20
 
 	judas();
 
-*/
 
 }
 
@@ -218,7 +218,7 @@ void experimental()
 	gps.initialize_full(-1.2192, -1.2192, 90, 1, -1);
 	driveViaGPS(1.2192, -1.2192);
 }
-
+*/
 // opcontrol
 void setLift()
 {
@@ -257,11 +257,15 @@ void setDTSpeeds()
 
 void setGrip(){
 	// Grip variables
-	if(master.getDigital(okapi::ControllerDigital::L1) && grip.get_value()){
+	if(master.getDigital(okapi::ControllerDigital::L1) && gripState == true){
 		grip.set_value(false);
+		gripState = false;
+		master.rumble(".");
 	}
-	if(master.getDigital(okapi::ControllerDigital::L2) && !grip.get_value()){
+	if(master.getDigital(okapi::ControllerDigital::L2) && gripState == false){
 		grip.set_value(true);
+		gripState = true;
+		master.rumble("-");
 	}
 }
 
@@ -272,6 +276,7 @@ void setVibrate(){
 	}
 }
 
+// TODO: Needs testing
 void setHook(){
 	// Store controller state
 	bool buttonUp = master.getDigital(okapi::ControllerDigital::up);
@@ -280,13 +285,15 @@ void setHook(){
 	if(buttonUp && !prevUp){
 		hookState = !hookState;
 	}
-	// Upper button - Lift the grip
+	// Upper button - Lift the hook
 	if(!hookState){
 		hook.moveAbsolute(0, 100);
 	}
-	// Lower button - Start lowering the lift
+	// Lower button - Start lowering the hook
 	if(hookState){
-		hook.moveAbsolute(-3.5, 100);
+		hook.moveAbsolute(1.5, 100); // TODO: Make this number more accurate
+									 // Perhaps the strength inefficiency
+									 // is a result of it not wanting to go further.
 	}
 
 	// Update variables
@@ -303,14 +310,6 @@ void initialize() {
 	imu.calibrate();
 	while (imu.isCalibrating()){pros::delay(10);}
 	master.clear();
-	
-	// Tare grip
-	grip.moveVelocity(100);
-	while(std::abs(grip.getTorque()) < TORQUE_THRESHOLD){pros::delay(10);}
-	grip.moveVelocity(0);
-	pros::delay(100);
-	grip.tarePosition();
-	grip.moveAbsolute(-2, 100);
 
 	// Tare lift
 	lift.moveVelocity(-100);
@@ -319,12 +318,15 @@ void initialize() {
 	pros::delay(100);
 	lift.tarePosition();
 
+	// Tare hook
+	// TODO: We need a sensor so that this thing can auto-zero without tearing itself apart
+	hook.tarePosition();
+	
 	// Everything holds
 	leftMotor.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
 	rightMotor.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
 	backMotor.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
 	lift.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
-	grip.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
 
 	// Render the prompt
 	master.setText(0, 0, "Select a mode:");
@@ -353,20 +355,22 @@ void competition_initialize()
 
 void disabled() {}
 
-void autonomous() {
+void autonomous() {/*
 	if(autonMode == 'X') skillsAuton();
 	if(autonMode == '<') compLeftAuton();
 	if(autonMode == '>') compRightAuton();
 	if(autonMode == '^') compForwardAuton();
-	if(autonMode == 'A') experimental();
+	if(autonMode == 'A') experimental();*/
 }
 
 void opcontrol() {
 	while (true) {
-		setDTSpeeds();
-		setLift();
+		setDTSpeeds(); // TODO: Add filters for this method
+		setLift(); // TODO: Fix the lift limits
 		setVibrate();
 		setGrip();
+		setHook(); // TODO: Tune the numbers for this one
+		pros::lcd::print(0, "%4.2f", hook.getPosition());
 		updateFilters();
 		pros::delay(5);
 	}

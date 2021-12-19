@@ -14,6 +14,7 @@ int currentGPS;
 int gpsOffset;
 
 void updateFilters(){
+	// Fix the GPS rotation so that it is a total and not a %360
 	pastGPS = currentGPS;
 	currentGPS = gps.get_heading();
 	if(pastGPS % 360 > 350 && currentGPS % 360 < 10) gpsOffset += 360;
@@ -22,7 +23,7 @@ void updateFilters(){
 
 double getFilteredGPS(){
 	return gps.get_heading() + gpsOffset;
-}
+}/*
 
 void driveViaIMU(double dist, double rotation)
 {
@@ -161,13 +162,13 @@ void turnViaIMU(double rotation)
 
 void grab()
 {
-	grip.moveAbsolute(-3.5, 100);
+	grip.set_value(true);
 	pros::delay(750);
 }
 
 void ungrab() // NOTE: This has no wait, unlike the function above
 {
-	grip.moveAbsolute(-2, 80);
+	grip.set_value(false);
 }
 
 void liftMin() {lift.moveAbsolute(0, 90);}
@@ -188,11 +189,11 @@ void scoreGoal()
 
 // TODO: Pretty sure this is still UNTESTED / not ready
 void judas()
-{
+{/*
 	liftHang();
 	while(lift.getPosition() > 1.4){
 		pros::delay(10);
 	}
 	piston.set_value(true);
 	while(lift.getPosition() > 1) pros::delay(10);
-}
+}*/

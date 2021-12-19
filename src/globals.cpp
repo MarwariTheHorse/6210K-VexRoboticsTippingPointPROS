@@ -12,12 +12,12 @@
 
 #define LIFT 19
 #define HOOK 6
-#define GRIP 'A'
+#define GRIP 'H'
 
 #define VISION 6
-#define GYRO 8
+#define GYRO 7
 
-#define GPS_PORT 7
+#define GPS_PORT 1
 #define GPS_OFFSET_X 1
 #define GPS_OFFSET_Y -1
 
@@ -44,4 +44,4 @@ okapi::IMU imu(GYRO);
 pros::GPS gps(GPS_PORT, GPS_OFFSET_X, GPS_OFFSET_Y);
 
 // Pneumatics
-pros::ADIPort grip(GRIP)
+pros::ADIDigitalOut grip(GRIP);
