@@ -101,11 +101,11 @@ void copycat(){
                 vector<tuple<int, int>> position;
                 position.emplace_back(status.x, status.y);
                 if(wheelBackRightSpeed < 5){
-                    speed = wheelFrontLeftSpeed;
+                    speed = abs(wheelFrontLeftSpeed);
                 }else{
-                    speed = (wheelBackRightSpeed + wheelFrontLeftSpeed)/2;
+                    speed = (abs(wheelBackRightSpeed) + abs(wheelFrontLeftSpeed))/2;
                 }
-                data.emplace_back(heading, position, timestamp);\
+                data.emplace_back(heading, position, timestamp);
                 dataFile.open("/usd/copycatData.txt");
                 dataFile << heading << "\n"<< endl;
                 dataFile << speed << "\n" << endl;
@@ -159,6 +159,7 @@ void copycat(){
                 i++;
             }else if(i % 4 == 1){
                 double velocity = stod(line);
+                i++;
             }else if(i % 4 == 2){
                 //Whole thing needs tuning
                 int next = i + 1;
@@ -245,4 +246,7 @@ void initialize() {
 void opcontrol() {
 	setDTSpeeds();
     pros::delay(10);
+    pros::lcd::register_btn0_cb(copycat);
+    pros::lcd::register_btn1_cb(copycat);
+    pros::lcd::register_btn2_cb(copycat);
 }
