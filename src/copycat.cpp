@@ -21,8 +21,8 @@ okapi::Motor mWheelFrontRight(9);
 okapi::Motor mWheelBackRight(8);
 
 // Controller and camera definitions + green is defined
-pros::Vision sCamera(4, pros::E_VISION_ZERO_CENTER);
-pros::vision_signature colorCode = sCamera.signature_from_utility(1, -4915, -4609, -4762, -5121, -4807, -4964, 11.000, 0);
+// pros::Vision sCamera(4, pros::E_VISION_ZERO_CENTER);
+// pros::vision_signature colorCode = sCamera.signature_from_utility(1, -4915, -4609, -4762, -5121, -4807, -4964, 11.000, 0);
 pros::Imu sImu(5);
 pros::Gps sGps(7);
 okapi::Controller master(okapi::ControllerId::master);
@@ -141,20 +141,20 @@ void copycat(){
                     // otherwise maintain fast turning speed of 90
                     rightX = 90 * sgn(error);
                     }
-                    mWheelFrontLeft.moveVelocity(rightX + leftY + leftX);
-                    mWheelFrontRight.moveVelocity(rightX - leftY + leftX);
-                    mWheelBackLeft.moveVelocity(rightX + leftY - leftX);
-                    mWheelBackRight.moveVelocity(rightX - leftY - leftX);
+                    mWheelFrontLeft.moveVelocity((rightX + leftY + leftX) * .9 * 200);
+                    mWheelFrontRight.moveVelocity((rightX - leftY + leftX) * .9 * 200);
+                    mWheelBackLeft.moveVelocity((rightX + leftY - leftX) * .9 * 200);
+                    mWheelBackRight.moveVelocity((rightX - leftY - leftX) * .9 * 200);
                     pros::delay(5);
                     error = angle - sImu.get_rotation();
                 }
                 // these next lines attempt to slow down the robot's rotational momentum
                 // might be better just to put the motors into braking mode
                 rightX = -5 * sgn(error);
-                mWheelFrontLeft.moveVelocity(rightX + leftY + leftX);
-                mWheelFrontRight.moveVelocity(rightX - leftY + leftX);
-                mWheelBackLeft.moveVelocity(rightX + leftY - leftX);
-                mWheelBackRight.moveVelocity(rightX - leftY - leftX);
+                mWheelFrontLeft.moveVelocity((rightX + leftY + leftX) * .9 * 200);
+                mWheelFrontRight.moveVelocity((rightX - leftY + leftX) * .9 * 200);
+                mWheelBackLeft.moveVelocity((rightX + leftY - leftX) * .9 * 200);
+                mWheelBackRight.moveVelocity((rightX - leftY - leftX) * .9 * 200);
                 pros::delay(50);
                 i++;
             }else if(i % 4 == 1){
@@ -209,10 +209,10 @@ void copycat(){
                     double angularSpeed = (targetRotation - kFilterRot.filter(sImu.get_rotation())) * 30; // NOTE: We can use gyro to maintain heading if gps sucks
 
                     // Assign the calculated wheel values
-                    mWheelFrontLeft.moveVelocity(velocity - angularSpeed);
-                    mWheelFrontRight.moveVelocity(velocity + angularSpeed);
-                    mWheelBackRight.moveVelocity(velocity + angularSpeed);
-                    mWheelBackLeft.moveVelocity(velocity - angularSpeed);
+                    mWheelFrontLeft.moveVelocity((velocity - angularSpeed) * 200);
+                    mWheelFrontRight.moveVelocity((velocity + angularSpeed) * 200);
+                    mWheelBackRight.moveVelocity((velocity + angularSpeed) * 200);
+                    mWheelBackLeft.moveVelocity((velocity - angularSpeed) * 200);
                     std::string str;
                     ss << targetRotation;
                     ss >> str;
