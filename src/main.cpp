@@ -291,7 +291,7 @@ void setHook(){
 	}
 	// Lower button - Start lowering the hook
 	if(hookState){
-		hook.moveAbsolute(1.5, 100); // TODO: Make this number more accurate
+		hook.moveAbsolute(8.75, 100); // TODO: Make this number more accurate
 									 // Perhaps the strength inefficiency
 									 // is a result of it not wanting to go further.
 	}
