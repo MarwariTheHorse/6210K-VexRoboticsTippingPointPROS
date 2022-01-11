@@ -25,7 +25,7 @@ double lastVibrate = 0;
 char autonMode = 'N'; // Stands for none
 
 // Autons
-/*
+
 void skillsAuton()
 {
 	// Configure the GPS for skills
@@ -41,54 +41,34 @@ void skillsAuton()
 	grab();
 
 	// Get better grip
-	driveViaIMU(-.45, 0);
-	ungrab();
-	driveViaIMU(.05, 0);
-	grab();
-	lift.moveAbsolute(.2, 100); //make it not scrape the ground so we can move
-
+	driveViaIMU(-.4, 0);
+	liftSmall(); //make it not scrape the ground so we can move
+	pros::delay(1000);
 	/////////////////////////////
 	// Drive to the other side //
 	/////////////////////////////
 	// Turn towards gap between yellow
-	turnViaIMU(-45);
-
+	turnViaIMU(-40);
+	pros::delay(1000);
 	// Drive to the gap
-	driveViaIMU(.8, -45); // Previously 1
-
+	driveViaIMU(3.5, -40); // Previously 1
+	pros::delay(600);
+	driveViaIMU(-.2, -40);
+	pros::delay(600);
 	// Turn to perpendicular
 	turnViaIMU(-90);
-
+	pros::delay(500);
+	liftMax();
 	// Drive to other side of goal
-	driveViaIMU(1, -90);
-	// Turn to ramp
-	turnViaIMU(-50);
-
-	///////////////////////////////
-	// Swipe goal out of the way (De-tilt the ramp) //
-	///////////////////////////////
-
-	// Hit the ramp
-	driveViaTime(2000, 400, -50);
-	lift.moveRelative(.7, 100);
-	while(lift.getPosition() < .65) pros::delay(10);
-
-	// De-tilt and back up to center on the ramp
-	driveViaIMU(-.75, -50);
-	turnViaIMU(-90);
-	driveViaTime(1000, 100, -90);
+	driveViaTime(5000, 80, -90);
+	pros::delay(500);
 	///////////////////////////////////
 	// Score goal 1 in bridge center //
 	///////////////////////////////////
 
-	// Lift goal then approach
-	liftMax();
-	while(lift.getPosition() < 1.75) pros::delay(10);
-	driveViaTime(3000, 600, -90);
-
 	// Slap that bad boy onto the ramp
 	scoreGoal();
-
+	pros::delay(600);
 	// This section is the 11/20 auton
 	//////////////////////////////
 	// Get tall yellow and judas //
@@ -96,40 +76,45 @@ void skillsAuton()
 
 	// Grab yellow
 	driveViaIMU(-.4, -90);
+	pros::delay(300);
 	turnViaIMU(90);
+	pros::delay(300);
 	liftMin();
-	while(lift.getPosition() > .1) pros::delay(10);
+	pros::delay(300);
+	while(lift.getPosition() > .1){
+	    pros::delay(10);
+	}
 	driveViaIMU(.75, 90);
 	pros::delay(10);
 	grab();
 
 	// Lift a bit
 	lift.moveAbsolute(.7, 90);
-
+	pros::delay(400);
 	//Drive forward some
 	driveViaIMU(.4, 90);
-
+	pros::delay(400);
 	//Yeet those stupid rings outta the way
 	turnViaIMU(0);
+	pros::delay(300);
 	driveViaIMU(1, 0);
 	pros::delay(1000);
 	driveViaIMU(-.8, 0);
+	pros::delay(200);
 	turnViaIMU(90);
 	
 	// Judas
 	liftMax();
 	pros::delay(10);
-	leftMotor.moveVelocity(600); // So that it runs up against the ramp and enables the ability to judas
-	rightMotor.moveVelocity(600);
-	backMotor.moveVelocity(600);
-	pros::delay(3000);
 	judas();
+	pros::delay(600);
 	leftMotor.moveVelocity(0); // Don't kill the motors
 	rightMotor.moveVelocity(0);
 	backMotor.moveVelocity(0);
 	lift.setBrakeMode(okapi::AbstractMotor::brakeMode::coast);
 	lift.moveVelocity(0);
 	pros::delay(60000);
+}
 	
 /*
 FUTURE AUTON FOR AFTER 11/20
@@ -189,7 +174,7 @@ FUTURE AUTON FOR AFTER 11/20
 
 
 }
-
+*/
 void compLeftAuton()
 {
 	driveViaIMU(.5, 0);
@@ -199,10 +184,9 @@ void compLeftAuton()
 
 void compForwardAuton()
 {
-	driveViaIMU(1.5, 0);
-	pros::delay(750);
+	driveViaIMU(1.75, 0);
 	grab();
-	pros::delay(1000);
+	pros::delay(500);
 	driveViaIMU(-1.5, 0);
 }
 
@@ -218,7 +202,7 @@ void experimental()
 	gps.initialize_full(-1.2192, -1.2192, 90, 1, -1);
 	driveViaGPS(1.2192, -1.2192);
 }
-*/
+
 // opcontrol
 void setLift()
 {
@@ -291,7 +275,7 @@ void setHook(){
 	}
 	// Lower button - Start lowering the hook
 	if(hookState){
-		hook.moveAbsolute(8.75, 100); // TODO: Make this number more accurate
+		hook.moveAbsolute(-6, 100); // TODO: Make this number more accurate
 									 // Perhaps the strength inefficiency
 									 // is a result of it not wanting to go further.
 	}
@@ -355,12 +339,12 @@ void competition_initialize()
 
 void disabled() {}
 
-void autonomous() {/*
+void autonomous() {
 	if(autonMode == 'X') skillsAuton();
 	if(autonMode == '<') compLeftAuton();
 	if(autonMode == '>') compRightAuton();
 	if(autonMode == '^') compForwardAuton();
-	if(autonMode == 'A') experimental();*/
+	if(autonMode == 'A') experimental();
 }
 
 void opcontrol() {

@@ -23,7 +23,7 @@ void updateFilters(){
 
 double getFilteredGPS(){
 	return gps.get_heading() + gpsOffset;
-}/*
+}
 
 void driveViaIMU(double dist, double rotation)
 {
@@ -40,7 +40,7 @@ void driveViaIMU(double dist, double rotation)
 	if(d < dist){
 		while (d < dist){
 			speed = 500;
-			aSpeed = (rotation - kFilter.filter(imu.get())) * 20; // Was at 30
+			aSpeed = (rotation - kFilter.filter(imu.get())) * 30; // Was at 30
 			leftMotor.moveVelocity(speed - aSpeed);
 			rightMotor.moveVelocity(speed + aSpeed);
 			backMotor.moveVelocity(speed);
@@ -50,7 +50,7 @@ void driveViaIMU(double dist, double rotation)
 	}else{
 		while (d > dist){
 			speed = -500;
-			aSpeed = (rotation - kFilter.filter(imu.get())) * 20; // Was at 30
+			aSpeed = (rotation - kFilter.filter(imu.get())) * 30; // Was at 30
 			leftMotor.moveVelocity(speed - aSpeed);
 			rightMotor.moveVelocity(speed + aSpeed);
 			backMotor.moveVelocity(speed);
@@ -163,7 +163,7 @@ void turnViaIMU(double rotation)
 void grab()
 {
 	grip.set_value(true);
-	pros::delay(750);
+	pros::delay(300);
 }
 
 void ungrab() // NOTE: This has no wait, unlike the function above
@@ -172,15 +172,15 @@ void ungrab() // NOTE: This has no wait, unlike the function above
 }
 
 void liftMin() {lift.moveAbsolute(0, 90);}
-void liftSmall() {lift.moveAbsolute(.2, 90);} // 0, .5, 1.7
-void liftMax() {lift.moveAbsolute(1.85, 90);}
-void liftScore() {lift.moveAbsolute(.5, 90);}
-void liftHang() {lift.moveAbsolute(.9, 90);} // theoretically overshoots by .2
+void liftSmall() {lift.moveAbsolute(.4, 90);} // 0, .5, 1.7
+void liftMax() {lift.moveAbsolute(1.75, 90);}
+void liftScore() {lift.moveAbsolute(1, 90);}
+void liftHang() {lift.moveAbsolute(1, 90);} // theoretically overshoots by .2
 
 void scoreGoal()
 {
 	//Ensure lift is up
-	liftMax();
+	liftScore();
 	// Release Goal
 	ungrab();
 	// Lift the lift back to max
@@ -189,11 +189,9 @@ void scoreGoal()
 
 // TODO: Pretty sure this is still UNTESTED / not ready
 void judas()
-{/*
-	liftHang();
-	while(lift.getPosition() > 1.4){
-		pros::delay(10);
-	}
-	piston.set_value(true);
-	while(lift.getPosition() > 1) pros::delay(10);
-}*/
+{
+	liftMax();
+	driveViaTime(2000, 500, -90);
+	liftScore();
+	hook.moveAbsolute(1.5, 85);
+}	
