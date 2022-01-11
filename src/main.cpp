@@ -3,15 +3,14 @@
 #include "auton_assist_methods.h"
 #include "globals.h"
 
-const bool DEBUG = false;
+// Constants
 const bool TORQUE_THRESHOLD = 1.99;
-const double LIFT_MAX_POSITION = 2.1; // 2.5 - 3.0
+const double LIFT_MAX_POSITION = 2.1;
 const double LIFT_MIN_POSITION = .09;
-const bool LOGGING_RATE = 100; // ms * 10, plus execution per loop time. ie 100 results in data appox. every second
 
 // State variables
 int liftState;
-bool gripState = false;
+bool gripState;
 bool hookState;
 double gripHoldPosition;
 
@@ -21,11 +20,9 @@ bool prevB;
 
 double lastVibrate = 0;
 
-// Globals
 char autonMode = 'N'; // Stands for none
 
 // Autons
-
 void skillsAuton()
 {
 	// Configure the GPS for skills
@@ -175,10 +172,12 @@ FUTURE AUTON FOR AFTER 11/20
 
 }
 */
+
+// Needs work
 void compLeftAuton()
 {
 	driveViaIMU(.5, 0);
-	pros::delay(750); // TODO: Replace this line with something involving getActualVelocity();
+	pros::delay(750);
 	driveViaIMU(-.5, 0);
 }
 
@@ -354,8 +353,6 @@ void opcontrol() {
 		setVibrate();
 		setGrip();
 		setHook(); // TODO: Tune the numbers for this one
-		pros::lcd::print(0, "%4.2f", hook.getPosition());
-		updateFilters();
 		pros::delay(5);
 	}
 }

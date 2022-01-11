@@ -9,21 +9,6 @@ int sgn(double d) // Mimimcs the mathematical sgn function
 }
 
 // Auton assist methods //
-int pastGPS;
-int currentGPS;
-int gpsOffset;
-
-void updateFilters(){
-	// Fix the GPS rotation so that it is a total and not a %360
-	pastGPS = currentGPS;
-	currentGPS = gps.get_heading();
-	if(pastGPS % 360 > 350 && currentGPS % 360 < 10) gpsOffset += 360;
-	if(pastGPS % 360 < 10 && currentGPS % 360 > 350) gpsOffset -= 360;
-}
-
-double getFilteredGPS(){
-	return gps.get_heading() + gpsOffset;
-}
 
 void driveViaIMU(double dist, double rotation)
 {
@@ -37,6 +22,8 @@ void driveViaIMU(double dist, double rotation)
 	leftMotor.tarePosition();
 	rightMotor.tarePosition();
 	int d = 0;
+
+	// TODO: Add PID
 	if(d < dist){
 		while (d < dist){
 			speed = 500;
