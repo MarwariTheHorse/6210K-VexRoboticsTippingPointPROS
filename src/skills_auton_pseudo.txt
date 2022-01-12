@@ -1,0 +1,41 @@
+# Grab the goal
+fwd .1
+Grab
+rev .4
+
+# Score yellow for 20 pts
+turn to -45
+fwd .5
+turn to -90
+fwd 3
+
+# Score the previously grabbed red
+rev .5
+turn to -60
+liftMax
+driveViaTime 6s
+liftScore
+ungrab
+rev 1s (To make sure we don't accidentally take the scored goal with use when we lift off the bridge)
+
+# Grab the tall yellow
+liftMax
+rev .4 (this was originally rev -.4 but I am almost 100% sure that was a mistake)
+liftMin
+turn to 90
+fwd .6
+grip()
+liftSetAbsolute .6
+
+# Move the rings away
+SLOWLY fwd 1
+SLOWLY turn to 0
+SLOWLY fwd .5 
+SLOWLY rev .5
+SLOWLY turn to 90
+
+# Score + Judas
+liftMax
+fwd 4s at full speed
+liftScore
+judas
