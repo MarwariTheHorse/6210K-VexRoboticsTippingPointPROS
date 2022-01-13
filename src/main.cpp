@@ -31,11 +31,43 @@ void skillsAuton()
 	driveViaIMU(-.4, 0);
 	liftSmall();
 
-	// Line up with the yellow goal we are gonna push
+	// Line up with the yellow goal and push
 	turnViaIMU(-45);
-	driveViaIMU(.65, -45); //.8
+	driveViaIMU(.525, -45); //.8
 	turnViaIMU(-90);
-	driveViaIMU(3, -90);
+	driveViaIMU(1.7, -90);
+	pros::delay(1000);
+	//Score red
+	driveViaIMU(-.3, -90);
+	pros::delay(800);
+	turnViaIMU(-55);
+	liftMax();
+	pros::delay(800);
+	double time = pros::millis();
+	while(pros::millis() - time < 3000){
+		leftMotor.moveVelocity(500);
+		rightMotor.moveVelocity(500);
+		backMotor.moveVelocity(500);
+	}
+	liftScore();
+	pros::delay(300);
+	ungrab();
+
+	//Get off of platform
+	driveViaTime(1000, -90, -90);
+	liftMax();
+	pros::delay(600);
+	driveViaIMU(-.5, -90);
+
+	// Line up with tall yellow and grab
+	turnViaIMU(90);
+	liftMin();
+	driveViaIMU(.6, 90);
+	grab();
+
+	// From now on we need to see if we need the special maneuver to move rings out
+	// of the way and this can only be acheived through testing. Sooo...
+	// TODO: Test and see if we can hang with rings jammed between the bot and the ramp base
 }
 	
 // Needs work
