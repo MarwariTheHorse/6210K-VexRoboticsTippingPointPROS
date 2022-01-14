@@ -13,6 +13,7 @@ int liftState;
 bool gripState;
 bool hookState;
 double gripHoldPosition;
+bool initializing;
 
 // Anti-doubles
 bool prevUp;
@@ -37,6 +38,7 @@ void skillsAuton()
 	turnViaIMU(-90);
 	driveViaIMU(1.7, -90);
 	pros::delay(1000);
+
 	//Score red
 	driveViaIMU(-.3, -90);
 	pros::delay(800);
@@ -64,13 +66,19 @@ void skillsAuton()
 	liftMin();
 	driveViaIMU(.6, 90);
 	grab();
+	
+	// Go hang urself
+	liftMax();
+	pros::delay(800);
+	driveViaTime(3000, 50, 90);
+	liftScore();
+	judas();
 
 	// From now on we need to see if we need the special maneuver to move rings out
 	// of the way and this can only be acheived through testing. Sooo...
 	// TODO: Test and see if we can hang with rings jammed between the bot and the ramp base
 }
 	
-// Needs work
 void compLeftAuton()
 {
 	driveViaIMU(.5, 0);
@@ -171,7 +179,7 @@ void setHook(){
 	}
 	// Lower button - Start lowering the hook
 	if(hookState){
-		hook.moveAbsolute(-6, 100); // TODO: Make this number more accurate
+		hook.moveAbsolute(7, 100); // TODO: Make this number more accurate
 									 // Perhaps the strength inefficiency
 									 // is a result of it not wanting to go further.
 	}
@@ -212,6 +220,7 @@ void initialize() {
 	master.setText(0, 0, "Select a mode:");
 
 	// Get the choice
+	initializing = true;
 	while(autonMode == 'N'){
 		// Letter buttons
 		if(master.getDigital(okapi::ControllerDigital::A)) autonMode = 'A';
@@ -222,9 +231,12 @@ void initialize() {
 		// Arrow buttons
 		if(master.getDigital(okapi::ControllerDigital::left)) autonMode = '<';
 		if(master.getDigital(okapi::ControllerDigital::right)) autonMode = '>';
-		if(master.getDigital(okapi::ControllerDigital::up)) autonMode = '^';
+		if(master.getDigital(okapi::ControllerDigital::L1)) autonMode = '^';
 		if(master.getDigital(okapi::ControllerDigital::down)) autonMode = 'V';
 	}
+	pros::delay(1000);
+	initializing = false;
+
 	master.clear();
 
 }
@@ -245,11 +257,13 @@ void autonomous() {
 
 void opcontrol() {
 	while (true) {
-		setDTSpeeds(); // TODO: Add filters for this method
-		setLift(); // TODO: Fix the lift limits
-		setVibrate();
-		setGrip();
-		setHook(); // TODO: Tune the numbers for this one
+		if(!initializing){
+			setDTSpeeds(); // TODO: Add filters for this method
+			setLift(); // TODO: Fix the lift limits
+			setVibrate();
+			setGrip();
+			setHook(); // TODO: Tune the numbers for this one
+		}
 		pros::delay(5);
 	}
 }
