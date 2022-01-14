@@ -26,155 +26,59 @@ char autonMode = 'N'; // Stands for none
 // Autons
 void skillsAuton()
 {
-	// Configure the GPS for skills
-
-	//////////////////////
-	// Grab nearby goal //
-	//////////////////////
-
-	// Drive to the goal
+  // Get the red goal
 	driveViaIMU(.1, 0);
-
-	// Grab the goal
 	grab();
-
-	// Get better grip
 	driveViaIMU(-.4, 0);
-	liftSmall(); //make it not scrape the ground so we can move
-	pros::delay(1000);
-	/////////////////////////////
-	// Drive to the other side //
-	/////////////////////////////
-	// Turn towards gap between yellow
-	turnViaIMU(-40);
-	pros::delay(1000);
-	// Drive to the gap
-	driveViaIMU(3.5, -40); // Previously 1
-	pros::delay(600);
-	driveViaIMU(-.2, -40);
-	pros::delay(600);
-	// Turn to perpendicular
+	liftSmall();
+
+	// Line up with the yellow goal and push
+	turnViaIMU(-45);
+	driveViaIMU(.525, -45); //.8
 	turnViaIMU(-90);
-	pros::delay(500);
-	liftMax();
-	// Drive to other side of goal
-	driveViaTime(5000, 80, -90);
-	pros::delay(500);
-	///////////////////////////////////
-	// Score goal 1 in bridge center //
-	///////////////////////////////////
-
-	// Slap that bad boy onto the ramp
-	scoreGoal();
-	pros::delay(600);
-	// This section is the 11/20 auton
-	//////////////////////////////
-	// Get tall yellow and judas //
-	//////////////////////////////
-
-	// Grab yellow
-	driveViaIMU(-.4, -90);
-	pros::delay(300);
-	turnViaIMU(90);
-	pros::delay(300);
-	liftMin();
-	pros::delay(300);
-	while(lift.getPosition() > .1){
-	    pros::delay(10);
-	}
-	driveViaIMU(.75, 90);
-	pros::delay(10);
-	grab();
-
-	// Lift a bit
-	lift.moveAbsolute(.7, 90);
-	pros::delay(400);
-	//Drive forward some
-	driveViaIMU(.4, 90);
-	pros::delay(400);
-	//Yeet those stupid rings outta the way
-	turnViaIMU(0);
-	pros::delay(300);
-	driveViaIMU(1, 0);
+	driveViaIMU(1.7, -90);
 	pros::delay(1000);
-	driveViaIMU(-.8, 0);
-	pros::delay(200);
-	turnViaIMU(90);
-	
-	// Judas
+
+	//Score red
+	driveViaIMU(-.3, -90);
+	pros::delay(800);
+	turnViaIMU(-55);
 	liftMax();
-	pros::delay(10);
-	judas();
+	pros::delay(800);
+	double time = pros::millis();
+	while(pros::millis() - time < 3000){
+		leftMotor.moveVelocity(500);
+		rightMotor.moveVelocity(500);
+		backMotor.moveVelocity(500);
+	}
+	liftScore();
+	pros::delay(300);
+	ungrab();
+
+	//Get off of platform
+	driveViaTime(1000, -90, -90);
+	liftMax();
 	pros::delay(600);
-	leftMotor.moveVelocity(0); // Don't kill the motors
-	rightMotor.moveVelocity(0);
-	backMotor.moveVelocity(0);
-	lift.setBrakeMode(okapi::AbstractMotor::brakeMode::coast);
-	lift.moveVelocity(0);
-	pros::delay(60000);
-}
+	driveViaIMU(-.5, -90);
+
+	// Line up with tall yellow and grab
+	turnViaIMU(90);
+	liftMin();
+	driveViaIMU(.6, 90);
+	grab();
 	
-/*
-FUTURE AUTON FOR AFTER 11/20
-	/////////////////////////////////////////////////
-	// Turn around, grab one yellow, and score it //
-	/////////////////////////////////////////////////
-
-	// Go to the goal
-
-	// Lower lift
-
-	// Approach, grip, and lift goal
-	
-
-	// Do a 180
-
-	// Lift goal approach the ramp
-
-	// Score the  goal
-	
-	////////////////////////////////////////////////////////
-	// Turn around, grab blue by the auton line //
-	////////////////////////////////////////////////////////
-	//Back up and turn
-	
-	// Approach, grip, then lift goal a litte
-
-	///////////////////////////////////////////////////////////////////
-	// Grab nearby color goal, drive to the other side, and score it //
-	///////////////////////////////////////////////////////////////////
-
-	// Turn towards the color goal
-
-	// Approach, grip, then lift the goal a litte
-
-	// Turn and approach the ramp
-
-	// Lower lift and score
-
-	/////////////////////////////////////////
-	// Grab the last yellow and score that //
-	/////////////////////////////////////////
-
-	// Back up then turn towards the final yellow
-
-	// Approach, grip, and lift the yellow
-
-	// Turn around and approach the ramp
-
-	// Lower the lift and score
-
-	////////////////////////
-	// judas on the bridge //
-	////////////////////////
-
+	// Go hang urself
+	liftMax();
+	pros::delay(800);
+	driveViaTime(3000, 50, 90);
+	liftScore();
 	judas();
 
-
+	// From now on we need to see if we need the special maneuver to move rings out
+	// of the way and this can only be acheived through testing. Sooo...
+	// TODO: Test and see if we can hang with rings jammed between the bot and the ramp base
 }
-*/
 
-// Needs work
 void compLeftAuton()
 {
 	driveViaIMU(.5, 0);
@@ -275,9 +179,7 @@ void setHook(){
 	}
 	// Lower button - Start lowering the hook
 	if(hookState){
-		hook.moveAbsolute(-6, 100); // TODO: Make this number more accurate
-									 // Perhaps the strength inefficiency
-									 // is a result of it not wanting to go further.
+		hook.moveAbsolute(7, 100);
 	}
 
 	// Update variables
@@ -287,6 +189,7 @@ void setHook(){
 // PROS-called functions
 void initialize() {
 	initializing = true;
+  
 	// Initialize stuff
 	pros::lcd::initialize();
 
@@ -304,7 +207,7 @@ void initialize() {
 	lift.tarePosition();
 
 	// Tare hook
-	// TODO: We need a sensor so that this thing can auto-zero without tearing itself apart
+	// TODO: Use a limit sensor for this
 	hook.tarePosition();
 	
 	// Everything holds
@@ -327,11 +230,12 @@ void initialize() {
 		// Arrow buttons
 		if(master.getDigital(okapi::ControllerDigital::left)) autonMode = '<';
 		if(master.getDigital(okapi::ControllerDigital::right)) autonMode = '>';
-		if(master.getDigital(okapi::ControllerDigital::up)) autonMode = '^';
+		if(master.getDigital(okapi::ControllerDigital::L1)) autonMode = '^';
 		if(master.getDigital(okapi::ControllerDigital::down)) autonMode = 'V';
 	}
-	master.clear();
-	initilizing = false;
+	pros::delay(1000);
+	initializing = false;
+  master.clear();
 }
 
 void competition_initialize()

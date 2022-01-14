@@ -177,8 +177,5 @@ void scoreGoal()
 // TODO: Pretty sure this is still UNTESTED / not ready
 void judas()
 {
-	liftMax();
-	driveViaTime(2000, 500, -90);
-	liftScore();
-	hook.moveAbsolute(1.5, 85);
+	hook.moveAbsolute(7, 100);
 }	
