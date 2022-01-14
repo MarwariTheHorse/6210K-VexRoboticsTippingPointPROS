@@ -26,7 +26,7 @@ char autonMode = 'N'; // Stands for none
 // Autons
 void skillsAuton()
 {
-	// Get the red goal
+  // Get the red goal
 	driveViaIMU(.1, 0);
 	grab();
 	driveViaIMU(-.4, 0);
@@ -78,7 +78,7 @@ void skillsAuton()
 	// of the way and this can only be acheived through testing. Sooo...
 	// TODO: Test and see if we can hang with rings jammed between the bot and the ramp base
 }
-	
+
 void compLeftAuton()
 {
 	driveViaIMU(.5, 0);
@@ -179,9 +179,7 @@ void setHook(){
 	}
 	// Lower button - Start lowering the hook
 	if(hookState){
-		hook.moveAbsolute(7, 100); // TODO: Make this number more accurate
-									 // Perhaps the strength inefficiency
-									 // is a result of it not wanting to go further.
+		hook.moveAbsolute(7, 100);
 	}
 
 	// Update variables
@@ -190,6 +188,8 @@ void setHook(){
 
 // PROS-called functions
 void initialize() {
+	initializing = true;
+  
 	// Initialize stuff
 	pros::lcd::initialize();
 
@@ -207,7 +207,7 @@ void initialize() {
 	lift.tarePosition();
 
 	// Tare hook
-	// TODO: We need a sensor so that this thing can auto-zero without tearing itself apart
+	// TODO: Use a limit sensor for this
 	hook.tarePosition();
 	
 	// Everything holds
@@ -220,7 +220,6 @@ void initialize() {
 	master.setText(0, 0, "Select a mode:");
 
 	// Get the choice
-	initializing = true;
 	while(autonMode == 'N'){
 		// Letter buttons
 		if(master.getDigital(okapi::ControllerDigital::A)) autonMode = 'A';
@@ -236,9 +235,7 @@ void initialize() {
 	}
 	pros::delay(1000);
 	initializing = false;
-
-	master.clear();
-
+  master.clear();
 }
 
 void competition_initialize()
@@ -258,11 +255,11 @@ void autonomous() {
 void opcontrol() {
 	while (true) {
 		if(!initializing){
-			setDTSpeeds(); // TODO: Add filters for this method
-			setLift(); // TODO: Fix the lift limits
 			setVibrate();
 			setGrip();
 			setHook(); // TODO: Tune the numbers for this one
+			setDTSpeeds(); // TODO: Add filters for this method
+			setLift(); // TODO: Fix the lift limits
 		}
 		pros::delay(5);
 	}
