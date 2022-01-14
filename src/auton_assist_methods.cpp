@@ -27,7 +27,7 @@ void driveViaIMU(double dist, double rotation)
 	if(d < dist){
 		while (d < dist){
 			speed = 500;
-			aSpeed = (rotation - kFilter.filter(imu.get())) * 30; // Was at 30
+			aSpeed = (rotation - kFilter.filter(imu.get())) * 15; // Was at 30
 			leftMotor.moveVelocity(speed - aSpeed);
 			rightMotor.moveVelocity(speed + aSpeed);
 			backMotor.moveVelocity(speed);
@@ -37,7 +37,7 @@ void driveViaIMU(double dist, double rotation)
 	}else{
 		while (d > dist){
 			speed = -500;
-			aSpeed = (rotation - kFilter.filter(imu.get())) * 30; // Was at 30
+			aSpeed = (rotation - kFilter.filter(imu.get())) * 15; // Was at 30
 			leftMotor.moveVelocity(speed - aSpeed);
 			rightMotor.moveVelocity(speed + aSpeed);
 			backMotor.moveVelocity(speed);
@@ -91,8 +91,6 @@ void driveViaGPS(double locx, double locy)
 	// auto distController = okapi::IterativeControllerFactory::posPID(.001, .0001, .0001);
 	// distController.setTarget(0);
 
-	std::stringstream ss;
-
 	// Until we reach our destination, set the speed
 	while(dist > .1){
 		// Update the distance
@@ -111,10 +109,6 @@ void driveViaGPS(double locx, double locy)
 		leftMotor.moveVelocity(speed - angularSpeed);
 		rightMotor.moveVelocity(speed + angularSpeed);
 		backMotor.moveVelocity(speed);
-		std::string str;
-		ss << targetRotation;
-		ss >> str;
-		master.setText(0, 0, str);
 
 		pros::delay(5); // Delay for the other tasks
 	}

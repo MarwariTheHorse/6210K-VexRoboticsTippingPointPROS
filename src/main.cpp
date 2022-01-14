@@ -235,7 +235,7 @@ void initialize() {
 	}
 	pros::delay(1000);
 	initializing = false;
-  master.clear();
+  	master.clear();
 }
 
 void competition_initialize()
