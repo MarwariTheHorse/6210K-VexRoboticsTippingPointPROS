@@ -13,37 +13,41 @@ int sgn(double d) // Mimimcs the mathematical sgn function
 void driveViaIMU(double dist, double rotation)
 {
 	dist *= 39.3701 / (2.75 * PI); // To in. then to rev
-	int aSpeed;
-	int speed;
-	okapi::EKFFilter kFilter;
+
+	// Configure controllers
+	auto turnController = okapi::IterativeControllerFactory::posPID(.003, .0004, .0001); // PID for angular speed int aSpeed; int speed; okapi::EKFFilter kFilter;
+	auto speedController = okapi::IterativeControllerFactory::posPID(60, 0, 0);
+
+	turnController.setTarget(rotation);
+	speedController.setTarget(dist);
+
+	// Configure filters
+	okapi::EKFFilter speedFilter;
+	okapi::EKFFilter turnFilter;
+
 	// reset all motor encoders to zero
-	// 10000 units is equal to 56" of travel
 	backMotor.tarePosition();
 	leftMotor.tarePosition();
 	rightMotor.tarePosition();
-	int d = 0;
 
-	// TODO: Add PID
-	if(d < dist){
-		while (d < dist){
-			speed = 500;
-			aSpeed = (rotation - kFilter.filter(imu.get())) * 15; // Was at 30
-			leftMotor.moveVelocity(speed - aSpeed);
-			rightMotor.moveVelocity(speed + aSpeed);
-			backMotor.moveVelocity(speed);
-			pros::delay(5);
-			d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
-		}
-	}else{
-		while (d > dist){
-			speed = -500;
-			aSpeed = (rotation - kFilter.filter(imu.get())) * 15; // Was at 30
-			leftMotor.moveVelocity(speed - aSpeed);
-			rightMotor.moveVelocity(speed + aSpeed);
-			backMotor.moveVelocity(speed);
-			pros::delay(5);
-			d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
-		}
+	double d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
+
+	while (std::fabs(dist - d) > .3){
+		d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
+		double speedInput = speedFilter.filter(d);
+		double speed = speedController.step(speedInput);
+		speed *= 600; // Scale from pct to wheel speed
+		std::cout << "Input: " << speedInput << std::endl;
+		std::cout << "Speed: " << speed << std::endl;
+
+		double a = imu.get();
+		double turnSpeedInput = turnFilter.filter(imu.get());
+		double turnSpeed = turnController.step(turnSpeedInput);
+
+		leftMotor.moveVelocity(speed - turnSpeed);
+		rightMotor.moveVelocity(speed + turnSpeed);
+		backMotor.moveVelocity(speed);
+		pros::delay(5);
 	}
 	leftMotor.moveVelocity(0);
 	rightMotor.moveVelocity(0);
@@ -123,22 +127,22 @@ void turnViaIMU(double rotation)
 {
 	// Initialize things
 	okapi::EKFFilter kFilter; // Kalman filter for IMU
-	auto turnController = okapi::IterativeControllerFactory::posPID(.003, .0004, .0001); // PID for angular speed
+	auto turnController = okapi::IterativeControllerFactory::posPID(.3, 0, 0); // PID for angular speed
 	turnController.setTarget(rotation); // Prepare for the upcoming maneuver
 
-	backMotor.moveVelocity(0); // There is not reason for the back motor to move when turning
-	while(std::abs(rotation - kFilter.filter(imu.get())) > 3){ // We accept make range of 6 deg of error
+	backMotor.moveVelocity(0);
+	while(std::abs(rotation - kFilter.filter(imu.get())) > 1){ // We accept make range of 2 deg of error
 		// Controller should give values based off of the previously filtered angle
 		double controllerInput = kFilter.getOutput();
 		// The resulting controller value will be used for turning speed
 		double output = turnController.step(controllerInput);
+		output *= 600;
 		leftMotor.controllerSet(-output);
 		rightMotor.controllerSet(output);
 		pros::delay(5);
 	}
 	leftMotor.moveVelocity(0);
 	rightMotor.moveVelocity(0);
-
 }
 
 void grab()

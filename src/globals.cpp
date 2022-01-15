@@ -13,6 +13,7 @@
 #define LIFT 19
 #define HOOK 6
 #define GRIP 'H'
+#define HOOK_STOP 'G'
 
 #define VISION 6
 #define GYRO 7
@@ -42,6 +43,9 @@ okapi::Controller master(okapi::ControllerId::master);
 pros::Vision vision (VISION);
 okapi::IMU imu(GYRO);
 pros::GPS gps(GPS_PORT, GPS_OFFSET_X, GPS_OFFSET_Y);
+
+// ADI Stop sensor
+pros::ADIDigitalIn hookStop(HOOK_STOP);
 
 // Pneumatics
 pros::ADIDigitalOut grip(GRIP);

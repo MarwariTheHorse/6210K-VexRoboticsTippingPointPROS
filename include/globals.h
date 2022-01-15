@@ -22,6 +22,7 @@ extern okapi::Controller master;
 extern pros::Vision vision;
 extern okapi::IMU imu;
 extern pros::GPS gps;
+extern pros::ADIDigitalIn hookStop;
 
 // Pneumatics
 extern pros::ADIDigitalOut grip;

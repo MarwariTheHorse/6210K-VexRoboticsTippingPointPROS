@@ -13,7 +13,7 @@ int liftState;
 bool gripState;
 bool hookState;
 double gripHoldPosition;
-bool initializing;
+bool initialized;
 
 // Anti-doubles
 bool prevUp;
@@ -103,8 +103,8 @@ void compRightAuton()
 // For screwing around
 void experimental()
 {
-	gps.initialize_full(-1.2192, -1.2192, 90, 1, -1);
-	driveViaGPS(1.2192, -1.2192);
+	driveViaIMU(2, 0);
+	turnViaIMU(90);
 }
 
 // opcontrol
@@ -164,7 +164,6 @@ void setVibrate(){
 	}
 }
 
-// TODO: Needs testing
 void setHook(){
 	// Store controller state
 	bool buttonUp = master.getDigital(okapi::ControllerDigital::up);
@@ -173,13 +172,11 @@ void setHook(){
 	if(buttonUp && !prevUp){
 		hookState = !hookState;
 	}
-	// Upper button - Lift the hook
 	if(!hookState){
 		hook.moveAbsolute(0, 100);
 	}
-	// Lower button - Start lowering the hook
 	if(hookState){
-		hook.moveAbsolute(7, 100);
+		hook.moveAbsolute(6.5, 100);
 	}
 
 	// Update variables
@@ -188,54 +185,6 @@ void setHook(){
 
 // PROS-called functions
 void initialize() {
-	initializing = true;
-  
-	// Initialize stuff
-	pros::lcd::initialize();
-
-	// Calibrate IMU
-	master.setText(0, 0, "Calibrating...");
-	imu.calibrate();
-	while (imu.isCalibrating()){pros::delay(10);}
-	master.clear();
-
-	// Tare lift
-	lift.moveVelocity(-100);
-	while(std::abs(lift.getTorque()) < TORQUE_THRESHOLD){pros::delay(10);}
-	lift.moveVelocity(0);
-	pros::delay(100);
-	lift.tarePosition();
-
-	// Tare hook
-	// TODO: Use a limit sensor for this
-	hook.tarePosition();
-	
-	// Everything holds
-	leftMotor.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
-	rightMotor.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
-	backMotor.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
-	lift.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
-
-	// Render the prompt
-	master.setText(0, 0, "Select a mode:");
-
-	// Get the choice
-	while(autonMode == 'N'){
-		// Letter buttons
-		if(master.getDigital(okapi::ControllerDigital::A)) autonMode = 'A';
-		if(master.getDigital(okapi::ControllerDigital::B)) break;
-		if(master.getDigital(okapi::ControllerDigital::X)) autonMode = 'X';
-		if(master.getDigital(okapi::ControllerDigital::Y)) autonMode = 'Y';
-
-		// Arrow buttons
-		if(master.getDigital(okapi::ControllerDigital::left)) autonMode = '<';
-		if(master.getDigital(okapi::ControllerDigital::right)) autonMode = '>';
-		if(master.getDigital(okapi::ControllerDigital::L1)) autonMode = '^';
-		if(master.getDigital(okapi::ControllerDigital::down)) autonMode = 'V';
-	}
-	pros::delay(1000);
-	initializing = false;
-  	master.clear();
 }
 
 void competition_initialize()
@@ -253,14 +202,65 @@ void autonomous() {
 }
 
 void opcontrol() {
-	while (true) {
-		if(!initializing){
-			setVibrate();
-			setGrip();
-			setHook(); // TODO: Tune the numbers for this one
-			setDTSpeeds(); // TODO: Add filters for this method
-			setLift(); // TODO: Fix the lift limits
+	if(!initialized){
+		// Initialize stuff
+		pros::lcd::initialize();
+
+		// Calibrate IMU
+		master.setText(0, 0, "Calibrating...");
+		imu.calibrate();
+		while (imu.isCalibrating()){pros::delay(10);}
+		master.clear();
+
+		// Tare hook
+		hook.moveVelocity(-100);
+		while(!hookStop.get_value()){pros::delay(10);}
+		hook.moveVelocity(0);
+		hook.tarePosition();
+		
+		// Everything holds
+		leftMotor.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
+		rightMotor.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
+		backMotor.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
+		lift.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
+
+		// Tare lift
+		lift.moveVelocity(-100);
+		while(std::abs(lift.getTorque()) < TORQUE_THRESHOLD){pros::delay(10);}
+		lift.moveVelocity(0);
+		pros::delay(100);
+		lift.tarePosition();
+
+		// Render the prompt
+		master.setText(0, 0, "Select a mode:");
+
+		// Get the choice
+		while(autonMode == 'N'){
+			// Letter buttons
+			if(master.getDigital(okapi::ControllerDigital::A)) autonMode = 'A';
+			if(master.getDigital(okapi::ControllerDigital::B)) break;
+			if(master.getDigital(okapi::ControllerDigital::X)) autonMode = 'X';
+			if(master.getDigital(okapi::ControllerDigital::Y)) autonMode = 'Y';
+
+			// Arrow buttons
+			if(master.getDigital(okapi::ControllerDigital::left)) autonMode = '<';
+			if(master.getDigital(okapi::ControllerDigital::right)) autonMode = '>';
+			if(master.getDigital(okapi::ControllerDigital::up)) autonMode = '^';
+			if(master.getDigital(okapi::ControllerDigital::down)) autonMode = 'V';
 		}
-		pros::delay(5);
+		pros::delay(1000);
+		master.clear();
+	}
+	initialized = true;
+
+	pros::delay(1000);
+
+	while (true) {
+		setVibrate();
+		setGrip();
+		setHook();
+		setDTSpeeds(); // TODO: Add filters for this method
+		setLift(); // TODO: Fix the lift limits
+		pros::delay(10);
 	}
 }
