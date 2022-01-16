@@ -5,8 +5,6 @@
 
 // Constants
 const bool TORQUE_THRESHOLD = 1.99;
-const double LIFT_MAX_POSITION = 2.1;
-const double LIFT_MIN_POSITION = .09;
 
 // State variables
 int liftState;
@@ -26,7 +24,7 @@ char autonMode = 'N'; // Stands for none
 // Autons
 void skillsAuton()
 {
-  // Get the red goal
+    // Get the red goal
 	driveViaIMU(.1, 0);
 	grab();
 	driveViaIMU(-.4, 0);
@@ -110,8 +108,8 @@ void experimental()
 // opcontrol
 void setLift()
 {
-	if(master.getDigital(okapi::ControllerDigital::R1) && lift.getPosition() < LIFT_MAX_POSITION) lift.moveVelocity(600);
-	else if(master.getDigital(okapi::ControllerDigital::R2) && lift.getPosition() > LIFT_MIN_POSITION) lift.moveVelocity(-600);
+	if(master.getDigital(okapi::ControllerDigital::R1)) lift.moveVelocity(600);
+	else if(master.getDigital(okapi::ControllerDigital::R2)) lift.moveVelocity(-600);
 	else lift.moveVelocity(0);
 }
 
@@ -223,13 +221,6 @@ void opcontrol() {
 		rightMotor.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
 		backMotor.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
 		lift.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
-
-		// Tare lift
-		lift.moveVelocity(-100);
-		while(std::abs(lift.getTorque()) < TORQUE_THRESHOLD){pros::delay(10);}
-		lift.moveVelocity(0);
-		pros::delay(100);
-		lift.tarePosition();
 
 		// Render the prompt
 		master.setText(0, 0, "Select a mode:");
