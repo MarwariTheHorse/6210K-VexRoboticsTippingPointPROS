@@ -15,7 +15,7 @@ void driveViaIMU(double dist, double rotation)
 	dist *= 39.3701 / (2.75 * PI); // To in. then to rev
 
 	// Configure controllers
-	auto turnController = okapi::IterativeControllerFactory::posPID(.003, .0004, .0001); // PID for angular speed int aSpeed; int speed; okapi::EKFFilter kFilter;
+	auto turnController = okapi::IterativeControllerFactory::posPID(.25, 0, 0); // PID for angular speed int aSpeed; int speed; okapi::EKFFilter kFilter;
 	auto speedController = okapi::IterativeControllerFactory::posPID(1, 0, 0);
 
 	turnController.setTarget(rotation);
@@ -37,12 +37,11 @@ void driveViaIMU(double dist, double rotation)
 		double speedInput = speedFilter.filter(d);
 		double speed = speedController.step(speedInput);
 		speed *= 600; // Scale from pct to wheel speed
-		std::cout << "Input: " << speedInput << std::endl;
-		std::cout << "Speed: " << speed << std::endl;
 
 		double a = imu.get();
 		double turnSpeedInput = turnFilter.filter(imu.get());
 		double turnSpeed = turnController.step(turnSpeedInput);
+		turnSpeed *= 600;
 
 		leftMotor.moveVelocity(speed - turnSpeed);
 		rightMotor.moveVelocity(speed + turnSpeed);
@@ -137,9 +136,9 @@ void driveViaVision(bool isRamp, double vel, double rotation, double dist){
 	}
 }
 
-void turnViaIMU(double rotation)
+void turnViaIMU(double heading)
 {
-	auto turnController = okapi::IterativeControllerFactory::posPID(.5, 0, .075); // PID for angular speed int aSpeed; int speed; okapi::EKFFilter kFilter;
+	auto turnController = okapi::IterativeControllerFactory::posPID(.5, .1, .075); // PID for angular speed int aSpeed; int speed; okapi::EKFFilter kFilter;
 	turnController.setTarget(heading);
 	okapi::EKFFilter turnFilter;
 

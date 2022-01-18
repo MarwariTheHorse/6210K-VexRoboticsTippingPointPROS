@@ -25,22 +25,18 @@ char autonMode = 'N'; // Stands for none
 void skillsAuton()
 {
     // Get the red goal
-	driveViaIMU(.1, 0);
+	driveViaIMU(.3, 0);
 	grab();
 	driveViaIMU(-.4, 0);
 	liftSmall();
 
 	// Line up with the yellow goal and push
+	turnViaIMU(90);
+	driveViaIMU(-2.1, 90);
+	driveViaIMU(.3, 90);
 	turnViaIMU(-45);
-	driveViaIMU(.525, -45); //.8
-	turnViaIMU(-90);
-	driveViaIMU(1.7, -90);
-	pros::delay(1000);
 
 	//Score red
-	driveViaIMU(-.3, -90);
-	pros::delay(800);
-	turnViaIMU(-55);
 	liftMax();
 	pros::delay(800);
 	double time = pros::millis();
@@ -62,8 +58,10 @@ void skillsAuton()
 	// Line up with tall yellow and grab
 	turnViaIMU(90);
 	liftMin();
-	driveViaIMU(.6, 90);
+	pros::delay(1000);
+	driveViaIMU(1, 90);
 	grab();
+	pros::delay(5000); //TESTING PURPOSES ONLY
 	
 	// Go hang urself
 	liftMax();
