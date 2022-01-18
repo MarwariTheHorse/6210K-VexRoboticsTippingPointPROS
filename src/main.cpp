@@ -101,7 +101,7 @@ void compRightAuton()
 // For screwing around
 void experimental()
 {
-	driveViaIMU(2, 0);
+	driveViaIMU(3, 0);
 	turnViaIMU(90);
 }
 

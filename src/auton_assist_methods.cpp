@@ -16,7 +16,7 @@ void driveViaIMU(double dist, double rotation)
 
 	// Configure controllers
 	auto turnController = okapi::IterativeControllerFactory::posPID(.003, .0004, .0001); // PID for angular speed int aSpeed; int speed; okapi::EKFFilter kFilter;
-	auto speedController = okapi::IterativeControllerFactory::posPID(60, 0, 0);
+	auto speedController = okapi::IterativeControllerFactory::posPID(1, 0, 0);
 
 	turnController.setTarget(rotation);
 	speedController.setTarget(dist);
@@ -123,26 +123,49 @@ void driveViaGPS(double locx, double locy)
 	backMotor.moveVelocity(0);
 }
 
-void turnViaIMU(double rotation)
+void turnViaIMU(double heading)
 {
-	// Initialize things
-	okapi::EKFFilter kFilter; // Kalman filter for IMU
-	auto turnController = okapi::IterativeControllerFactory::posPID(.3, 0, 0); // PID for angular speed
-	turnController.setTarget(rotation); // Prepare for the upcoming maneuver
+	auto turnController = okapi::IterativeControllerFactory::posPID(.5, 0, .075); // PID for angular speed int aSpeed; int speed; okapi::EKFFilter kFilter;
+	turnController.setTarget(heading);
+	okapi::EKFFilter turnFilter;
 
-	backMotor.moveVelocity(0);
-	while(std::abs(rotation - kFilter.filter(imu.get())) > 1){ // We accept make range of 2 deg of error
-		// Controller should give values based off of the previously filtered angle
-		double controllerInput = kFilter.getOutput();
-		// The resulting controller value will be used for turning speed
-		double output = turnController.step(controllerInput);
-		output *= 600;
-		leftMotor.controllerSet(-output);
-		rightMotor.controllerSet(output);
-		pros::delay(5);
+	while (std::fabs(heading - turnFilter.filter(imu.get())) > .5){
+		double aSpeed = turnController.step(turnFilter.getOutput());
+		leftMotor.moveVelocity(-600 * aSpeed);
+		rightMotor.moveVelocity(600 * aSpeed);
 	}
 	leftMotor.moveVelocity(0);
 	rightMotor.moveVelocity(0);
+
+	/*
+	double error = heading - imu.get();
+	int rotation;
+	backMotor.moveVelocity(0);
+	while(std::fabs(error) > 2) // keeps turning until within 10 degrees of objective
+	{
+		if (std::fabs(error) < 40){
+		// if within 40 degrees of objective, the motors start slowing
+		// and the speed never drops below 20
+		rotation = (12 * error);
+		} else {
+		// otherwise maintain fast turning speed of 90
+		rotation = 540 * sgn(error);
+		}
+
+		rightMotor.moveVelocity(rotation);
+		leftMotor.moveVelocity(-rotation);
+
+		pros::delay(5);
+		error = heading - imu.get();
+	}
+	// these next lines attempt to slow down the robot's rotational momentum
+	// might be better just to put the motors into braking mode
+	rotation = -15 * sgn(error);
+	leftMotor.moveVelocity(rotation);
+	rightMotor.moveVelocity(-rotation);
+	pros::delay(50);
+	leftMotor.moveVelocity(0);
+	rightMotor.moveVelocity(0);*/
 }
 
 void grab()
