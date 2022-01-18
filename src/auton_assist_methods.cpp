@@ -123,7 +123,21 @@ void driveViaGPS(double locx, double locy)
 	backMotor.moveVelocity(0);
 }
 
-void turnViaIMU(double heading)
+void driveViaVision(bool isRamp, double vel, double rotation, double dist){
+
+	//Filters
+	okapi::EKFFilter kFilterRot;
+	okapi::EKFFilter kFilterDist;
+
+	// Variables
+	if(isRamp == true){
+		
+	} else{
+
+	}
+}
+
+void turnViaIMU(double rotation)
 {
 	auto turnController = okapi::IterativeControllerFactory::posPID(.5, 0, .075); // PID for angular speed int aSpeed; int speed; okapi::EKFFilter kFilter;
 	turnController.setTarget(heading);
