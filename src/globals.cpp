@@ -15,7 +15,8 @@
 #define GRIP 'H'
 #define HOOK_STOP 'G'
 
-#define VISION 6
+#define GOAL_VISION 6
+#define RAMP_VISON 5
 #define GYRO 7
 
 #define GPS_PORT 1
@@ -40,7 +41,8 @@ okapi::MotorGroup backMotor({lBackMotor, rBackMotor});
 okapi::Controller master(okapi::ControllerId::master);
 
 // Sensors
-pros::Vision vision (VISION);
+pros::Vision goalVision (GOAL_VISION);
+pros::Vision rampVision(RAMP_VISON);
 okapi::IMU imu(GYRO);
 pros::GPS gps(GPS_PORT, GPS_OFFSET_X, GPS_OFFSET_Y);
 

@@ -123,6 +123,20 @@ void driveViaGPS(double locx, double locy)
 	backMotor.moveVelocity(0);
 }
 
+void driveViaVision(bool isRamp, double vel, double rotation, double dist){
+
+	//Filters
+	okapi::EKFFilter kFilterRot;
+	okapi::EKFFilter kFilterDist;
+
+	// Variables
+	if(isRamp == true){
+		
+	} else{
+
+	}
+}
+
 void turnViaIMU(double rotation)
 {
 	// Initialize things
