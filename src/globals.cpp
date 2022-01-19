@@ -17,6 +17,8 @@
 
 #define GOAL_VISION 6
 #define RAMP_VISON 5
+#define NUM_OBJECTS 4
+
 #define GYRO 7
 
 #define GPS_PORT 1
