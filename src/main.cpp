@@ -30,21 +30,16 @@ void skillsAuton()
 	driveViaIMU(-.4, 0);
 	liftSmall();
 
-	// Line up with the yellow goal and push
+	// Line up with the yellow goal and push in corner
 	turnViaIMU(90);
 	driveViaIMU(-2.1, 90);
-	driveViaIMU(.3, 90);
+	driveViaIMU(.9, 90);
 	turnViaIMU(-45);
 
 	//Score red
 	liftMax();
 	pros::delay(800);
-	double time = pros::millis();
-	while(pros::millis() - time < 3000){
-		leftMotor.moveVelocity(500);
-		rightMotor.moveVelocity(500);
-		backMotor.moveVelocity(500);
-	}
+	driveViaTime(3000, 400, -45);
 	liftScore();
 	pros::delay(300);
 	ungrab();
@@ -59,7 +54,7 @@ void skillsAuton()
 	turnViaIMU(90);
 	liftMin();
 	pros::delay(1000);
-	driveViaIMU(1, 90);
+	driveViaIMU(1.5, 90);
 	grab();
 	pros::delay(5000); //TESTING PURPOSES ONLY
 	
