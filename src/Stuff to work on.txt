@@ -1,5 +1,5 @@
 1. Tune the driveViaIMU function (I changed 30 to 15 but haven't tested it yet, also, add PID)
 1.5. Tune the turn function a little
 2. Add cameras and get some good camera methods working from last year
-3. Finish our auton to get into state
-4. Make the auton that will get us into worlds
+3. Finish our auton to get into state (380+)
+4. Make the auton that will get us into worlds (420+)
