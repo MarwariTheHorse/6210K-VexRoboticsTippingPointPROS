@@ -99,8 +99,14 @@ void compRightAuton()
 // For screwing around
 void experimental()
 {
-	driveViaIMU(3, 0);
-	turnViaIMU(90);
+	pros::delay(6000);
+	driveViaIMU(.9, 0);
+	turnViaIMU(-45);
+	driveViaIMU(1.3, -45);
+	grab();
+	pros::delay(200);
+	driveViaIMU(-1.5, -45);
+
 }
 
 // opcontrol
