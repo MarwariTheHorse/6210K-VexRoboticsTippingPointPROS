@@ -53,7 +53,7 @@ void driveViaTime(double ms, double vel, double rotation){
 	double startTime = pros::millis();
 	okapi::EKFFilter kFilter;
 	while (pros::millis() - startTime < ms){
-		int aSpeed = (rotation - kFilter.filter(imu.get())) * 30;
+		int aSpeed = (rotation - kFilter.filter(imu.get())) * 20;
 		leftMotor.moveVelocity(vel - aSpeed);
 		rightMotor.moveVelocity(vel + aSpeed);
 		backMotor.moveVelocity(vel);
@@ -118,20 +118,99 @@ void driveViaGPS(double locx, double locy)
 	backMotor.moveVelocity(0);
 }
 
-void driveViaVision(bool isRamp, double vel, double rotation, double dist){
+/*void driveViaVision(bool isRamp, double rotation, double dist){
+	dist *= 39.3701 / (2.75 * PI); // To in. then to rev
+	vision_object_s_t object_arr[NUM_OBJECTS];
 
 	//Filters
 	okapi::EKFFilter kFilterRot;
 	okapi::EKFFilter kFilterDist;
 
+	// Configure controllers
+	auto turnController = okapi::IterativeControllerFactory::posPID(.25, 0, 0); // PID for angular speed int aSpeed; int speed; okapi::EKFFilter kFilter;
+	auto speedController = okapi::IterativeControllerFactory::posPID(1, 0, 0);
+
+	turnController.setTarget(rotation);
+	speedController.setTarget(dist);
+
+	// reset all motor encoders to zero
+	backMotor.tarePosition();
+	leftMotor.tarePosition();
+	rightMotor.tarePosition();
+
+	double d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
 	// Variables
 	if(isRamp == true){
-		
-	} else{
+		while (std::fabs(dist - d) > .3){
+			d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
+			double speedInput = speedFilter.filter(d);
+			double speed = speedController.step(speedInput);
+			speed *= 600; // Scale from pct to wheel speed
 
+			double a = imu.get();
+			double turnSpeedInput = turnFilter.filter(imu.get());
+			double turnSpeed = turnController.step(turnSpeedInput);
+			turnSpeed *= 600;
+
+			rampVision.read_by_size(0, NUM_OBJECTS, object_arr);
+			if(object_arr[0].width > 100){
+				double target = (object_arr[0].x_middle_cord0*.6;
+			}else if(object_arr[0].width >= object_arr[1].width - 10 && object_arr[0].width <= object_arr[1].width + 10){
+				double target = ((object_arr[0].x_middle_cord + object_arr[1].x_middle_cord)/2)*.6;
+			} else{
+				double target = 0;
+			}
+			if(target <= 0){
+				leftMotor.moveVelocity(speed + (turnSpeed + target));
+				rightMotor.moveVelocity(speed - (turnSpeed + target));
+				backMotor.moveVelocity(speed);
+				}
+			} else{
+				leftMotor.moveVelocity(speed - (turnSpeed + target));
+				rightMotor.moveVelocity(speed + (turnSpeed + target));
+				backMotor.moveVelocity(speed);
+				pros::delay(5);
+			}
+		}
+		leftMotor.moveVelocity(0);
+		rightMotor.moveVelocity(0);
+		backMotor.moveVelocity(0);
+	} else{
+		while (std::fabs(dist - d) > .3){
+			d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
+			double speedInput = speedFilter.filter(d);
+			double speed = speedController.step(speedInput);
+			speed *= 600; // Scale from pct to wheel speed
+
+			double a = imu.get();
+			double turnSpeedInput = turnFilter.filter(imu.get());
+			double turnSpeed = turnController.step(turnSpeedInput);
+			turnSpeed *= 600;
+
+			goalVision.read_by_size(0, NUM_OBJECTS, object_arr);
+			if(object_arr[0].width > 50){
+				double target = (object_arr[0].x_middle_cord)*.6;
+			} else{
+				double target = 0;
+			}
+			if(target <= 0){
+				leftMotor.moveVelocity(speed + (turnSpeed + target));
+				rightMotor.moveVelocity(speed - (turnSpeed + target));
+				backMotor.moveVelocity(speed);
+				}
+			} else{
+				leftMotor.moveVelocity(speed - (turnSpeed + target));
+				rightMotor.moveVelocity(speed + (turnSpeed + target));
+				backMotor.moveVelocity(speed);
+				pros::delay(5);
+			}
+		}
+		leftMotor.moveVelocity(0);
+		rightMotor.moveVelocity(0);
+		backMotor.moveVelocity(0);
 	}
 }
-
+*/
 void turnViaIMU(double heading)
 {
 	auto turnController = okapi::IterativeControllerFactory::posPID(.5, .1, .075); // PID for angular speed int aSpeed; int speed; okapi::EKFFilter kFilter;
@@ -190,7 +269,7 @@ void ungrab() // NOTE: This has no wait, unlike the function above
 
 void liftMin() {lift.moveAbsolute(0, 90);}
 void liftSmall() {lift.moveAbsolute(.4, 90);} // 0, .5, 1.7
-void liftMax() {lift.moveAbsolute(1.75, 90);}
+void liftMax() {lift.moveAbsolute(2, 90);}
 void liftScore() {lift.moveAbsolute(1, 90);}
 void liftHang() {lift.moveAbsolute(1, 90);} // theoretically overshoots by .2
 

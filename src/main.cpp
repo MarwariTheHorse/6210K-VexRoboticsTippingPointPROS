@@ -30,21 +30,23 @@ void skillsAuton()
 	driveViaIMU(-.4, 0);
 	liftSmall();
 
-	// Line up with the yellow goal and push
+	// Line up with the yellow goal and push in corner
 	turnViaIMU(90);
 	driveViaIMU(-2.1, 90);
-	driveViaIMU(.3, 90);
+	driveViaIMU(.9, 90);
 	turnViaIMU(-45);
 
 	//Score red
 	liftMax();
 	pros::delay(800);
+	// driveViaTime correction fails when goal is high
 	double time = pros::millis();
 	while(pros::millis() - time < 3000){
-		leftMotor.moveVelocity(500);
 		rightMotor.moveVelocity(500);
+		leftMotor.moveVelocity(500);
 		backMotor.moveVelocity(500);
 	}
+	
 	liftScore();
 	pros::delay(300);
 	ungrab();
@@ -59,14 +61,16 @@ void skillsAuton()
 	turnViaIMU(90);
 	liftMin();
 	pros::delay(1000);
-	driveViaIMU(1, 90);
+	// Use base of other ramp to get the goal in the grip
+	driveViaTime(5000, 300, 90);
 	grab();
-	pros::delay(5000); //TESTING PURPOSES ONLY
-	
+	liftSmall();
+	driveViaIMU(-.5, 90);
+
 	// Go hang urself
 	liftMax();
 	pros::delay(800);
-	driveViaTime(3000, 50, 90);
+	driveViaTime(3000, 300, 90);
 	liftScore();
 	judas();
 
