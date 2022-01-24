@@ -61,6 +61,7 @@ void skillsAuton()
 	turnViaIMU(90);
 	liftMin();
 	pros::delay(1000);
+
 	// Use base of other ramp to get the goal in the grip
 	driveViaTime(5000, 300, 90);
 	grab();
@@ -73,10 +74,6 @@ void skillsAuton()
 	driveViaTime(3000, 300, 90);
 	liftScore();
 	judas();
-
-	// From now on we need to see if we need the special maneuver to move rings out
-	// of the way and this can only be acheived through testing. Sooo...
-	// TODO: Test and see if we can hang with rings jammed between the bot and the ramp base
 }
 
 void compLeftAuton()
@@ -215,6 +212,8 @@ void opcontrol() {
 	if(!initialized){
 		// Initialize stuff
 		pros::lcd::initialize();
+		rampVision.signature_from_utility(1, 1, 1, 1, 1, 1, 1, 1, 1); // Red ramp
+		goalVision.signature_from_utility(2, 1, 1, 1, 1, 1, 1, 1, 1); // Blue ramp
 
 		// Calibrate IMU
 		master.setText(0, 0, "Calibrating...");
@@ -262,8 +261,8 @@ void opcontrol() {
 		setVibrate();
 		setGrip();
 		setHook();
-		setDTSpeeds(); // TODO: Add filters for this method
-		setLift(); // TODO: Fix the lift limits
+		setDTSpeeds();
+		setLift();
 		pros::delay(10);
 	}
 }

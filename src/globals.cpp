@@ -17,13 +17,15 @@
 
 #define GOAL_VISION 6
 #define RAMP_VISON 5
-#define NUM_OBJECTS 4
 
 #define GYRO 7
 
 #define GPS_PORT 1
 #define GPS_OFFSET_X 1
 #define GPS_OFFSET_Y -1
+
+#define RED true
+#define BLUE false
 
 okapi::Motor fLeftMotor(WHEEL_LEFT_F, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations);
 okapi::Motor rLeftMotor(WHEEL_LEFT_R, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations);
@@ -43,8 +45,8 @@ okapi::MotorGroup backMotor({lBackMotor, rBackMotor});
 okapi::Controller master(okapi::ControllerId::master);
 
 // Sensors
-pros::Vision goalVision (GOAL_VISION);
-pros::Vision rampVision(RAMP_VISON);
+pros::Vision goalVision(GOAL_VISION, pros::E_VISION_ZERO_CENTER);
+pros::Vision rampVision(RAMP_VISON, pros::E_VISION_ZERO_CENTER);
 okapi::IMU imu(GYRO);
 pros::GPS gps(GPS_PORT, GPS_OFFSET_X, GPS_OFFSET_Y);
 
