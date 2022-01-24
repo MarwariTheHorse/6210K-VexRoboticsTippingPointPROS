@@ -99,13 +99,17 @@ void compRightAuton()
 // For screwing around
 void experimental()
 {
-	pros::delay(6000);
-	driveViaIMU(.9, 0);
-	turnViaIMU(-45);
-	driveViaIMU(1.3, -45);
-	grab();
-	pros::delay(200);
-	driveViaIMU(-1.5, -45);
+	// Auton with f-gladiators
+	// pros::delay(6000);
+	// driveViaIMU(.9, 0);
+	// turnViaIMU(-45);
+	// driveViaIMU(1.3, -45);
+	// grab();
+	// pros::delay(200);
+	// driveViaIMU(-1.5, -45);
+
+	// Testing code
+	driveViaIMU(-1, 0);
 
 }
 

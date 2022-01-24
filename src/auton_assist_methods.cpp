@@ -14,17 +14,6 @@ void driveViaIMU(double dist, double rotation)
 {
 	dist *= 39.3701 / (2.75 * PI); // To in. then to rev
 
-	// Configure controllers
-	auto turnController = okapi::IterativeControllerFactory::posPID(.25, 0, 0); // PID for angular speed int aSpeed; int speed; okapi::EKFFilter kFilter;
-	auto speedController = okapi::IterativeControllerFactory::posPID(1, 0, 0);
-
-	turnController.setTarget(rotation);
-	speedController.setTarget(dist);
-
-	// Configure filters
-	okapi::EKFFilter speedFilter;
-	okapi::EKFFilter turnFilter;
-
 	// reset all motor encoders to zero
 	backMotor.tarePosition();
 	leftMotor.tarePosition();
@@ -32,21 +21,28 @@ void driveViaIMU(double dist, double rotation)
 
 	double d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
 
-	while (std::fabs(dist - d) > .3){
-		d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
-		double speedInput = speedFilter.filter(d);
-		double speed = speedController.step(speedInput);
-		speed *= 600; // Scale from pct to wheel speed
+	if(sgn(dist) > 0){
+		while (std::fabs(dist - d) > .3){
+			// Calculate base wheel speed
+			d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
+			double anglePCT = (imu.get() * .5) / 100;
 
-		double a = imu.get();
-		double turnSpeedInput = turnFilter.filter(imu.get());
-		double turnSpeed = turnController.step(turnSpeedInput);
-		turnSpeed *= 600;
+			leftMotor.moveVelocity(600 * (1 - anglePCT));
+			rightMotor.moveVelocity(600 * (1 + anglePCT));
+			backMotor.moveVelocity(600);
+			pros::delay(5);
+		}
+	}else{
+		while (std::fabs(dist - d) > .3){
+			// Calculate base wheel speed
+			d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
+			double anglePCT = (imu.get() * .5) / 100;
 
-		leftMotor.moveVelocity(speed - turnSpeed);
-		rightMotor.moveVelocity(speed + turnSpeed);
-		backMotor.moveVelocity(speed);
-		pros::delay(5);
+			leftMotor.moveVelocity(-600 * (1 + anglePCT));
+			rightMotor.moveVelocity(-600 * (1 - anglePCT));
+			backMotor.moveVelocity(-600);
+			pros::delay(5);
+		}
 	}
 	leftMotor.moveVelocity(0);
 	rightMotor.moveVelocity(0);
