@@ -13,5 +13,4 @@ extern void liftScore();
 extern void liftHang();
 extern void scoreGoal();
 extern void judas();
-extern void updateFilters();
-extern double getFilteredGPS();
+extern void driveViaSig(double dist, int sig);

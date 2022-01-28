@@ -21,6 +21,10 @@ double lastVibrate = 0;
 
 char autonMode = 'N'; // Stands for none
 
+pros::vision_signature sigGoalRed = goalVision.signature_from_utility(1, 5607, 8193, 6900, -793, -297, -545, 3.7, 0);
+pros::vision_signature sigGoalBlue = goalVision.signature_from_utility(2, -2909, -2315, -2612, 8851, 10215, 9533, 10.5, 0);
+pros::vision_signature sigGoalYellow = goalVision.signature_from_utility(3, 431, 745, 588, -3343, -3041, -3192, 8.2, 0);
+
 // Autons
 void skillsAuton()
 {
@@ -109,8 +113,7 @@ void experimental()
 	// pros::delay(200);
 	// driveViaIMU(-1.5, -45);
 
-	// Testing code
-	driveViaIMU(-1, 0);
+	driveViaSig(2, 1);
 
 }
 
@@ -212,8 +215,10 @@ void opcontrol() {
 	if(!initialized){
 		// Initialize stuff
 		pros::lcd::initialize();
-		rampVision.signature_from_utility(1, 1, 1, 1, 1, 1, 1, 1, 1); // Red ramp
-		goalVision.signature_from_utility(2, 1, 1, 1, 1, 1, 1, 1, 1); // Blue ramp
+
+		// Configure the goal vision sensor
+		goalVision.set_exposure(33);
+		goalVision.set_led(65280);
 
 		// Calibrate IMU
 		master.setText(0, 0, "Calibrating...");

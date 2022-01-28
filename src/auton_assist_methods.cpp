@@ -58,15 +58,15 @@ void driveToRamp(double time, bool isRedRamp){
 		if(isRedRamp){
 			// Red
 			stuff[0] = rampVision.get_by_sig(0, 1); // First index
-			stuff[1] = rampVision.get_by_sig(1, 1) // Second index
+			stuff[1] = rampVision.get_by_sig(1, 1); // Second index
 		}else{
 			// Blue
 			stuff[0] = rampVision.get_by_sig(0, 2); // First index
-			stuff[1] = rampVision.get_by_sig(1, 2) // Second index
+			stuff[1] = rampVision.get_by_sig(1, 2); // Second index
 		}
 
 		// Get the location between the colors
-		double rampCenter = (stuff[0] + stuff[1]) / 2;
+		double rampCenter = (stuff[0].x_middle_coord + stuff[1].x_middle_coord) / 2;
 
 		// Set speed and aSpeed
 		double speed = 600;
@@ -90,12 +90,12 @@ void driveViaSig(double dist, int sig){
 	leftMotor.tarePosition();
 	rightMotor.tarePosition();
 
-	double d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
+	double d = 0;
 
 	while (std::fabs(dist - d) > .3){
 		// Calculate base wheel speed
 		d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
-		double anglePCT = (goalVision.get_by_sig(0, sig).x_middle_coord * .5) / 100;
+		double anglePCT = (goalVision.get_by_sig(0, sig).x_middle_coord * 2) / 100;
 
 		leftMotor.moveVelocity(sgn(dist) * 600 * (1 - sgn(dist) * anglePCT));
 		rightMotor.moveVelocity(sgn(dist) * 600 * (1 + sgn(dist) * anglePCT));

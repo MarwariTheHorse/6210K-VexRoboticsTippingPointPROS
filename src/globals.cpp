@@ -15,7 +15,7 @@
 #define GRIP 'H'
 #define HOOK_STOP 'G'
 
-#define GOAL_VISION 6
+#define GOAL_VISION 18
 #define RAMP_VISON 5
 
 #define GYRO 7
