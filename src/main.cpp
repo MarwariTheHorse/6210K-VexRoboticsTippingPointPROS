@@ -35,11 +35,12 @@ void skillsAuton()
 	liftSmall();
 
 	// Line up with the yellow goal and push in corner
-	turnViaIMU(90);
-	driveViaIMU(-2.1, 90);
-	driveViaIMU(.9, 90);
+	turnViaIMU(93);
+	driveViaIMU(-2.1, 93);
+	driveViaIMU(.5, 93); // .9 > .7
 	turnViaIMU(-45);
 
+/*
 	//Score red
 	liftMax();
 	pros::delay(800);
@@ -78,6 +79,7 @@ void skillsAuton()
 	driveViaTime(3000, 300, 90);
 	liftScore();
 	judas();
+	*/
 }
 
 void compLeftAuton()
@@ -97,8 +99,10 @@ void compForwardAuton()
 
 void compRightAuton()
 {
-	// The line below is a filler line right now, but actually works quite nicely
-	compLeftAuton();
+	driveViaIMU(.7, 0);
+	grab();
+	pros::delay(500);
+	driveViaIMU(-.5, 0);
 }
 
 // For screwing around

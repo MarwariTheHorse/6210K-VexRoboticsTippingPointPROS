@@ -20,15 +20,29 @@ void driveViaIMU(double dist, double rotation)
 	rightMotor.tarePosition();
 
 	double d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
-	while (std::fabs(dist - d) > .3){
-		// Calculate base wheel speed
-		d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
-		double anglePCT = (imu.get() * .5) / 100;
 
-		leftMotor.moveVelocity(sgn(dist) * 600 * (1 - sgn(dist) * anglePCT));
-		rightMotor.moveVelocity(sgn(dist) * 600 * (1 + sgn(dist) * anglePCT));
-		backMotor.moveVelocity(sgn(dist) * 600);
-		pros::delay(5);
+	if(sgn(dist) > 0){
+		while(std::fabs(dist - d) > .3){
+			// Calculate base wheel speed
+			d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
+			double anglePCT = (imu.get() - rotation) * 4.5; // 4.5
+
+			leftMotor.moveVelocity(600 - anglePCT);
+			rightMotor.moveVelocity(600 + anglePCT);
+			backMotor.moveVelocity(600);
+			pros::delay(5);
+		}
+	}else{
+		while (std::fabs(dist - d) > .3){
+			// Calculate base wheel speed
+			d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
+			double anglePCT = (imu.get() - rotation) * 4.5; // 4.5
+
+			leftMotor.moveVelocity(-300 - anglePCT);
+			rightMotor.moveVelocity(-300 + anglePCT);
+			backMotor.moveVelocity(-300);
+			pros::delay(5);
+		}
 	}
 	leftMotor.moveVelocity(0);
 	rightMotor.moveVelocity(0);
@@ -95,11 +109,12 @@ void driveViaSig(double dist, int sig){
 	while (std::fabs(dist - d) > .3){
 		// Calculate base wheel speed
 		d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
-		double anglePCT = (goalVision.get_by_sig(0, sig).x_middle_coord * 2) / 100;
+		double anglePCT = (goalVision.get_by_sig(0, sig).x_middle_coord * 25) / 100;
 
-		leftMotor.moveVelocity(sgn(dist) * 600 * (1 - sgn(dist) * anglePCT));
-		rightMotor.moveVelocity(sgn(dist) * 600 * (1 + sgn(dist) * anglePCT));
-		backMotor.moveVelocity(sgn(dist) * 600);
+		leftMotor.moveVelocity(300 + 4.5 * anglePCT);
+		rightMotor.moveVelocity(300 - 4.5 * anglePCT);
+		std::cout << goalVision.get_by_sig(0, sig).x_middle_coord << std::endl;
+		backMotor.moveVelocity(300);
 		pros::delay(5);
 	}
 	leftMotor.moveVelocity(0);
