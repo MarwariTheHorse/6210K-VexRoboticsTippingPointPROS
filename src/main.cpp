@@ -37,33 +37,30 @@ void skillsAuton()
 	// Line up with the yellow goal and push in corner
 	turnViaIMU(93);
 	driveViaIMU(-2.1, 93);
-	driveViaIMU(.5, 93); // .9 > .7
-	turnViaIMU(-45);
-
-/*
-	//Score red
-	liftMax();
-	pros::delay(800);
-	// driveViaTime correction fails when goal is high
-	double time = pros::millis();
-	while(pros::millis() - time < 3000){
-		rightMotor.moveVelocity(500);
-		leftMotor.moveVelocity(500);
-		backMotor.moveVelocity(500);
-	}
 	
+	// Line up with the bridge and get around the base
+	driveViaIMU(.8, 93); // .9 > .7
+	liftMax();
+	turnViaIMU(-45);
+	pros::delay(500);
+	driveViaIMU(.5, -45); // Get near platform
+	driveViaTime(1000, 600); // Make sure we are around the base
+	turnViaIMU(-90);
+	
+	// Score red
 	liftScore();
 	pros::delay(300);
 	ungrab();
 
 	//Get off of platform
-	driveViaTime(1000, -90, -90);
+	driveViaTime(1000, -90);
 	liftMax();
 	pros::delay(600);
 	driveViaIMU(-.5, -90);
 
 	// Line up with tall yellow and grab
-	turnViaIMU(90);
+	turnViaIMU(30);
+/*
 	liftMin();
 	pros::delay(1000);
 
@@ -272,6 +269,8 @@ void opcontrol() {
 		setHook();
 		setDTSpeeds();
 		setLift();
+		pros::lcd::clear();
+		pros::lcd::print(2, "Lift location:%4.2f", lift.getPosition());
 		pros::delay(10);
 	}
 }

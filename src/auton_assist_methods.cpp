@@ -38,8 +38,8 @@ void driveViaIMU(double dist, double rotation)
 			d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
 			double anglePCT = (imu.get() - rotation) * 4.5; // 4.5
 
-			leftMotor.moveVelocity(-300 - anglePCT);
-			rightMotor.moveVelocity(-300 + anglePCT);
+			leftMotor.moveVelocity(-300 + anglePCT);
+			rightMotor.moveVelocity(-300 - anglePCT);
 			backMotor.moveVelocity(-300);
 			pros::delay(5);
 		}
@@ -49,16 +49,13 @@ void driveViaIMU(double dist, double rotation)
 	backMotor.moveVelocity(0);
 }
 
-void driveViaTime(double ms, double vel, double rotation){
-	double startTime = pros::millis();
-	okapi::EKFFilter kFilter;
-	while (pros::millis() - startTime < ms){
-		int aSpeed = (rotation - kFilter.filter(imu.get())) * 20;
-		leftMotor.moveVelocity(vel - aSpeed);
-		rightMotor.moveVelocity(vel + aSpeed);
-		backMotor.moveVelocity(vel);
-		pros::delay(5);
-	}
+void driveViaTime(double ms, double vel){
+	leftMotor.moveVelocity(vel);
+	rightMotor.moveVelocity(vel);
+	backMotor.moveVelocity(vel);
+
+	pros::delay(ms);
+
 	leftMotor.moveVelocity(0);
 	rightMotor.moveVelocity(0);
 	backMotor.moveVelocity(0);
