@@ -1,3 +1,2 @@
-1. Add cameras and get some good camera methods working from last year
-2. Finish our auton to get into state (380+)
-3. Make the auton that will get us into worlds (420+)
+1. Break 210 in auton
+2. Add red goal pneumatic for auton

@@ -28,6 +28,18 @@ pros::vision_signature sigGoalYellow = goalVision.signature_from_utility(3, 431,
 // Autons
 void skillsAuton()
 {
+	// THE STRATEGY
+	// 1. Grab the red goal and score it on the other side, pushing the yellow in the way
+	// @ 40
+	// 2. Grab the unmoved small yellow scoring on the red platform
+	// @ 80
+	// 3. Grab the yellow we pushed out of the way earlier and score that.
+	// @ 120
+	// 3. Grab the nearby blue and score that
+	// @ 160
+	// 4. Grab the tall yellow and hang
+	// @ 230
+
     // Get the red goal
 	driveViaIMU(.3, 0);
 	grab();
@@ -63,6 +75,89 @@ void skillsAuton()
 	pros::delay(600);
 	driveViaSig(1.3, 3);
 	grab();
+
+	// UNTESTED CODE FROM HERE ON OUT
+	
+	/*
+
+	// Turn around and get to platfrom
+	liftMax();
+	turnViaIMU(-147);
+	driveToRamp(2000, true); // 2000 ms, isRedRamp
+
+	// Score the second yellow that we deal with
+	liftScore();
+	pros::delay(300);
+	ungrab();
+
+	// Get off of platform
+	driveViaTime(1000, -90);
+	liftMax();
+	pros::delay(600);
+	driveViaIMU(-.5, -90);
+
+	// Get the yellow we pushed out of the way earlier
+	turnViaIMU(-180);
+	driveViaIMU(1, -180);
+	turnViaIMU(-90);
+	driveViaSig(.3, 3);
+	grab();
+
+	// Reverse of above
+	driveViaIMU(-.3, -90);
+	turnViaIMU(-180);
+	liftMax();
+	driveViaIMU(-1, -180);
+	turnViaIMU(-90);
+
+	// Score the yellow
+	driveViaTime(1000, 600); // Make sure we are around the base
+	liftScore();
+	pros::delay(300);
+	ungrab();
+
+	//Get off of platform
+	driveViaTime(1000, -90);
+	liftMax();
+	pros::delay(600);
+	driveViaIMU(-.5, -90);
+
+	// Get the blue from down south
+	turnViaIMU(-180);
+	liftMin();
+	driveViaIMU(1.7, -180); // get near the blue
+	driveViaSig(1, 2); // Finish the journey w/ the camera
+	grab();
+
+	// get to the bridge
+	turnViaIMU(50);
+	driveViaIMU(6, 50);
+	driveToRamp(2000, false);
+
+	// score the blue
+	liftScore();
+	pros::delay(300);
+	ungrab();
+
+	//Get off of platform
+	driveViaTime(1000, -90);
+	liftMax();
+	pros::delay(600);
+	driveViaIMU(-.5, 90);
+
+	// Get the tall yellow
+	turnViaIMU(90);
+	driveViaSig(1, 3);
+	grab();
+
+	// Score and pull a judas
+	turnViaIMU(90);
+	driveToRamp(2000, false);
+	liftScore();
+	judas();
+
+	*/
+
 }
 
 void compLeftAuton()
