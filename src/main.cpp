@@ -36,16 +36,15 @@ void skillsAuton()
 
 	// Line up with the yellow goal and push in corner
 	turnViaIMU(93);
-	driveViaIMU(-2.1, 93);
+	driveViaIMU(-2.4, 93);
 	
 	// Line up with the bridge and get around the base
-	driveViaIMU(.8, 93); // .9 > .7
+	driveViaIMU(.8, 93); // .9 > .7 > .95
 	liftMax();
 	turnViaIMU(-45);
 	pros::delay(500);
 	driveViaIMU(.5, -45); // Get near platform
-	driveViaTime(1000, 600); // Make sure we are around the base
-	turnViaIMU(-90);
+	driveViaTime(2000, 600); // Make sure we are around the base
 	
 	// Score red
 	liftScore();
@@ -58,25 +57,12 @@ void skillsAuton()
 	pros::delay(600);
 	driveViaIMU(-.5, -90);
 
-	// Line up with tall yellow and grab
-	turnViaIMU(30);
-/*
+	// Line up with far yellow and grab
 	liftMin();
-	pros::delay(1000);
-
-	// Use base of other ramp to get the goal in the grip
-	driveViaTime(5000, 300, 90);
+	turnViaIMU(33);
+	pros::delay(600);
+	driveViaSig(1.3, 3);
 	grab();
-	liftSmall();
-	driveViaIMU(-.5, 90);
-
-	// Go hang urself
-	liftMax();
-	pros::delay(800);
-	driveViaTime(3000, 300, 90);
-	liftScore();
-	judas();
-	*/
 }
 
 void compLeftAuton()
@@ -114,8 +100,8 @@ void experimental()
 	// pros::delay(200);
 	// driveViaIMU(-1.5, -45);
 
-	driveViaSig(2, 1);
-
+	turnViaIMU(90);
+	turnViaIMU(0);
 }
 
 // opcontrol

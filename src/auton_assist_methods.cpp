@@ -110,7 +110,6 @@ void driveViaSig(double dist, int sig){
 
 		leftMotor.moveVelocity(300 + 4.5 * anglePCT);
 		rightMotor.moveVelocity(300 - 4.5 * anglePCT);
-		std::cout << goalVision.get_by_sig(0, sig).x_middle_coord << std::endl;
 		backMotor.moveVelocity(300);
 		pros::delay(5);
 	}
@@ -121,15 +120,32 @@ void driveViaSig(double dist, int sig){
 
 void turnViaIMU(double heading)
 {
-	auto turnController = okapi::IterativeControllerFactory::posPID(.5, .1, .075); // PID for angular speed int aSpeed; int speed; okapi::EKFFilter kFilter;
-	turnController.setTarget(heading);
-	okapi::EKFFilter turnFilter;
+	double error = heading - imu.get();
+	int rotation;
+	backMotor.moveVelocity(0);
+	while(std::fabs(error) > 5) // keeps turning until within 10 degrees of objective
+	{
+		if (std::fabs(error) < 40){
+		// if within 40 degrees of objective, the motors start slowing
+		// and the speed never drops below 20
+		rotation = (6 * error);
+		} else {
+		// otherwise maintain fast turning speed of 90
+		rotation = 200 * sgn(error);
+		}
 
-	while (std::fabs(heading - turnFilter.filter(imu.get())) > .5){
-		double aSpeed = turnController.step(turnFilter.getOutput());
-		leftMotor.moveVelocity(-600 * aSpeed);
-		rightMotor.moveVelocity(600 * aSpeed);
+		rightMotor.moveVelocity(rotation);
+		leftMotor.moveVelocity(-rotation);
+
+		pros::delay(5);
+		error = heading - imu.get();
 	}
+	// these next lines attempt to slow down the robot's rotational momentum
+	// might be better just to put the motors into braking mode
+	rotation = -30 * sgn(error);
+	leftMotor.moveVelocity(rotation);
+	rightMotor.moveVelocity(-rotation);
+	pros::delay(50);
 	leftMotor.moveVelocity(0);
 	rightMotor.moveVelocity(0);
 }
