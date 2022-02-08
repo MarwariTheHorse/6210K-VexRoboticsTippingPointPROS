@@ -48,10 +48,10 @@ void skillsAuton()
 
 	// Line up with the yellow goal and push in corner
 	turnViaIMU(93);
-	driveViaIMU(-2.4, 93);
+	driveViaIMU(-2.2, 93);
 	
 	// Line up with the bridge and get around the base
-	driveViaIMU(.8, 93); // .9 > .7 > .95
+	driveViaIMU(.6, 93); // .9 > .7 > .95
 	liftMax();
 	turnViaIMU(-45);
 	pros::delay(500);
@@ -73,18 +73,15 @@ void skillsAuton()
 	liftMin();
 	turnViaIMU(33);
 	pros::delay(600);
-	driveViaSig(1.3, 3);
+	driveViaSig(1.2, 3);
 	grab();
-
-	// UNTESTED CODE FROM HERE ON OUT
-	
-	/*
 
 	// Turn around and get to platfrom
 	liftMax();
 	turnViaIMU(-147);
 	driveToRamp(2000, true); // 2000 ms, isRedRamp
 
+	/*
 	// Score the second yellow that we deal with
 	liftScore();
 	pros::delay(300);
@@ -195,8 +192,7 @@ void experimental()
 	// pros::delay(200);
 	// driveViaIMU(-1.5, -45);
 
-	turnViaIMU(90);
-	turnViaIMU(0);
+	driveToRamp(2000, true);
 }
 
 // opcontrol

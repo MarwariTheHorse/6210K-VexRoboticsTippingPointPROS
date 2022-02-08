@@ -63,29 +63,26 @@ void driveViaTime(double ms, double vel){
 
 void driveToRamp(double time, bool isRedRamp){
 	double startTime = pros::millis();
-	while (pros::millis() - startTime){
+	while (pros::millis() - startTime < time){
 		// Get the two largest colors
-		pros::vision_object_s_t stuff [2];
+		double rampCenter;
 		if(isRedRamp){
 			// Red
-			stuff[0] = rampVision.get_by_sig(0, 1); // First index
-			stuff[1] = rampVision.get_by_sig(1, 1); // Second index
+			rampCenter = (rampVision.get_by_sig(0, 1).x_middle_coord + rampVision.get_by_sig(1, 1).x_middle_coord) / 2;
 		}else{
 			// Blue
-			stuff[0] = rampVision.get_by_sig(0, 2); // First index
-			stuff[1] = rampVision.get_by_sig(1, 2); // Second index
+			rampCenter = (rampVision.get_by_sig(0, 2).x_middle_coord + rampVision.get_by_sig(1, 2).x_middle_coord) / 2;
 		}
 
 		// Get the location between the colors
-		double rampCenter = (stuff[0].x_middle_coord + stuff[1].x_middle_coord) / 2;
 
 		// Set speed and aSpeed
-		double speed = 600;
-		double aSpeed = imu.get() * 3;
+		double speed = 300;
+		double aSpeed = imu.get() * .25;
 
 		// Go
-		leftMotor.moveVelocity(speed - aSpeed);
-		rightMotor.moveVelocity(speed + aSpeed);
+		leftMotor.moveVelocity(speed - 4.5 * aSpeed);
+		rightMotor.moveVelocity(speed + 4.5 * aSpeed);
 		backMotor.moveVelocity(speed);
 	}
 	leftMotor.moveVelocity(0);
@@ -162,7 +159,7 @@ void ungrab() // NOTE: This has no wait, unlike the function above
 }
 
 void liftMin() {lift.moveAbsolute(0, 90);}
-void liftSmall() {lift.moveAbsolute(.4, 90);} // 0, .5, 1.7
+void liftSmall() {lift.moveAbsolute(.5, 90);} // 0, .5, 1.7
 void liftMax() {lift.moveAbsolute(2, 90);}
 void liftScore() {lift.moveAbsolute(1, 90);}
 void liftHang() {lift.moveAbsolute(1, 90);} // theoretically overshoots by .2
