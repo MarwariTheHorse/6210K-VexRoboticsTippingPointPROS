@@ -48,10 +48,10 @@ void skillsAuton()
 
 	// Line up with the yellow goal and push in corner
 	turnViaIMU(93);
-	driveViaIMU(-2.2, 93);
+	driveViaIMU(-2.1, 93);
 	
 	// Line up with the bridge and get around the base
-	driveViaIMU(.6, 93); // .9 > .7 > .95
+	driveViaIMU(.3, 93); 
 	liftMax();
 	turnViaIMU(-45);
 	pros::delay(500);
@@ -73,13 +73,21 @@ void skillsAuton()
 	liftMin();
 	turnViaIMU(33);
 	pros::delay(600);
-	driveViaSig(1.2, 3);
+	driveViaSig(1.4, 3);
 	grab();
 
 	// Turn around and get to platfrom
 	liftMax();
-	turnViaIMU(-147);
-	driveToRamp(2000, true); // 2000 ms, isRedRamp
+	turnViaIMU(135);
+	driveViaIMU(2, 125);
+	driveViaTime(3000, 100);
+	ungrab();
+	driveViaIMU(-1, 90);
+
+
+
+
+	// driveToRamp(2000, true); // 2000 ms, isRedRamp
 
 	/*
 	// Score the second yellow that we deal with
@@ -296,7 +304,6 @@ void opcontrol() {
 
 		// Configure the goal vision sensor
 		goalVision.set_exposure(33);
-		goalVision.set_led(65280);
 
 		// Calibrate IMU
 		master.setText(0, 0, "Calibrating...");
@@ -346,8 +353,6 @@ void opcontrol() {
 		setHook();
 		setDTSpeeds();
 		setLift();
-		pros::lcd::clear();
-		pros::lcd::print(2, "Lift location:%4.2f", lift.getPosition());
 		pros::delay(10);
 	}
 }

@@ -25,6 +25,7 @@ void driveViaIMU(double dist, double rotation)
 		while(std::fabs(dist - d) > .3){
 			// Calculate base wheel speed
 			d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
+			std::cout << d << std::endl;
 			double anglePCT = (imu.get() - rotation) * 4.5; // 4.5
 
 			leftMotor.moveVelocity(600 - anglePCT);
@@ -36,6 +37,7 @@ void driveViaIMU(double dist, double rotation)
 		while (std::fabs(dist - d) > .3){
 			// Calculate base wheel speed
 			d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
+			std::cout << d << std::endl;
 			double anglePCT = (imu.get() - rotation) * 4.5; // 4.5
 
 			leftMotor.moveVelocity(-300 + anglePCT);
@@ -78,11 +80,11 @@ void driveToRamp(double time, bool isRedRamp){
 
 		// Set speed and aSpeed
 		double speed = 300;
-		double aSpeed = imu.get() * .25;
+		double aSpeed = (rampCenter * 50) / 100;
 
 		// Go
-		leftMotor.moveVelocity(speed - 4.5 * aSpeed);
-		rightMotor.moveVelocity(speed + 4.5 * aSpeed);
+		leftMotor.moveVelocity(speed + 4.5 * aSpeed);
+		rightMotor.moveVelocity(speed - 4.5 * aSpeed);
 		backMotor.moveVelocity(speed);
 	}
 	leftMotor.moveVelocity(0);
