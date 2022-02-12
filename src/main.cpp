@@ -11,7 +11,6 @@ int liftState;
 bool gripState;
 bool hookState;
 double gripHoldPosition;
-bool initialized;
 
 // Anti-doubles
 bool prevUp;
@@ -298,6 +297,7 @@ void autonomous() {
 }
 
 void opcontrol() {
+	static bool initialized = false; // This line only runs once, no matter how many function calls
 	if(!initialized){
 		// Initialize stuff
 		pros::lcd::initialize();
@@ -340,12 +340,10 @@ void opcontrol() {
 			if(master.getDigital(okapi::ControllerDigital::up)) autonMode = '^';
 			if(master.getDigital(okapi::ControllerDigital::down)) autonMode = 'V';
 		}
-		pros::delay(1000);
 		master.clear();
+		pros::delay(1000);
+		initialized = true;
 	}
-	initialized = true;
-
-	pros::delay(1000);
 
 	while (true) {
 		setVibrate();
