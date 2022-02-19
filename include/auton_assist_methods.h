@@ -14,4 +14,4 @@ extern void liftHang();
 extern void scoreGoal();
 extern void judas();
 extern void driveViaSig(double dist, int sig);
-extern void driveToRamp(double time, bool isRedRamp);
+extern void driveToRamp(double time, double heading, bool isRedRamp);

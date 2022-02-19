@@ -15,10 +15,10 @@
 #define GRIP 'H'
 #define HOOK_STOP 'G'
 
-#define GOAL_VISION 17
-#define RAMP_VISON 5
-
 #define GYRO 7
+
+#define GOAL_VISION 2
+#define RAMP_VISON 5
 
 #define GPS_PORT 1
 #define GPS_OFFSET_X 1

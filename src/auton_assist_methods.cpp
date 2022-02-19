@@ -63,7 +63,7 @@ void driveViaTime(double ms, double vel){
 	backMotor.moveVelocity(0);
 }
 
-void driveToRamp(double time, bool isRedRamp){
+void driveToRamp(double time, double heading, bool isRedRamp){
 	double startTime = pros::millis();
 	while (pros::millis() - startTime < time){
 		// Get the two largest colors
@@ -80,11 +80,11 @@ void driveToRamp(double time, bool isRedRamp){
 
 		// Set speed and aSpeed
 		double speed = 300;
-		double aSpeed = (rampCenter * 50) / 100;
+		double aSpeed = ((heading - imu.get()) * 0.8) + ((rampCenter) * .13);
 
 		// Go
-		leftMotor.moveVelocity(speed + 4.5 * aSpeed);
-		rightMotor.moveVelocity(speed - 4.5 * aSpeed);
+		leftMotor.moveVelocity(speed + 3 * aSpeed);
+		rightMotor.moveVelocity(speed - 3 * aSpeed);
 		backMotor.moveVelocity(speed);
 	}
 	leftMotor.moveVelocity(0);
@@ -178,5 +178,5 @@ void scoreGoal()
 
 void judas()
 {
-	hook.moveAbsolute(7, 100);
+	hook.moveAbsolute(6.5, 100);
 }	

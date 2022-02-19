@@ -20,10 +20,6 @@ double lastVibrate = 0;
 
 char autonMode = 'N'; // Stands for none
 
-pros::vision_signature sigGoalRed = goalVision.signature_from_utility(1, 5607, 8193, 6900, -793, -297, -545, 3.7, 0);
-pros::vision_signature sigGoalBlue = goalVision.signature_from_utility(2, -2909, -2315, -2612, 8851, 10215, 9533, 10.5, 0);
-pros::vision_signature sigGoalYellow = goalVision.signature_from_utility(3, 431, 745, 588, -3343, -3041, -3192, 8.2, 0);
-
 // Autons
 void skillsAuton()
 {
@@ -50,11 +46,11 @@ void skillsAuton()
 	driveViaIMU(-2.1, 93);
 	
 	// Line up with the bridge and get around the base
-	driveViaIMU(.3, 93); 
+	driveViaIMU(.5, 93); 
 	liftMax();
-	turnViaIMU(-45);
+	turnViaIMU(-50);
 	pros::delay(500);
-	driveViaIMU(.5, -45); // Get near platform
+	driveViaIMU(.5, -50); // Get near platform
 	driveViaTime(2000, 600); // Make sure we are around the base
 	
 	// Score red
@@ -70,18 +66,25 @@ void skillsAuton()
 
 	// Line up with far yellow and grab
 	liftMin();
-	turnViaIMU(33);
+	turnViaIMU(25);
 	pros::delay(600);
-	driveViaSig(1.4, 3);
+	driveViaSig(1.7, 3);
 	grab();
+	pros::delay(400);
+	driveViaIMU(-.4, 33);
 
 	// Turn around and get to platfrom
+	liftSmall();
+	turnViaIMU(125);
 	liftMax();
-	turnViaIMU(135);
-	driveViaIMU(2, 125);
-	driveViaTime(3000, 100);
-	ungrab();
-	driveViaIMU(-1, 90);
+	pros::delay(600);
+	driveToRamp(3000, 125, false);
+	pros::delay(600);
+	driveViaTime(3000, 200);
+	pros::delay(600);
+	driveViaTime(2000, 600);
+	liftScore();
+	judas();
 
 
 
@@ -198,8 +201,6 @@ void experimental()
 	// grab();
 	// pros::delay(200);
 	// driveViaIMU(-1.5, -45);
-
-	driveToRamp(2000, true);
 }
 
 // opcontrol
@@ -303,6 +304,18 @@ void opcontrol() {
 		pros::lcd::initialize();
 
 		// Configure the goal vision sensor
+		
+		pros::vision_signature_s_t sigGoalRed = goalVision.signature_from_utility(1, 5607, 8193, 6900, -793, -297, -545, 3.7, 0);
+		pros::vision_signature_s_t sigGoalBlue = goalVision.signature_from_utility(2, -2909, -2315, -2612, 8851, 10215, 9533, 10.5, 0);
+		pros::vision_signature_s_t sigGoalYellow = goalVision.signature_from_utility(3, 431, 745, 588, -3343, -3041, -3192, 8.2, 0);
+
+		goalVision.set_signature(1, &sigGoalRed);
+		goalVision.set_signature(2, &sigGoalBlue);
+		goalVision.set_signature(3, &sigGoalYellow);
+
+		rampVision.set_signature(1, &sigGoalRed);
+		rampVision.set_signature(2, &sigGoalBlue);
+
 		goalVision.set_exposure(33);
 
 		// Calibrate IMU
