@@ -107,8 +107,8 @@ void driveViaSig(double dist, int sig){
 		d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
 		double anglePCT = (goalVision.get_by_sig(0, sig).x_middle_coord * 25) / 100;
 
-		leftMotor.moveVelocity(300 + 4.5 * anglePCT);
-		rightMotor.moveVelocity(300 - 4.5 * anglePCT);
+		leftMotor.moveVelocity(300 - 4.5 * anglePCT);
+		rightMotor.moveVelocity(300 + 4.5 * anglePCT);
 		backMotor.moveVelocity(300);
 		pros::delay(5);
 	}
