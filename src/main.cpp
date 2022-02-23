@@ -75,12 +75,12 @@ void skillsAuton()
 
 	// Turn around and get to platfrom
 	liftSmall();
-	turnViaIMU(125);
+	turnViaIMU(-155);
 	liftMax();
 	pros::delay(600);
-	driveToRamp(3000, 125, false);
+	driveToRamp(3000, -155, true);
 	pros::delay(600);
-	driveViaTime(3000, 200);
+	driveViaTime(3000, -200);
 	pros::delay(600);
 	driveViaTime(2000, 600);
 	liftScore();
@@ -234,9 +234,9 @@ void setDTSpeeds()
 	// Filter wheel speeds (We got none right now)
 
 	// Wheel speed assignments
-	leftMotor.moveVelocity(wheelLeftSpeed * 600); // Speed is velocity pct * gearbox
-	rightMotor.moveVelocity(wheelRightSpeed * 600);
-	backMotor.moveVelocity(wheelBackSpeed * 600);
+	leftMotor.moveVelocity(wheelLeftSpeed * 200); // Speed is velocity pct * gearbox
+	rightMotor.moveVelocity(wheelRightSpeed * 200);
+	backMotor.moveVelocity(wheelBackSpeed * 200);
 }
 
 void setGrip(){
