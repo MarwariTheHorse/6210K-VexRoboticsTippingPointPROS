@@ -1,5 +1,6 @@
 #include "main.h"
 #include "globals.h"
+#define SPEED 200
 
 int sgn(double d) // Mimimcs the mathematical sgn function
 {
@@ -27,10 +28,9 @@ void driveViaIMU(double dist, double rotation)
 			d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
 			std::cout << d << std::endl;
 			double anglePCT = (imu.get() - rotation) * 4.5; // 4.5
-
-			leftMotor.moveVelocity(600 - anglePCT);
-			rightMotor.moveVelocity(600 + anglePCT);
-			backMotor.moveVelocity(600);
+			leftMotor.moveVelocity(SPEED - anglePCT);
+			rightMotor.moveVelocity(SPEED + anglePCT);
+			backMotor.moveVelocity(SPEED);
 			pros::delay(5);
 		}
 	}else{
@@ -39,10 +39,9 @@ void driveViaIMU(double dist, double rotation)
 			d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
 			std::cout << d << std::endl;
 			double anglePCT = (imu.get() - rotation) * 4.5; // 4.5
-
-			leftMotor.moveVelocity(-300 + anglePCT);
-			rightMotor.moveVelocity(-300 - anglePCT);
-			backMotor.moveVelocity(-300);
+			leftMotor.moveVelocity(-SPEED + anglePCT);
+			rightMotor.moveVelocity(-SPEED - anglePCT);
+			backMotor.moveVelocity(-SPEED);
 			pros::delay(5);
 		}
 	}
@@ -79,13 +78,12 @@ void driveToRamp(double time, double heading, bool isRedRamp){
 		// Get the location between the colors
 
 		// Set speed and aSpeed
-		double speed = 300;
 		double aSpeed = ((heading - imu.get()) * 0.8) + ((rampCenter) * .13);
 
 		// Go
-		leftMotor.moveVelocity(speed + 3 * aSpeed);
-		rightMotor.moveVelocity(speed - 3 * aSpeed);
-		backMotor.moveVelocity(speed);
+		leftMotor.moveVelocity(SPEED + 3 * aSpeed);
+		rightMotor.moveVelocity(SPEED - 3 * aSpeed);
+		backMotor.moveVelocity(SPEED);
 	}
 	leftMotor.moveVelocity(0);
 	rightMotor.moveVelocity(0);
@@ -107,9 +105,9 @@ void driveViaSig(double dist, int sig){
 		d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
 		double anglePCT = (goalVision.get_by_sig(0, sig).x_middle_coord * 25) / 100;
 
-		leftMotor.moveVelocity(300 - 4.5 * anglePCT);
-		rightMotor.moveVelocity(300 + 4.5 * anglePCT);
-		backMotor.moveVelocity(300);
+		leftMotor.moveVelocity(SPEED - 4.5 * anglePCT);
+		rightMotor.moveVelocity(SPEED + 4.5 * anglePCT);
+		backMotor.moveVelocity(SPEED);
 		pros::delay(5);
 	}
 	leftMotor.moveVelocity(0);
