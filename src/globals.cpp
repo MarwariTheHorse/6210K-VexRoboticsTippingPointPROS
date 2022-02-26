@@ -47,7 +47,7 @@ okapi::Controller master(okapi::ControllerId::master);
 // Sensors
 pros::Vision goalVision(GOAL_VISION, pros::E_VISION_ZERO_CENTER);
 pros::Vision rampVision(RAMP_VISON, pros::E_VISION_ZERO_CENTER);
-okapi::IMU imu(GYRO);
+pros::Imu imu(GYRO);
 pros::GPS gps(GPS_PORT, GPS_OFFSET_X, GPS_OFFSET_Y);
 
 // ADI Stop sensor

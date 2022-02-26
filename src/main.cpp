@@ -356,8 +356,7 @@ void opcontrol() {
 
 		// Calibrate IMU
 		master.setText(0, 0, "Calibrating...");
-		imu.calibrate();
-		while (imu.isCalibrating()){pros::delay(10);}
+		imu.reset(); // This line is blocking so there is no reason to wait after
 		master.clear();
 
 		// Tare hook

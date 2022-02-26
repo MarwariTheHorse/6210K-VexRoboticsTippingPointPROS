@@ -26,7 +26,7 @@ void driveViaIMU(double dist, double rotation)
 			// Calculate base wheel speed
 			d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
 			std::cout << d << std::endl;
-			double anglePCT = (imu.get() - rotation) * 4.5; // 4.5
+			double anglePCT = (imu.get_rotation() - rotation) * 4.5; // 4.5
 			leftMotor.moveVelocity(SPEED - anglePCT);
 			rightMotor.moveVelocity(SPEED + anglePCT);
 			backMotor.moveVelocity(SPEED);
@@ -37,7 +37,7 @@ void driveViaIMU(double dist, double rotation)
 			// Calculate base wheel speed
 			d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
 			std::cout << d << std::endl;
-			double anglePCT = (imu.get() - rotation) * 4.5; // 4.5
+			double anglePCT = (imu.get_rotation() - rotation) * 4.5; // 4.5
 			leftMotor.moveVelocity(-SPEED + anglePCT);
 			rightMotor.moveVelocity(-SPEED - anglePCT);
 			backMotor.moveVelocity(-SPEED);
@@ -77,7 +77,7 @@ void driveToRamp(double time, double heading, bool isRedRamp){
 		// Get the location between the colors
 
 		// Set speed and aSpeed
-		double aSpeed = ((heading - imu.get()) * 0.8) + ((rampCenter) * .13);
+		double aSpeed = ((heading - imu.get_rotation()) * 0.8) + ((rampCenter) * .13);
 
 		// Go
 		leftMotor.moveVelocity(SPEED + 3 * aSpeed);
@@ -116,7 +116,7 @@ void driveViaSig(double dist, int sig){
 
 void turnViaIMU(double heading)
 {
-	double error = heading - imu.get();
+	double error = heading - imu.get_rotation();
 	int rotation;
 	backMotor.moveVelocity(0);
 	while(std::fabs(error) > 5) // keeps turning until within 10 degrees of objective
@@ -134,7 +134,7 @@ void turnViaIMU(double heading)
 		leftMotor.moveVelocity(-rotation);
 
 		pros::delay(5);
-		error = heading - imu.get();
+		error = heading - imu.get_rotation();
 	}
 	// these next lines attempt to slow down the robot's rotational momentum
 	// might be better just to put the motors into braking mode

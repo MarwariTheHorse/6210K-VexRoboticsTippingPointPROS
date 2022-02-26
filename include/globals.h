@@ -21,7 +21,7 @@ extern okapi::Controller master;
 // Sensors
 extern pros::Vision rampVision;
 extern pros::Vision goalVision;
-extern okapi::IMU imu;
+extern pros::Imu imu;
 extern pros::GPS gps;
 extern pros::ADIDigitalIn hookStop;
 
