@@ -1,6 +1,5 @@
 #include "main.h"
 #include "globals.h"
-#define SPEED 200
 
 int sgn(double d) // Mimimcs the mathematical sgn function
 {

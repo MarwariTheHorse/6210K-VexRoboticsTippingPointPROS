@@ -1,5 +1,5 @@
 #include "main.h"
-
+#define SPEED 200
 // Motors(port, reversed, gearset, encoderUnits, logger(implied))
 extern okapi::Motor fLeftMotor;
 extern okapi::Motor rLeftMotor;

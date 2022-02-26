@@ -50,8 +50,8 @@ void skillsAuton()
 	liftMax();
 	turnViaIMU(-50);
 	pros::delay(500);
-	driveViaIMU(.5, -50); // Get near platform
-	driveViaTime(2000, 600); // Make sure we are around the base
+	driveViaIMU(.5, -52.5); // Get near platform
+	driveViaTime(2000, 200); // Make sure we are around the base
 	
 	// Score red
 	liftScore();
@@ -59,7 +59,7 @@ void skillsAuton()
 	ungrab();
 
 	//Get off of platform
-	driveViaTime(1000, -90);
+	driveViaTime(600, -90);
 	liftMax();
 	pros::delay(600);
 	driveViaIMU(-.5, -90);
@@ -68,21 +68,47 @@ void skillsAuton()
 	liftMin();
 	turnViaIMU(25);
 	pros::delay(600);
-	driveViaSig(1.7, 3);
+	driveViaTime(2500, 200);
 	grab();
 	pros::delay(400);
-	driveViaIMU(-.4, 33);
+	driveViaIMU(-.4, 25);
 
 	// Turn around and get to platfrom
 	liftSmall();
-	turnViaIMU(-155);
+	turnViaIMU(-145);
 	liftMax();
 	pros::delay(600);
-	driveToRamp(3000, -155, true);
+	driveViaTime(3000, 200);
 	pros::delay(600);
+	liftScore();
+	ungrab();
+	driveViaTime(600, -90);
+	liftMax();
+	driveViaIMU(-.5, -90);
+	liftMin();
+	turnViaIMU(-177);
+	driveViaIMU(1, -177);
+	grab();
+	driveViaIMU(-1, -177);
+	turnViaIMU(-90);
+	driveViaTime(1000, 200);
+	liftScore();
+	pros::delay(300);
+	ungrab();
+	driveViaTime(600, -90);
+	liftMax();
+	pros::delay(300);
+	driveViaIMU(-.5, -178);
+	driveViaTime(2000, 200);
+	grab();
+	turnViaIMU(-180);
+	driveViaIMU(-.5, -180);
+	turnViaIMU(-120);
+	driveViaIMU(4000, 200);
+	pros::delay(300);
 	driveViaTime(3000, -200);
 	pros::delay(600);
-	driveViaTime(2000, 600);
+	driveViaTime(3000, 200);
 	liftScore();
 	judas();
 
@@ -234,9 +260,9 @@ void setDTSpeeds()
 	// Filter wheel speeds (We got none right now)
 
 	// Wheel speed assignments
-	leftMotor.moveVelocity(wheelLeftSpeed * 200); // Speed is velocity pct * gearbox
-	rightMotor.moveVelocity(wheelRightSpeed * 200);
-	backMotor.moveVelocity(wheelBackSpeed * 200);
+	leftMotor.moveVelocity(wheelLeftSpeed * SPEED); // Speed is velocity pct * gearbox
+	rightMotor.moveVelocity(wheelRightSpeed * SPEED);
+	backMotor.moveVelocity(wheelBackSpeed * SPEED);
 }
 
 void setGrip(){
