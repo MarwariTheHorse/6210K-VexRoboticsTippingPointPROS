@@ -93,9 +93,9 @@ void skillsAuton()
 
 	// Align with and get the first yellow
 	turnViaIMU(-177);
-	driveViaIMU(1.3, -177);
+	driveViaTime(2000, 200);
 	grab();
-	driveViaIMU(-1, -177);
+	driveViaIMU(1800, -200);
 	turnViaIMU(-90);
 	liftMax();
 	pros::delay(500);
@@ -106,7 +106,7 @@ void skillsAuton()
 	driveViaTime(600, -90);
 	liftMax();
 	pros::delay(300);
-	driveViaIMU(-.5,-90);
+	driveViaIMU(-.5, -90);
 	liftMin();
 	turnViaIMU(-178);
 	driveViaTime(2000, 200);
