@@ -48,7 +48,7 @@ void skillsAuton()
 	// Line up with the bridge and get around the base
 	driveViaIMU(.5, 93); 
 	liftMax();
-	turnViaIMU(-50);
+	turnViaIMU(-52.5);
 	pros::delay(500);
 	driveViaIMU(.5, -52.5); // Get near platform
 	driveViaTime(2000, 200); // Make sure we are around the base
@@ -66,31 +66,39 @@ void skillsAuton()
 
 	// Line up with far yellow and grab
 	liftMin();
-	turnViaIMU(25);
+	turnViaIMU(30);
 	pros::delay(600);
-	driveViaTime(2500, 200);
+	driveViaTime(3000, 200);
 	grab();
 	pros::delay(400);
-	driveViaIMU(-.4, 25);
+	driveViaIMU(-.4, 30);
 
 	// Turn around and get to platfrom
 	liftSmall();
-	turnViaIMU(-145);
+	turnViaIMU(-128.5);
 	liftMax();
 	pros::delay(600);
-	driveViaTime(3000, 200);
-	pros::delay(600);
+	driveViaTime(4000, 200);
+	pros::delay(300);
+
+	// Score the first yellow then back up from the bridge
 	liftScore();
+	pros::delay(300);
 	ungrab();
 	driveViaTime(600, -90);
 	liftMax();
+	pros::delay(200);
 	driveViaIMU(-.5, -90);
 	liftMin();
+
+	// Align with and get the first yellow
 	turnViaIMU(-177);
-	driveViaIMU(1, -177);
+	driveViaIMU(1.3, -177);
 	grab();
 	driveViaIMU(-1, -177);
 	turnViaIMU(-90);
+	liftMax();
+	pros::delay(500);
 	driveViaTime(1000, 200);
 	liftScore();
 	pros::delay(300);
@@ -98,7 +106,9 @@ void skillsAuton()
 	driveViaTime(600, -90);
 	liftMax();
 	pros::delay(300);
-	driveViaIMU(-.5, -178);
+	driveViaIMU(-.5,-90);
+	liftMin();
+	turnViaIMU(-178);
 	driveViaTime(2000, 200);
 	grab();
 	turnViaIMU(-180);
