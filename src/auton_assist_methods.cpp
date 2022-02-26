@@ -22,18 +22,18 @@ void driveViaIMU(double dist, double rotation)
 	double d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
 
 	if(sgn(dist) > 0){
-		while(std::fabs(dist - d) > .3){
+		while(std::fabs(dist - d) > .1){
 			// Calculate base wheel speed
 			d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
 			std::cout << d << std::endl;
 			double anglePCT = (imu.get_rotation() - rotation) * 4.5; // 4.5
-			leftMotor.moveVelocity(SPEED - anglePCT);
-			rightMotor.moveVelocity(SPEED + anglePCT);
+			leftMotor.moveVelocity(SPEED + anglePCT); // Originally this + and the - below were swapped
+			rightMotor.moveVelocity(SPEED - anglePCT);
 			backMotor.moveVelocity(SPEED);
 			pros::delay(5);
 		}
 	}else{
-		while (std::fabs(dist - d) > .3){
+		while (std::fabs(dist - d) > .1){
 			// Calculate base wheel speed
 			d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
 			std::cout << d << std::endl;
@@ -119,7 +119,7 @@ void turnViaIMU(double heading)
 	double error = heading - imu.get_rotation();
 	int rotation;
 	backMotor.moveVelocity(0);
-	while(std::fabs(error) > 5) // keeps turning until within 10 degrees of objective
+	while(std::fabs(error) > 1) // keeps turning until within 10 degrees of objective
 	{
 		if (std::fabs(error) < 40){
 		// if within 40 degrees of objective, the motors start slowing

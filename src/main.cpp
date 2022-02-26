@@ -68,9 +68,10 @@ void skillsAuton()
 	liftMin();
 	turnViaIMU(30);
 	pros::delay(600);
-	driveViaTime(3000, 200);
+	driveViaIMU(2.2, 30);
 	grab();
 	pros::delay(400);
+	turnViaIMU(30); // Make sure we have not been thrown off
 	driveViaIMU(-.4, 30);
 
 	// Turn around and get to platfrom
@@ -88,18 +89,21 @@ void skillsAuton()
 	driveViaTime(600, -90);
 	liftMax();
 	pros::delay(200);
-	driveViaIMU(-.5, -90);
+	driveViaIMU(-.8, -90);
 	liftMin();
 
-	// Align with and get the first yellow
-	turnViaIMU(-177);
-	driveViaTime(2000, 200);
+	// Align with and get the og yellow
+	turnViaIMU(-145);
+	driveViaIMU(1.9, -145);
 	grab();
-	driveViaIMU(1800, -200);
-	turnViaIMU(-90);
+	pros::delay(400);
+	driveViaIMU(-1.8, -145);
+
+	// turn and score og yellow then back up
 	liftMax();
+	turnViaIMU(-90);
 	pros::delay(500);
-	driveViaTime(1000, 200);
+	driveViaTime(2000, 200);
 	liftScore();
 	pros::delay(300);
 	ungrab();
@@ -108,6 +112,30 @@ void skillsAuton()
 	pros::delay(300);
 	driveViaIMU(-.5, -90);
 	liftMin();
+
+	turnViaIMU(-170);
+	driveViaTime(3000, 200);
+	grab();
+	turnViaIMU(-180);
+	driveViaIMU(-.3, -180);
+	liftMax();
+	turnViaIMU(-300);
+	driveViaIMU(2, -300);
+	driveViaTime(2000, 200);
+	pros::delay(300);
+	driveViaIMU(-2, -270);
+	pros::delay(300);
+	driveViaTime(4000, 200);
+	liftScore();
+	pros::delay(300);
+	ungrab();
+	driveViaTime(600, -90);
+	liftMax();
+	driveViaIMU(-.5, -270);
+
+
+
+	/*
 	turnViaIMU(-178);
 	driveViaTime(2000, 200);
 	grab();
@@ -127,7 +155,6 @@ void skillsAuton()
 
 	// driveToRamp(2000, true); // 2000 ms, isRedRamp
 
-	/*
 	// Score the second yellow that we deal with
 	liftScore();
 	pros::delay(300);
@@ -237,6 +264,8 @@ void experimental()
 	// grab();
 	// pros::delay(200);
 	// driveViaIMU(-1.5, -45);
+
+	turnViaIMU(90);
 }
 
 // opcontrol
