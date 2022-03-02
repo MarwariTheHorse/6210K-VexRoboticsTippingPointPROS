@@ -83,14 +83,10 @@ void skillsAuton()
 	pros::delay(300);
 
 	// Score the first yellow then back up from the bridge
-	liftScore();
-	pros::delay(300);
 	ungrab();
-	driveViaTime(600, -90);
-	liftMax();
-	pros::delay(200);
-	driveViaIMU(-.8, -90);
+	driveViaIMU(-.2, -90);
 	liftMin();
+	driveViaIMU(-.7, -90);
 
 	// Align with and get the og yellow
 	turnViaIMU(-145);

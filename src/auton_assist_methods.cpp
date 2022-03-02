@@ -9,7 +9,6 @@ int sgn(double d) // Mimimcs the mathematical sgn function
 }
 
 // Auton assist methods //
-
 void driveViaIMU(double dist, double rotation)
 {
 	dist *= 39.3701 / (2.75 * PI); // To in. then to rev
@@ -119,7 +118,7 @@ void turnViaIMU(double heading)
 	double error = heading - imu.get_rotation();
 	int rotation;
 	backMotor.moveVelocity(0);
-	while(std::fabs(error) > 1) // keeps turning until within 10 degrees of objective
+	while(std::fabs(error) > .5) // keeps turning until within 10 degrees of objective
 	{
 		if (std::fabs(error) < 40){
 		// if within 40 degrees of objective, the motors start slowing
