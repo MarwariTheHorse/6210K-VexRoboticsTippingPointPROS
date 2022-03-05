@@ -36,9 +36,10 @@ void skillsAuton()
 	// @ 230
 
     // Get the red goal
+	liftMin();
 	driveViaIMU(.3, 0);
 	grab();
-	driveViaIMU(-.4, 0);
+	driveViaIMU(-.2, 0); // was -.4
 	liftSmall();
 
 	// Line up with the yellow goal and push in corner
@@ -46,7 +47,7 @@ void skillsAuton()
 	driveViaIMU(-2.1, 93);
 	
 	// Line up with the bridge and get around the base
-	driveViaIMU(.5, 93); 
+	driveViaIMU(.3, 93); 
 	liftMax();
 	turnViaIMU(-52.5);
 	pros::delay(500);
@@ -57,23 +58,22 @@ void skillsAuton()
 	liftScore();
 	pros::delay(300);
 	ungrab();
-	std::cout << averageGPSX(1000) << std::endl;
 
 	//Get off of platform
 	driveViaTime(600, -90);
 	liftMax();
 	pros::delay(600);
-	driveViaIMU(-.5, -90);
+	driveViaIMU(-.9, -90);
 
 	// Line up with far yellow and grab
 	liftMin();
-	turnViaIMU(30);
+	turnViaIMU(10);
 	pros::delay(600);
-	driveViaIMU(2.2, 30);
+	driveViaSig(3);
 	grab();
 	pros::delay(400);
-	turnViaIMU(30); // Make sure we have not been thrown off
-	driveViaIMU(-.4, 30);
+	turnViaIMU(33); // Make sure we have not been thrown off
+	driveViaIMU(-.4, 33);
 
 	// Turn around and get to platfrom
 	liftSmall();
@@ -251,18 +251,10 @@ void compRightAuton()
 }
 
 // For screwing around
-void experimental()
+void experimental() // 2900 is the magic number
 {
-	// Auton with f-gladiators
-	// pros::delay(6000);
-	// driveViaIMU(.9, 0);
-	// turnViaIMU(-45);
-	// driveViaIMU(1.3, -45);
-	// grab();
-	// pros::delay(200);
-	// driveViaIMU(-1.5, -45);
-
-	turnViaIMU(90);
+	liftMin();
+	driveViaSig(3);
 }
 
 // opcontrol
@@ -366,7 +358,6 @@ void opcontrol() {
 		pros::lcd::initialize();
 
 		// Configure the goal vision sensor
-		
 		pros::vision_signature_s_t sigGoalRed = goalVision.signature_from_utility(1, 5607, 8193, 6900, -793, -297, -545, 3.7, 0);
 		pros::vision_signature_s_t sigGoalBlue = goalVision.signature_from_utility(2, -2909, -2315, -2612, 8851, 10215, 9533, 10.5, 0);
 		pros::vision_signature_s_t sigGoalYellow = goalVision.signature_from_utility(3, 431, 745, 588, -3343, -3041, -3192, 8.2, 0);
@@ -383,6 +374,7 @@ void opcontrol() {
 		// Calibrate IMU
 		master.setText(0, 0, "Calibrating...");
 		imu.reset(); // This line is blocking so there is no reason to wait after
+		goalDetect.calibrate();
 		master.clear();
 
 		// Tare hook
