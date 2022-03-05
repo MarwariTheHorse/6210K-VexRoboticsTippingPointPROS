@@ -20,9 +20,9 @@
 #define GOAL_VISION 2
 #define RAMP_VISON 5
 
-#define GPS_PORT 1
-#define GPS_OFFSET_X 1
-#define GPS_OFFSET_Y -1
+#define GPS_PORT 9
+#define GPS_OFFSET_X .0762
+#define GPS_OFFSET_Y .027
 
 #define RED true
 #define BLUE false

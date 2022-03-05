@@ -57,6 +57,7 @@ void skillsAuton()
 	liftScore();
 	pros::delay(300);
 	ungrab();
+	std::cout << averageGPSX(1000) << std::endl;
 
 	//Get off of platform
 	driveViaTime(600, -90);

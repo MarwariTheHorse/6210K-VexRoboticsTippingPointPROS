@@ -8,6 +8,18 @@ int sgn(double d) // Mimimcs the mathematical sgn function
 	return 0;
 }
 
+double averageGPSX(double ms){
+	double startTime = pros::millis();
+	double total;
+	double count;
+	while(pros::millis() - startTime < ms){
+		total += gps.get_status().x;
+		count++;
+		pros::delay(5);
+	}
+	return total / count;
+}
+
 // Auton assist methods //
 void driveViaIMU(double dist, double rotation)
 {
@@ -24,7 +36,6 @@ void driveViaIMU(double dist, double rotation)
 		while(std::fabs(dist - d) > .1){
 			// Calculate base wheel speed
 			d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
-			std::cout << d << std::endl;
 			double anglePCT = (imu.get_rotation() - rotation) * 4.5; // 4.5
 			leftMotor.moveVelocity(SPEED + anglePCT); // Originally this + and the - below were swapped
 			rightMotor.moveVelocity(SPEED - anglePCT);
@@ -35,7 +46,6 @@ void driveViaIMU(double dist, double rotation)
 		while (std::fabs(dist - d) > .1){
 			// Calculate base wheel speed
 			d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
-			std::cout << d << std::endl;
 			double anglePCT = (imu.get_rotation() - rotation) * 4.5; // 4.5
 			leftMotor.moveVelocity(-SPEED + anglePCT);
 			rightMotor.moveVelocity(-SPEED - anglePCT);
