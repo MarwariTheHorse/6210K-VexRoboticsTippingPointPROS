@@ -70,7 +70,6 @@ void skillsAuton()
 	turnViaIMU(10);
 	pros::delay(600);
 	driveViaSig(3);
-	grab();
 	pros::delay(400);
 	turnViaIMU(33); // Make sure we have not been thrown off
 	driveViaIMU(-.4, 33);
@@ -91,8 +90,7 @@ void skillsAuton()
 
 	// Align with and get the og yellow
 	turnViaIMU(-145);
-	driveViaIMU(1.9, -145);
-	grab();
+	driveViaSig(3);
 	pros::delay(400);
 	driveViaIMU(-1.8, -145);
 
@@ -120,15 +118,15 @@ void skillsAuton()
 	driveViaIMU(2, -300);
 	driveViaTime(2000, 200);
 	pros::delay(300);
+	ungrab();
+	pros::delay(500);
 	driveViaIMU(-2, -270);
 	pros::delay(300);
 	driveViaTime(4000, 200);
-	liftScore();
 	pros::delay(300);
-	ungrab();
-	driveViaTime(600, -90);
-	liftMax();
-	driveViaIMU(-.5, -270);
+	// driveViaTime(600, -90);
+	// liftMax();
+	// driveViaIMU(-.5, -270);
 
 
 

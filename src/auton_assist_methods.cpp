@@ -9,6 +9,17 @@ int sgn(double d) // Mimimcs the mathematical sgn function
 	return 0;
 }
 
+void grab()
+{
+	grip.set_value(true);
+	pros::delay(300);
+}
+
+void ungrab() // NOTE: This has no wait, unlike the function above
+{
+	grip.set_value(false);
+}
+
 // Returns a filtered x value from the gps
 double averageGPSX(double ms){
 	double startTime = pros::millis();
@@ -61,7 +72,7 @@ void driveViaIMU(double dist, double rotation)
 	double d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
 
 	if(sgn(dist) > 0){
-		while(std::fabs(dist - d) > .05){
+		while(std::fabs(dist - d) > .1){
 			// Calculate base wheel speed
 			d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
 			double anglePCT = (imu.get_rotation() - rotation) * 4.5; // 4.5
@@ -71,7 +82,7 @@ void driveViaIMU(double dist, double rotation)
 			pros::delay(5);
 		}
 	}else{
-		while (std::fabs(dist - d) > .05){
+		while (std::fabs(dist - d) > .1){
 			// Calculate base wheel speed
 			d = (leftMotor.getPosition() + rightMotor.getPosition()) / 2;
 			double anglePCT = (imu.get_rotation() - rotation) * 4.5; // 4.5
@@ -133,17 +144,18 @@ void driveViaSig(int sig){
 	leftMotor.tarePosition();
 	rightMotor.tarePosition();
 
-	while (goalDetect.get_value_calibrated() > 2900){
+	double filteredGoalDetect = 3000;
+	while (filteredGoalDetect > 2900){
 		// Calculate base wheel speed
-		double anglePCT = (goalVision.get_by_sig(0, sig).x_middle_coord * 100) / 100;
+		filteredGoalDetect = filteredGoalDetect * .99 + goalDetect.get_value() * .01;
+		double anglePCT = (goalVision.get_by_sig(0, sig).x_middle_coord * 10) / 100;
 
 		leftMotor.moveVelocity(SPEED - 4.5 * anglePCT);
 		rightMotor.moveVelocity(SPEED + 4.5 * anglePCT);
 		backMotor.moveVelocity(SPEED);
 		pros::delay(5);
 	}
-
-	driveViaTime(500, SPEED/3);
+	grab();
 
 	leftMotor.moveVelocity(0);
 	rightMotor.moveVelocity(0);
@@ -155,7 +167,7 @@ void turnViaIMU(double heading)
 	double error = heading - imu.get_rotation();
 	int rotation;
 	backMotor.moveVelocity(0);
-	while(std::fabs(error) > .5) // keeps turning until within 10 degrees of objective
+	while(std::fabs(error) > 1) // keeps turning until within 10 degrees of objective
 	{
 		if (std::fabs(error) < 40){
 		// if within 40 degrees of objective, the motors start slowing
@@ -180,17 +192,6 @@ void turnViaIMU(double heading)
 	pros::delay(50);
 	leftMotor.moveVelocity(0);
 	rightMotor.moveVelocity(0);
-}
-
-void grab()
-{
-	grip.set_value(true);
-	pros::delay(300);
-}
-
-void ungrab() // NOTE: This has no wait, unlike the function above
-{
-	grip.set_value(false);
 }
 
 // Auton lift methods
