@@ -195,7 +195,7 @@ void turnViaIMU(double heading)
 }
 
 // Auton lift methods
-void liftMin() {lift.moveAbsolute(0, 90);}
+void liftMin() {lift.moveAbsolute(.189, 90);}
 void liftSmall() {lift.moveAbsolute(.5, 90);} // 0, .5, 1.7
 void liftMax() {lift.moveAbsolute(2, 90);}
 void liftScore() {lift.moveAbsolute(1, 90);}
