@@ -147,8 +147,8 @@ void driveViaSig(int sig){
 	double filteredGoalDetect = 3000;
 	while (filteredGoalDetect > 2900){
 		// Calculate base wheel speed
-		filteredGoalDetect = filteredGoalDetect * .99 + goalDetect.get_value() * .01;
-		double anglePCT = (goalVision.get_by_sig(0, sig).x_middle_coord * 10) / 100;
+		filteredGoalDetect = filteredGoalDetect * .9 + goalDetect.get_value() * .1;
+		double anglePCT = (goalVision.get_by_sig(0, sig).x_middle_coord * 15) / 100;
 
 		leftMotor.moveVelocity(SPEED - 4.5 * anglePCT);
 		rightMotor.moveVelocity(SPEED + 4.5 * anglePCT);

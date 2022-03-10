@@ -67,9 +67,12 @@ void skillsAuton()
 
 	// Line up with far yellow and grab
 	liftMin();
-	turnViaIMU(10);
+	driveViaIMU(.6, -90);
+	turnViaIMU(35); // originally 10
 	pros::delay(600);
-	driveViaSig(3);
+	// driveViaSig(3);
+	driveViaIMU(1, 15);
+	grab();
 	pros::delay(400);
 	turnViaIMU(33); // Make sure we have not been thrown off
 	driveViaIMU(-.4, 33);
@@ -89,7 +92,7 @@ void skillsAuton()
 	driveViaIMU(-.7, -90);
 
 	// Align with and get the og yellow
-	turnViaIMU(-145);
+	turnViaIMU(-140); // Originally 145 but it overshot
 	driveViaSig(3);
 	pros::delay(400);
 	driveViaIMU(-1.8, -145);
