@@ -91,12 +91,14 @@ void skillsAuton()
 
 	// Align with and get the og yellow
 	turnViaIMU(-140); // Originally 145 but it overshot
-	driveViaSig(3);
+	driveViaIMU(1, -140);   // Originally this line was driveViaSig(3);
+	driveViaTime(1000, 200);
+	grab();
 	pros::delay(400);
 
 	// Get to the bridge's y value
 	double rotation = imu.get_rotation();
-	double yValue = -averageGPSY(2000) / std::cos(3.14159 * (rotation - 180) / 180);
+	double yValue = -averageGPSY(500) / std::cos(3.14159 * (rotation - 180) / 180);
 	driveViaIMU(-yValue, rotation);
 
 	// turn and score og yellow then back up

@@ -2,15 +2,15 @@
 
 // Motor + pneumatic port definitions
 #define WHEEL_LEFT_F 5
-#define WHEEL_LEFT_R 17
+#define WHEEL_LEFT_R 14
 
-#define WHEEL_RIGHT_F 4
-#define WHEEL_RIGHT_R 10
+#define WHEEL_RIGHT_F 11
+#define WHEEL_RIGHT_R 4
 
 #define WHEEL_BACK_L 8
 #define WHEEL_BACK_R 20
 
-#define LIFT 18
+#define LIFT 19
 #define HOOK 6
 #define GRIP 'H'
 #define HOOK_STOP 'A'
@@ -22,8 +22,8 @@
 #define GOAL_DETECT 'G'
 
 #define GPS_PORT 9
-#define GPS_OFFSET_X .0762
-#define GPS_OFFSET_Y .027
+#define GPS_OFFSET_X 0
+#define GPS_OFFSET_Y 0
 
 #define RED true
 #define BLUE false

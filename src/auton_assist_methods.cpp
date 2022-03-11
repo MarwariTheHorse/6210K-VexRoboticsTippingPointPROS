@@ -147,7 +147,7 @@ void driveViaSig(int sig){
 	double filteredGoalDetect = 2900;
 	while (filteredGoalDetect > 2000){
 
-		filteredGoalDetect = filteredGoalDetect * .99 + goalDetect.get_value() * .01;
+		filteredGoalDetect = filteredGoalDetect * .98 + goalDetect.get_value() * .02;
 
 		double anglePCT;
 		auto object = goalVision.get_by_sig(0, sig);
