@@ -68,18 +68,16 @@ void skillsAuton()
 	// Line up with far yellow and grab
 	liftMin();
 	driveViaIMU(.6, -90);
-	turnViaIMU(35); // originally 10
+	turnViaIMU(32); // originally 10
 	pros::delay(600);
-	// driveViaSig(3);
-	driveViaIMU(1, 15);
-	grab();
+	driveViaSig(3);
 	pros::delay(400);
-	turnViaIMU(33); // Make sure we have not been thrown off
+	turnViaIMU(32); // Make sure we have not been thrown off
 	driveViaIMU(-.4, 33);
 
 	// Turn around and get to platfrom
 	liftSmall();
-	turnViaIMU(-128.5);
+	turnViaIMU(-123);
 	liftMax();
 	pros::delay(600);
 	driveViaTime(4000, 200);
@@ -95,7 +93,11 @@ void skillsAuton()
 	turnViaIMU(-140); // Originally 145 but it overshot
 	driveViaSig(3);
 	pros::delay(400);
-	driveViaIMU(-1.8, -145);
+
+	// Get to the bridge's y value
+	double rotation = imu.get_rotation();
+	double yValue = -averageGPSY(2000) / std::cos(3.14159 * (rotation - 180) / 180);
+	driveViaIMU(-yValue, rotation);
 
 	// turn and score og yellow then back up
 	liftMax();
@@ -125,7 +127,7 @@ void skillsAuton()
 	pros::delay(500);
 	driveViaIMU(-2, -270);
 	pros::delay(300);
-	driveViaTime(4000, 200);
+	driveViaIMU(1, -270);
 	pros::delay(300);
 	// driveViaTime(600, -90);
 	// liftMax();
@@ -254,8 +256,10 @@ void compRightAuton()
 // For screwing around
 void experimental() // 2900 is the magic number
 {
-	liftMin();
-	driveViaSig(3);
+	while(true){
+		std::cout << goalDetect.get_value() << std::endl;
+		pros::delay(500);
+	}
 }
 
 // opcontrol

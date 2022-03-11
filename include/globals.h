@@ -23,8 +23,8 @@
 #define GOAL_DETECT 'A'
 
 #define GPS_PORT 9
-#define GPS_OFFSET_X .0762
-#define GPS_OFFSET_Y .027
+#define GPS_OFFSET_X 0
+#define GPS_OFFSET_Y 0
 
 #define RED true
 #define BLUE false

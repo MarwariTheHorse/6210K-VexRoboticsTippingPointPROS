@@ -144,11 +144,17 @@ void driveViaSig(int sig){
 	leftMotor.tarePosition();
 	rightMotor.tarePosition();
 
-	double filteredGoalDetect = 3000;
-	while (filteredGoalDetect > 2900){
-		// Calculate base wheel speed
-		filteredGoalDetect = filteredGoalDetect * .9 + goalDetect.get_value() * .1;
-		double anglePCT = (goalVision.get_by_sig(0, sig).x_middle_coord * 15) / 100;
+	double filteredGoalDetect = 2900;
+	while (filteredGoalDetect > 2000){
+
+		filteredGoalDetect = filteredGoalDetect * .99 + goalDetect.get_value() * .01;
+
+		double anglePCT;
+		auto object = goalVision.get_by_sig(0, sig);
+		if(goalVision.get_object_count() == 0 || object.width * object.height < 40)
+			anglePCT = 0;
+		else
+			anglePCT = (object.x_middle_coord * 15) / 100;
 
 		leftMotor.moveVelocity(SPEED - 4.5 * anglePCT);
 		rightMotor.moveVelocity(SPEED + 4.5 * anglePCT);

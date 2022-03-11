@@ -16,3 +16,5 @@ extern void judas();
 extern void driveViaSig(int sig);
 extern void driveToRamp(double time, double heading, bool isRedRamp);
 extern double averageGPSX(double ms);
+extern double averageGPSY(double ms);
+extern double averageGPSR(double ms);
