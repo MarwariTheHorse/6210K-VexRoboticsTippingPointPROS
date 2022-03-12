@@ -154,7 +154,7 @@ void driveViaSig(int sig){
 		if(goalVision.get_object_count() == 0 || object.width * object.height < 40)
 			anglePCT = 0;
 		else
-			anglePCT = (object.x_middle_coord * 15) / 100;
+			anglePCT = (object.x_middle_coord * 20) / 100;
 
 		leftMotor.moveVelocity(SPEED - 4.5 * anglePCT);
 		rightMotor.moveVelocity(SPEED + 4.5 * anglePCT);

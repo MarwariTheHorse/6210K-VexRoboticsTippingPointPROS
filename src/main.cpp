@@ -44,7 +44,7 @@ void skillsAuton()
 
 	// Line up with the yellow goal and push in corner
 	turnViaIMU(93);
-	driveViaIMU(-2.1, 93);
+	driveViaIMU(-2, 93); // Was -2.1
 	
 	// Line up with the bridge and get around the base
 	driveViaIMU(.3, 93); 
@@ -77,7 +77,7 @@ void skillsAuton()
 
 	// Turn around and get to platfrom
 	liftSmall();
-	turnViaIMU(-123);
+	turnViaIMU(-122); // Originally 120
 	liftMax();
 	pros::delay(600);
 	driveViaTime(4000, 200);
@@ -106,16 +106,11 @@ void skillsAuton()
 	turnViaIMU(-90);
 	pros::delay(500);
 	driveViaTime(2000, 200);
-	liftScore();
-	pros::delay(300);
 	ungrab();
-	driveViaTime(600, -90);
-	liftMax();
-	pros::delay(300);
-	driveViaIMU(-.5, -90);
+	driveViaIMU(-.7, -90);
 	liftMin();
 
-	turnViaIMU(-170);
+	turnViaIMU(-170); // Previously 170
 	driveViaTime(3000, 200);
 	grab();
 	turnViaIMU(-180);
