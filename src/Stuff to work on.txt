@@ -1,2 +1,0 @@
-1. Break 210 in auton
-2. Add red goal pneumatic for auton
