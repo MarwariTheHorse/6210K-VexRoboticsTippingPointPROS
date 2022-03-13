@@ -5,7 +5,7 @@
 #define WHEEL_LEFT_R 14
 
 #define WHEEL_RIGHT_F 11
-#define WHEEL_RIGHT_R 4
+#define WHEEL_RIGHT_R 13
 
 #define WHEEL_BACK_L 8
 #define WHEEL_BACK_R 20

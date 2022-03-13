@@ -96,7 +96,7 @@ void skillsAuton()
 	grab();
 	pros::delay(400);
 
-	// Get to the bridge's y value
+	// Align with the bridge using GPS
 	double rotation = imu.get_rotation();
 	double yValue = -averageGPSY(500) / std::cos(3.14159 * (rotation - 180) / 180);
 	driveViaIMU(-yValue, rotation);
@@ -110,7 +110,7 @@ void skillsAuton()
 	driveViaIMU(-.7, -90);
 	liftMin();
 
-	turnViaIMU(-170); // Previously 170
+	turnViaIMU(-165); // LAST PRE-WORLDS CHANGE (-170 > -165)
 	driveViaTime(3000, 200);
 	grab();
 	turnViaIMU(-180);
