@@ -12,6 +12,8 @@ bool gripState;
 bool hookState;
 double gripHoldPosition;
 
+int loggingCount = 0;
+
 // Anti-doubles
 bool prevUp;
 bool prevB;
@@ -353,6 +355,31 @@ void autonomous() {
 	if(autonMode == 'A') experimental();
 }
 
+void printHeaders() {
+	std::cout << "Pneumatic State, Reflectivity, Xr, Yr, Sr, Xb, Yb, Sb, Xy, Yy, Sy, IMUtheta, Ax, Ay, Lift Position, Judas\n";
+}
+
+void logData() {
+	if(loggingCount > 10){
+		std::ofstream myfile;
+		myfile.open ("/usd/trainingData.txt");
+
+		loggingCount = 0;
+		myfile << gripState << ", " << goalDetect.get_value() << ", ";
+
+		// auto redObject = goalVision.get_by_sig(0, 1);
+		// std::cout << redObject.x_middle_coord << ", " << redObject.y_middle_coord << ", " << redObject.width * redObject.height << ", ";
+		// auto blueObject = goalVision.get_by_sig(0, 2);
+		// std::cout << blueObject.x_middle_coord << ", " << blueObject.y_middle_coord << ", " << blueObject.width * blueObject.height << ", ";
+		// auto yellowObject = goalVision.get_by_sig(0, 3);
+		// std::cout << yellowObject.x_middle_coord << ", " << yellowObject.y_middle_coord << ", " << yellowObject.width * yellowObject.height << ", ";
+		myfile << imu.get_rotation() << ", " << imu.get_accel().x << ", " << imu.get_accel().y << ", " << lift.getPosition() << ", " << hookState << std::endl;
+		myfile.close();
+	}else{
+		loggingCount++;
+	}
+}
+
 void opcontrol() {
 	static bool initialized = false; // This line only runs once, no matter how many function calls
 	if(!initialized){
@@ -413,12 +440,15 @@ void opcontrol() {
 		initialized = true;
 	}
 
+	printHeaders();
+
 	while (true) {
 		setVibrate();
 		setGrip();
 		setHook();
 		setDTSpeeds();
 		setLift();
-		pros::delay(10);
+		logData();
+		pros::delay(5);
 	}
 }
