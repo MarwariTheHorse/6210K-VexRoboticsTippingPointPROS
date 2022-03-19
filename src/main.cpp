@@ -356,23 +356,27 @@ void autonomous() {
 }
 
 void printHeaders() {
-	std::cout << "Pneumatic State, Reflectivity, Xr, Yr, Sr, Xb, Yb, Sb, Xy, Yy, Sy, IMUtheta, Ax, Ay, Lift Position, Judas\n";
+	std::ofstream myfile;
+	myfile.open ("/usd/trainingData.txt", std::ios_base::app);
+	myfile << "Pneumatic State, Reflectivity, Xr, Yr, Sr, Xb, Yb, Sb, Xy, Yy, Sy, IMUtheta, Ax, Ay, Lift Position, Judas\n";
+	myfile.close();
 }
 
 void logData() {
 	if(loggingCount > 10){
-		std::ofstream myfile;
-		myfile.open ("/usd/trainingData.txt");
-
 		loggingCount = 0;
+
+		std::ofstream myfile;
+		myfile.open("/usd/trainingData.txt", std::ios_base::app);
+
 		myfile << gripState << ", " << goalDetect.get_value() << ", ";
 
-		// auto redObject = goalVision.get_by_sig(0, 1);
-		// std::cout << redObject.x_middle_coord << ", " << redObject.y_middle_coord << ", " << redObject.width * redObject.height << ", ";
-		// auto blueObject = goalVision.get_by_sig(0, 2);
-		// std::cout << blueObject.x_middle_coord << ", " << blueObject.y_middle_coord << ", " << blueObject.width * blueObject.height << ", ";
-		// auto yellowObject = goalVision.get_by_sig(0, 3);
-		// std::cout << yellowObject.x_middle_coord << ", " << yellowObject.y_middle_coord << ", " << yellowObject.width * yellowObject.height << ", ";
+		auto redObject = goalVision.get_by_sig(0, 1);
+		std::cout << redObject.x_middle_coord << ", " << redObject.y_middle_coord << ", " << redObject.width * redObject.height << ", ";
+		auto blueObject = goalVision.get_by_sig(0, 2);
+		std::cout << blueObject.x_middle_coord << ", " << blueObject.y_middle_coord << ", " << blueObject.width * blueObject.height << ", ";
+		auto yellowObject = goalVision.get_by_sig(0, 3);
+		std::cout << yellowObject.x_middle_coord << ", " << yellowObject.y_middle_coord << ", " << yellowObject.width * yellowObject.height << ", ";
 		myfile << imu.get_rotation() << ", " << imu.get_accel().x << ", " << imu.get_accel().y << ", " << lift.getPosition() << ", " << hookState << std::endl;
 		myfile.close();
 	}else{
