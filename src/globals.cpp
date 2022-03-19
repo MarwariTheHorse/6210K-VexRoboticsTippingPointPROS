@@ -17,7 +17,7 @@
 
 #define GYRO 7
 
-#define GOAL_VISION 21
+#define GOAL_VISION 12
 #define RAMP_VISON 5
 #define GOAL_DETECT 'G'
 

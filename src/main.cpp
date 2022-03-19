@@ -358,12 +358,12 @@ void autonomous() {
 void printHeaders() {
 	std::ofstream myfile;
 	myfile.open ("/usd/trainingData.txt", std::ios_base::app);
-	myfile << "Pneumatic State, Reflectivity, Xr, Yr, Sr, Xb, Yb, Sb, Xy, Yy, Sy, IMUtheta, Ax, Ay, Lift Position, Judas\n";
+	myfile << "Pneumatic State, Reflectivity, Xr, Yr, Sr, Xb, Yb, Sb, Xy, Yy, Sy, IMUtheta, Ax, Ay, Lift Position, Judas" << std::endl;
 	myfile.close();
 }
 
 void logData() {
-	if(loggingCount > 10){
+	if(loggingCount > 2){
 		loggingCount = 0;
 
 		std::ofstream myfile;
@@ -372,11 +372,11 @@ void logData() {
 		myfile << gripState << ", " << goalDetect.get_value() << ", ";
 
 		auto redObject = goalVision.get_by_sig(0, 1);
-		std::cout << redObject.x_middle_coord << ", " << redObject.y_middle_coord << ", " << redObject.width * redObject.height << ", ";
+		myfile << redObject.x_middle_coord << ", " << redObject.y_middle_coord << ", " << redObject.width * redObject.height << ", ";
 		auto blueObject = goalVision.get_by_sig(0, 2);
-		std::cout << blueObject.x_middle_coord << ", " << blueObject.y_middle_coord << ", " << blueObject.width * blueObject.height << ", ";
+		myfile << blueObject.x_middle_coord << ", " << blueObject.y_middle_coord << ", " << blueObject.width * blueObject.height << ", ";
 		auto yellowObject = goalVision.get_by_sig(0, 3);
-		std::cout << yellowObject.x_middle_coord << ", " << yellowObject.y_middle_coord << ", " << yellowObject.width * yellowObject.height << ", ";
+		myfile << yellowObject.x_middle_coord << ", " << yellowObject.y_middle_coord << ", " << yellowObject.width * yellowObject.height << ", ";
 		myfile << imu.get_rotation() << ", " << imu.get_accel().x << ", " << imu.get_accel().y << ", " << lift.getPosition() << ", " << hookState << std::endl;
 		myfile.close();
 	}else{
@@ -389,6 +389,13 @@ void opcontrol() {
 	if(!initialized){
 		// Initialize stuff
 		pros::lcd::initialize();
+
+		// SD warning
+		if(!pros::usd::is_installed()){
+			master.rumble(".-");
+			while(!master.getDigital(okapi::ControllerDigital::A))
+				pros::delay(10);
+		}
 
 		// Configure the goal vision sensor
 		pros::vision_signature_s_t sigGoalRed = goalVision.signature_from_utility(1, 5607, 8193, 6900, -793, -297, -545, 3.7, 0);
