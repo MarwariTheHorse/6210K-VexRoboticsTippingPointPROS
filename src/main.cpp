@@ -366,19 +366,20 @@ void logData() {
 	if(loggingCount > 2){
 		loggingCount = 0;
 
-		std::ofstream myfile;
-		myfile.open("/usd/trainingData.txt", std::ios_base::app);
+		std::ofstream dataFile;
+		dataFile.open("/usd/trainingData.txt", std::ios_base::app);
 
-		myfile << gripState << ", " << goalDetect.get_value() << ", ";
+		dataFile << gripState << ", " << goalDetect.get_value() << ", ";
 
 		auto redObject = goalVision.get_by_sig(0, 1);
-		myfile << redObject.x_middle_coord << ", " << redObject.y_middle_coord << ", " << redObject.width * redObject.height << ", ";
+		dataFile << redObject.x_middle_coord << ", " << redObject.y_middle_coord << ", " << redObject.width * redObject.height << ", ";
 		auto blueObject = goalVision.get_by_sig(0, 2);
-		myfile << blueObject.x_middle_coord << ", " << blueObject.y_middle_coord << ", " << blueObject.width * blueObject.height << ", ";
+		dataFile << blueObject.x_middle_coord << ", " << blueObject.y_middle_coord << ", " << blueObject.width * blueObject.height << ", ";
 		auto yellowObject = goalVision.get_by_sig(0, 3);
-		myfile << yellowObject.x_middle_coord << ", " << yellowObject.y_middle_coord << ", " << yellowObject.width * yellowObject.height << ", ";
-		myfile << imu.get_rotation() << ", " << imu.get_accel().x << ", " << imu.get_accel().y << ", " << lift.getPosition() << ", " << hookState << std::endl;
-		myfile.close();
+		dataFile << yellowObject.x_middle_coord << ", " << yellowObject.y_middle_coord << ", " << yellowObject.width * yellowObject.height << ", ";
+		
+		dataFile << imu.get_rotation() << ", " << imu.get_accel().x << ", " << imu.get_accel().y << ", " << lift.getPosition() << ", " << hookState << std::endl;
+		dataFile.close();
 	}else{
 		loggingCount++;
 	}
