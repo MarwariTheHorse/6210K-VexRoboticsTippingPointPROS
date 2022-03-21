@@ -1,5 +1,6 @@
 #include "main.h"
 #include <fstream>
+#include <string>
 #include "auton_assist_methods.h"
 #include "globals.h"
 
@@ -363,11 +364,11 @@ void printHeaders() {
 }
 
 void logData() {
-	if(loggingCount > 2){
+	if(loggingCount > 4){
 		loggingCount = 0;
 
 		std::ofstream dataFile;
-		dataFile.open("/usd/trainingData.txt", std::ios_base::app);
+		dataFile.open("/usd/current_data.csv", std::ios_base::app);
 
 		dataFile << gripState << ", " << goalDetect.get_value() << ", ";
 
@@ -382,6 +383,17 @@ void logData() {
 		dataFile.close();
 	}else{
 		loggingCount++;
+	}
+}
+
+void checkData() {
+	std::string line;
+	std::ifstream instructions ("/usd/instructions.txt");
+	std::getline(instructions, line);
+	if(line == "1"){
+		grab();
+	} if(line == "0"){
+		ungrab();
 	}
 }
 
