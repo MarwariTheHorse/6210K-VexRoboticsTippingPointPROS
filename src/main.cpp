@@ -397,6 +397,43 @@ void checkData() {
 	}
 }
 
+void loadWeights(){
+	CPyInstance hInstance;
+
+	CPyObject pName = PyUnicode_FromString("keras_nn");
+	CPyObject pModule = PyImport_Import(pName);
+
+	if(pModule)
+	{
+		CPyObject pFunc = PyObject_GetAttrString(pModule, "load_weights");
+		if(pFunc && PyCallable_Check(pFunc))
+		{
+			CPyObject model = PyObject_CallObject(pFunc, NULL);
+		}
+	}
+}
+
+void giveInstruction(){
+	CPyInstance hInstance;
+
+	CPyObject pName = PyUnicode_FromString("keras_nn");
+	CPyObject pModule = PyImport_Import(pName);
+
+	if(pModule)
+	{
+		CPyObject pFunc = PyObject_GetAttrString(pModule, "record_values");
+		if(pFunc && PyCallable_Check(pFunc))
+		{
+			CPyObject pValue = PyObject_CallObject(pFunc, NULL);
+			int instruction = pValue;
+			if(instruction = 1){
+				grab();
+			} else{
+				ungrab();
+			}
+		}
+}
+
 void opcontrol() {
 	static bool initialized = false; // This line only runs once, no matter how many function calls
 	if(!initialized){
@@ -466,6 +503,8 @@ void opcontrol() {
 
 	printHeaders();
 
+
+
 	while (true) {
 		setVibrate();
 		setGrip();
@@ -473,6 +512,7 @@ void opcontrol() {
 		setDTSpeeds();
 		setLift();
 		logData();
+		checkData();
 		pros::delay(5);
 	}
 }

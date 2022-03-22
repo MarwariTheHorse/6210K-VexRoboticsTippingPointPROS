@@ -10,16 +10,24 @@ from sklearn.preprocessing import normalize, StandardScaler
 from sklearn.pipeline import Pipeline
 
 # load dataset
-train = True
-if train:
-	dataframe = read_csv("src\COPilot.csv", header=None)
-	dataset = dataframe.values
-	# split into input (X) and output (Y) variables
-	X = dataset[:,1:16]
-	Y = dataset[:,0]
-	# define base model
-	adam = Adam(learning_rate=0.002)
-	def baseline_model():
+train = False
+adam = Adam(learning_rate=0.002)
+instruction = 0
+
+def load_weights():
+	global adam, score
+	# load json and create model
+	json_file = open('model.json', 'r')
+	loaded_model_json = json_file.read()
+	json_file.close()
+	loaded_model = model_from_json(loaded_model_json)
+	# load weights into new model
+	loaded_model.load_weights("nn_data\model.h5")		
+	# evaluate loaded model on test data
+	loaded_model.compile(loss='mean_squared_error', optimizer=adam, metrics=['accuracy'])
+	return loaded_model
+
+def baseline_model():
 		global adam
 		# create model
 		model = Sequential()
@@ -34,6 +42,13 @@ if train:
 		model.save_weights("model.h5")
 		print("Saved model to disk")
 		return model
+
+if train:
+	dataframe = read_csv("src\COPilot.csv", header=None)
+	dataset = dataframe.values
+	# split into input (X) and output (Y) variables
+	X = dataset[:,1:16]
+	Y = dataset[:,0]
 	# evaluate model with standardized dataset
 	estimators = []
 	X = normalize(X)
@@ -44,28 +59,19 @@ if train:
 	kfold = KFold(n_splits=10)
 	results = cross_val_score(pipeline, X, Y, cv=kfold)
 	print("Standardized: %.2f (%.2f) MSE" % (results.mean(), results.std()))
+
 else:
-	try:
+	def record_values():
+		global instruction, loaded_model
 		dataset = read_csv('\usd\current_data.csv')
 		X = dataset[:,1:16]
 		Y = dataset[:,0]
-		# load json and create model
-		json_file = open('model.json', 'r')
-		loaded_model_json = json_file.read()
-		json_file.close()
-		loaded_model = model_from_json(loaded_model_json)
-		# load weights into new model
-		loaded_model.load_weights("nn_data\model.h5")		
-		# evaluate loaded model on test data
-		loaded_model.compile(loss='mean_squared_error', optimizer='adam', metrics=['accuracy'])
 		score = loaded_model.evaluate(X, Y, verbose=0)
-		if score > .5:
-			file = open('instructions.txt', 'r')
-			file.write("1")
-			file.close()
-		else:
-			file = open('instructions.txt', 'r')
-			file.write("0")
-			file.close()
-	except:
-		pass
+		try:
+			if score > .5:
+				instruction = 1
+			else:
+				instruction = 0
+		except:
+			pass
+	record_values()
