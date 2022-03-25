@@ -390,7 +390,7 @@ void logData() {
 }
 
 void giveInstruction(){
-	auto model = Model::load("/usd/nn_data/keras_nn.model");
+	auto model = Model::load("/usd/keras_nn.model");
 
 	auto redObject = goalVision.get_by_sig(0, 1);
 	auto blueObject = goalVision.get_by_sig(0, 2);
@@ -434,7 +434,8 @@ void giveInstruction(){
 	} else{
 		ungrab();
 	}
-    std::cout << result << std::endl;
+    // std::cout << result << std::endl;
+	out.print();
 }
 
 void opcontrol() {
