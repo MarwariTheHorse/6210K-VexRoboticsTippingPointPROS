@@ -3,7 +3,10 @@
 #include <string>
 #include "auton_assist_methods.h"
 #include "globals.h"
+#include "src/model.h"
 
+using keras2cpp::Model;
+using keras2cpp::Tensor;
 // Constants
 const bool TORQUE_THRESHOLD = 1.99;
 
@@ -386,52 +389,52 @@ void logData() {
 	}
 }
 
-void checkData() {
-	std::string line;
-	std::ifstream instructions ("/usd/instructions.txt");
-	std::getline(instructions, line);
-	if(line == "1"){
+void giveInstruction(){
+	auto model = Model::load("/usd/nn_data/keras_nn.model");
+
+	auto redObject = goalVision.get_by_sig(0, 1);
+	auto blueObject = goalVision.get_by_sig(0, 2);
+	auto yellowObject = goalVision.get_by_sig(0, 3);
+
+	// convert everything to floats so the tensor doesn't cry
+
+	float redx = redObject.x_middle_coord;
+	float redy = redObject.y_middle_coord;
+	float redSize = redObject.height * redObject.width;
+
+	float bluex = blueObject.x_middle_coord;
+	float bluey = blueObject.y_middle_coord;
+	float blueSize = blueObject.height * blueObject.width;
+
+	float yellowx = yellowObject.x_middle_coord;
+	float yellowy = yellowObject.y_middle_coord;
+	float yellowSize = yellowObject.height * yellowObject.width;
+
+	float imu_theta = imu.get_rotation();
+	float imu_accelx = imu.get_accel().x;
+	float imu_accely = imu.get_accel().y;
+
+	float liftpos = lift.getPosition();
+	float hook_state = hookState;
+
+    // Create a 1D Tensor on length 15 for input data.
+    Tensor in{15};
+    in.data_ = {redx, redy, redSize, 
+				bluex, bluey, blueSize, 
+				yellowx, yellowy, yellowSize, 
+				imu_theta, imu_accelx, imu_accely, liftpos, hook_state};
+
+    // Run prediction.
+    Tensor out = model(in);
+	float result = out.data_[0];
+
+	// change the decimal to increase sensitivity
+	if (result > .5){
 		grab();
-	} if(line == "0"){
+	} else{
 		ungrab();
 	}
-}
-
-void loadWeights(){
-	CPyInstance hInstance;
-
-	CPyObject pName = PyUnicode_FromString("keras_nn");
-	CPyObject pModule = PyImport_Import(pName);
-
-	if(pModule)
-	{
-		CPyObject pFunc = PyObject_GetAttrString(pModule, "load_weights");
-		if(pFunc && PyCallable_Check(pFunc))
-		{
-			CPyObject model = PyObject_CallObject(pFunc, NULL);
-		}
-	}
-}
-
-void giveInstruction(){
-	CPyInstance hInstance;
-
-	CPyObject pName = PyUnicode_FromString("keras_nn");
-	CPyObject pModule = PyImport_Import(pName);
-
-	if(pModule)
-	{
-		CPyObject pFunc = PyObject_GetAttrString(pModule, "record_values");
-		if(pFunc && PyCallable_Check(pFunc))
-		{
-			CPyObject pValue = PyObject_CallObject(pFunc, NULL);
-			int instruction = pValue;
-			if(instruction = 1){
-				grab();
-			} else{
-				ungrab();
-			}
-		}
+    std::cout << result << std::endl;
 }
 
 void opcontrol() {
@@ -511,8 +514,7 @@ void opcontrol() {
 		setHook();
 		setDTSpeeds();
 		setLift();
-		logData();
-		checkData();
+		giveInstruction();
 		pros::delay(5);
 	}
 }
