@@ -425,10 +425,10 @@ void giveInstruction(){
 				imu_theta, imu_accelx, imu_accely, liftpos, hook_state};
 
     // Run prediction.
+	// First reshape tensor to 3d
+	//TODO: find a way to expand the dimensions of the tensor so that the NN can read it 
     Tensor out = model(in);
 	float result = out.data_[0];
-	//TODO: find a way to expand the dimensions of the tensor by 1 so that the NN can read it 
-	// TODO is conditional on LSTM implementation
 	// change the decimal to increase sensitivity
 	if (result > .55){
 		grab();

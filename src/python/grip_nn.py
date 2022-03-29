@@ -22,7 +22,7 @@ def create_model():
 	model.add(LSTM(3))
 	model.add(Dense(1, input_dim=1, kernel_initializer='normal', activation='sigmoid'))
 	model.compile(loss='mean_squared_error', optimizer=adam, metrics=['accuracy'])
-	model.fit(X, Y, batch_size=10, epochs=5, verbose=1)
+	model.fit(X, Y, batch_size=5, epochs=10, verbose=1)
 	model.summary()
 	return model
 
