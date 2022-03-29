@@ -429,7 +429,7 @@ void giveInstruction(){
 	float result = out.data_[0];
 
 	// change the decimal to increase sensitivity
-	if (result > .5){
+	if (result > .55){
 		grab();
 	} else{
 		ungrab();
