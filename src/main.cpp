@@ -427,7 +427,8 @@ void giveInstruction(){
     // Run prediction.
     Tensor out = model(in);
 	float result = out.data_[0];
-
+	//TODO: find a way to expand the dimensions of the tensor by 1 so that the NN can read it 
+	// TODO is conditional on LSTM implementation
 	// change the decimal to increase sensitivity
 	if (result > .55){
 		grab();
