@@ -417,16 +417,14 @@ void giveInstruction(){
 	float liftpos = lift.getPosition();
 	float hook_state = hookState;
 
-    // Create a 1D Tensor on length 15 for input data.
-    Tensor in{15};
-    in.data_ = {redx, redy, redSize, 
+    // Create a 3D Tensor on length 15 for input data.
+    Tensor in{NULL, 1, 15};
+	in.data_ = {{{(redx, redy, redSize, 
 				bluex, bluey, blueSize, 
 				yellowx, yellowy, yellowSize, 
-				imu_theta, imu_accelx, imu_accely, liftpos, hook_state};
-
+				imu_theta, imu_accelx, imu_accely, liftpos, hook_state)}}};
     // Run prediction.
-	// First reshape tensor to 3d
-	//TODO: find a way to expand the dimensions of the tensor so that the NN can read it 
+	in.print();
     Tensor out = model(in);
 	float result = out.data_[0];
 	// change the decimal to increase sensitivity
@@ -435,8 +433,7 @@ void giveInstruction(){
 	} else{
 		ungrab();
 	}
-    // std::cout << result << std::endl;
-	out.print();
+    std::cout << result << std::endl;
 }
 
 void opcontrol() {

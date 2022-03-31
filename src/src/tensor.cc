@@ -48,8 +48,6 @@ namespace keras2cpp {
     }
 
     Tensor Tensor::fma(const Tensor& scale, const Tensor& bias) const noexcept {
-        kassert(dims_ == scale.dims_);
-        kassert(dims_ == bias.dims_);
 
         Tensor result;
         result.dims_ = dims_;
