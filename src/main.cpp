@@ -419,6 +419,7 @@ void giveInstruction(){
 
     // Create a 3D Tensor on length 15 for input data.
     Tensor in{NULL, 1, 15};
+	in.print_shape();
 	in.data_ = {{{(redx, redy, redSize, 
 				bluex, bluey, blueSize, 
 				yellowx, yellowy, yellowSize, 
