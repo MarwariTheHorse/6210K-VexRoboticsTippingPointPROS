@@ -25,6 +25,7 @@ bool prevB;
 double lastVibrate = 0;
 
 char autonMode = 'N'; // Stands for none
+char userControlled = 'N'; //similar to above
 
 // Autons
 void skillsAuton()
@@ -429,12 +430,18 @@ void giveInstruction(){
     Tensor out = model(in);
 	float result = out.data_[0];
 	// change the decimal to increase sensitivity
-	if (result > .55){
-		grab();
-	} else{
-		ungrab();
-	}
+	if (userControlled == 'N'){
+		if (result > .55){
+			grab();
+		} else{
+			ungrab();
+		}}
     std::cout << result << std::endl;
+}
+
+void checkPreference(){
+	if(master.getDigital(okapi::ControllerDigital::A)) userControlled = 'A';
+	if(master.getDigital(okapi::ControllerDigital::B)) userControlled = 'N';
 }
 
 void opcontrol() {
@@ -483,6 +490,15 @@ void opcontrol() {
 		lift.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
 
 		// Render the prompt
+		master.setText(0, 0, "User or NN?");
+		master.setText(1, 0, "A for User");
+		master.setText(2, 0, "B for NN");
+		while(userControlled == 'N'){
+			//Buttons
+			if(master.getDigital(okapi::ControllerDigital::A)) userControlled = 'A';
+			if(master.getDigital(okapi::ControllerDigital::B)) break;
+		}
+		master.clear();
 		master.setText(0, 0, "Select a mode:");
 
 		// Get the choice
@@ -514,6 +530,7 @@ void opcontrol() {
 		setHook();
 		setDTSpeeds();
 		setLift();
+		checkPreference();
 		giveInstruction();
 		pros::delay(5);
 	}
