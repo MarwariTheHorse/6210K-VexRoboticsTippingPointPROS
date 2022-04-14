@@ -391,7 +391,7 @@ void logData() {
 }
 
 void giveInstruction(){
-	auto model = Model::load("/usd/keras_nn.model");
+	auto model = Model::load("/usd/keras_rnn.model");
 
 	auto redObject = goalVision.get_by_sig(0, 1);
 	auto blueObject = goalVision.get_by_sig(0, 2);
@@ -418,13 +418,13 @@ void giveInstruction(){
 	float liftpos = lift.getPosition();
 	float hook_state = hookState;
 
-    // Create a 3D Tensor on length 15 for input data.
-    Tensor in{NULL, 1, 15};
+    // Create a 1D Tensor on length 15 for input data.
+    Tensor in{15};
 	in.print_shape();
-	in.data_ = {{{(redx, redy, redSize, 
-				bluex, bluey, blueSize, 
-				yellowx, yellowy, yellowSize, 
-				imu_theta, imu_accelx, imu_accely, liftpos, hook_state)}}};
+	in.data_ = {redx,redy,redSize, 
+				bluex,bluey,blueSize, 
+				yellowx,yellowy,yellowSize, 
+				imu_theta,imu_accelx,imu_accely,liftpos,hook_state};
     // Run prediction.
 	in.print();
     Tensor out = model(in);

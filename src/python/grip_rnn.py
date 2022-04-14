@@ -28,7 +28,7 @@ def create_model():
 
 # save model
 model = create_model()
-export_model(model, "keras_nn.model")
+export_model(model, "keras_rnn.model")
 no_fire_test = np.expand_dims(np.array([2930,-32,-102,72,-67,-52,3570,-114,-55,160,-14.2388,0.0126953,0.894775,1.33944,0]), 0)
 fire_test = np.expand_dims(np.array([2790,73,3,800,-145,-28,364,65,-10,42,-27.845,-0.0571289,1.01196,0.575,0]), 0)
 #Following lines should return 1 from the NN
