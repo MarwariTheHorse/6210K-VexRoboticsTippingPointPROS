@@ -363,7 +363,7 @@ void autonomous() {
 void printHeaders() {
 	std::ofstream myfile;
 	myfile.open ("/usd/trainingData.txt", std::ios_base::app);
-	myfile << "Pneumatic State, Reflectivity, Xr, Yr, Sr, Xb, Yb, Sb, Xy, Yy, Sy, IMUtheta, Ax, Ay, Lift Position, Judas" << std::endl;
+	myfile << "Pneumatic State, Reflectivity, UltDist, Xr, Yr, Sr, Xb, Yb, Sb, Xy, Yy, Sy, IMUtheta, Ax, Ay, Lift Position, Judas" << std::endl;
 	myfile.close();
 }
 
@@ -374,7 +374,7 @@ void logData() {
 		std::ofstream dataFile;
 		dataFile.open("/usd/current_data.csv", std::ios_base::app);
 
-		dataFile << gripState << ", " << goalDetect.get_value() << ", ";
+		dataFile << gripState << ", " << goalDetect.get_value() << ", " << echo.get_value() << ", ";
 
 		auto redObject = goalVision.get_by_sig(0, 1);
 		dataFile << redObject.x_middle_coord << ", " << redObject.y_middle_coord << ", " << redObject.width * redObject.height << ", ";
@@ -391,25 +391,42 @@ void logData() {
 }
 
 void giveInstruction(){
-	auto model = Model::load("/usd/keras_rnn.model");
+	auto model = Model::load("/usd/keras_ann.model");
 
 	auto redObject = goalVision.get_by_sig(0, 1);
 	auto blueObject = goalVision.get_by_sig(0, 2);
 	auto yellowObject = goalVision.get_by_sig(0, 3);
 
 	// convert everything to floats so the tensor doesn't cry
+	float reflectivity = goalDetect.get_value();
+	float echoDist = echo.get_value();
 
 	float redx = redObject.x_middle_coord;
 	float redy = redObject.y_middle_coord;
 	float redSize = redObject.height * redObject.width;
+	if(redy < 0 || redx < 0){
+		redy = 0;
+		redx = 0;
+		redSize = 0;
+	}
 
 	float bluex = blueObject.x_middle_coord;
 	float bluey = blueObject.y_middle_coord;
 	float blueSize = blueObject.height * blueObject.width;
+	if(bluey < 0 || (bluex < 0)){
+		bluey = 0;
+		bluex = 0;
+		blueSize = 0;
+	}
 
 	float yellowx = yellowObject.x_middle_coord;
 	float yellowy = yellowObject.y_middle_coord;
 	float yellowSize = yellowObject.height * yellowObject.width;
+	if((yellowy < 0) || (yellowx < 0)){
+		yellowy = 0;
+		yellowx = 0;
+		yellowSize = 0;
+	}
 
 	float imu_theta = imu.get_rotation();
 	float imu_accelx = imu.get_accel().x;
@@ -418,10 +435,11 @@ void giveInstruction(){
 	float liftpos = lift.getPosition();
 	float hook_state = hookState;
 
-    // Create a 1D Tensor on length 15 for input data.
-    Tensor in{15};
+    // Create a 1D Tensor on length 16 for input data.
+    Tensor in{16};
 	in.print_shape();
-	in.data_ = {redx,redy,redSize, 
+	in.data_ = {reflectivity,echoDist,
+				redx,redy,redSize, 
 				bluex,bluey,blueSize, 
 				yellowx,yellowy,yellowSize, 
 				imu_theta,imu_accelx,imu_accely,liftpos,hook_state};
@@ -530,6 +548,7 @@ void opcontrol() {
 		setHook();
 		setDTSpeeds();
 		setLift();
+		//logData();
 		checkPreference();
 		giveInstruction();
 		pros::delay(5);

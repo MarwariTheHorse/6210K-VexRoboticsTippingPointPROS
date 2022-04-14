@@ -54,6 +54,7 @@ extern pros::Imu imu;
 extern pros::GPS gps;
 extern pros::ADIDigitalIn hookStop;
 extern pros::ADIAnalogIn goalDetect;
+extern pros::ADIUltrasonic echo;
 
 // Pneumatics
 extern pros::ADIDigitalOut grip;
