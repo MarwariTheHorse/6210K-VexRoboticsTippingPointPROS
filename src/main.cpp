@@ -27,6 +27,8 @@ double lastVibrate = 0;
 char autonMode = 'N'; // Stands for none
 char userControlled = 'N'; //similar to above
 
+bool RNN = false;
+
 // Autons
 void skillsAuton()
 {
@@ -391,7 +393,7 @@ void logData() {
 }
 
 void giveInstruction(){
-	auto model = Model::load("/usd/keras_ann.model");
+	auto model = Model::load("/usd/keras_rnn.model");
 
 	auto redObject = goalVision.get_by_sig(0, 1);
 	auto blueObject = goalVision.get_by_sig(0, 2);
@@ -404,29 +406,14 @@ void giveInstruction(){
 	float redx = redObject.x_middle_coord;
 	float redy = redObject.y_middle_coord;
 	float redSize = redObject.height * redObject.width;
-	if(redy < 0 || redx < 0){
-		redy = 0;
-		redx = 0;
-		redSize = 0;
-	}
 
 	float bluex = blueObject.x_middle_coord;
 	float bluey = blueObject.y_middle_coord;
 	float blueSize = blueObject.height * blueObject.width;
-	if(bluey < 0 || (bluex < 0)){
-		bluey = 0;
-		bluex = 0;
-		blueSize = 0;
-	}
 
 	float yellowx = yellowObject.x_middle_coord;
 	float yellowy = yellowObject.y_middle_coord;
 	float yellowSize = yellowObject.height * yellowObject.width;
-	if((yellowy < 0) || (yellowx < 0)){
-		yellowy = 0;
-		yellowx = 0;
-		yellowSize = 0;
-	}
 
 	float imu_theta = imu.get_rotation();
 	float imu_accelx = imu.get_accel().x;
@@ -434,18 +421,48 @@ void giveInstruction(){
 
 	float liftpos = lift.getPosition();
 	float hook_state = hookState;
-
-    // Create a 1D Tensor on length 16 for input data.
-    Tensor in{16};
-	in.print_shape();
-	in.data_ = {reflectivity,echoDist,
-				redx,redy,redSize, 
-				bluex,bluey,blueSize, 
-				yellowx,yellowy,yellowSize, 
-				imu_theta,imu_accelx,imu_accely,liftpos,hook_state};
-    // Run prediction.
-	in.print();
-    Tensor out = model(in);
+	Tensor in;
+	if(RNN){
+		// Create a 3D Tensor on length 16 for input data.
+		Tensor in{1, 1, 16};
+		in.data_[0] = reflectivity;
+		in.data_[1] = echoDist;
+		in.data_[2] = redx;
+		in.data_[3] = redy;
+		in.data_[4] = redSize;
+		in.data_[5] = bluex;
+		in.data_[6] = bluey;
+		in.data_[7] = blueSize;
+		in.data_[8] = yellowx;
+		in.data_[9] = yellowy;
+		in.data_[10] = yellowSize;
+		in.data_[11] = imu_theta;
+		in.data_[12] = imu_accelx;
+		in.data_[13] = imu_accely;
+		in.data_[14] = liftpos;
+		in.data_[15] = hook_state;
+	} else{
+		model = Model::load("/usd/keras_ann.model");
+		Tensor in{1, 16};
+		in.data_[0] = reflectivity;
+		in.data_[1] = echoDist;
+		in.data_[2] = redx;
+		in.data_[3] = redy;
+		in.data_[4] = redSize;
+		in.data_[5] = bluex;
+		in.data_[6] = bluey;
+		in.data_[7] = blueSize;
+		in.data_[8] = yellowx;
+		in.data_[9] = yellowy;
+		in.data_[10] = yellowSize;
+		in.data_[11] = imu_theta;
+		in.data_[12] = imu_accelx;
+		in.data_[13] = imu_accely;
+		in.data_[14] = liftpos;
+		in.data_[15] = hook_state;
+	}
+	// Run prediction.
+	Tensor out = model(in);
 	float result = out.data_[0];
 	// change the decimal to increase sensitivity
 	if (userControlled == 'N'){

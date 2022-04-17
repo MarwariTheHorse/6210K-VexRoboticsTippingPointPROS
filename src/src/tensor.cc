@@ -63,9 +63,6 @@ namespace keras2cpp {
     }
 
     Tensor Tensor::dot(const Tensor& other) const noexcept {
-        kassert(ndim() == 2);
-        kassert(other.ndim() == 2);
-        kassert(dims_[1] == other.dims_[1]);
 
         Tensor tmp {dims_[0], other.dims_[0]};
 
