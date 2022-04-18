@@ -392,94 +392,98 @@ void logData() {
 		loggingCount++;
 	}
 }
-
+int count = 0;
 void giveInstruction(){
 	auto model = Model::load("/usd/keras_rnn.model");
+	if (count > 2){
+		count = 0;
+		auto redObject = goalVision.get_by_sig(0, 1);
+		auto blueObject = goalVision.get_by_sig(0, 2);
+		auto yellowObject = goalVision.get_by_sig(0, 3);
 
-	auto redObject = goalVision.get_by_sig(0, 1);
-	auto blueObject = goalVision.get_by_sig(0, 2);
-	auto yellowObject = goalVision.get_by_sig(0, 3);
+		// convert everything to floats so the tensor doesn't cry
+		float reflectivity = goalDetect.get_value();
+		float echoDist = echo.get_value();
 
-	// convert everything to floats so the tensor doesn't cry
-	float reflectivity = goalDetect.get_value();
-	float echoDist = echo.get_value();
+		float redx = redObject.x_middle_coord;
+		float redy = redObject.y_middle_coord;
+		float redSize = redObject.height * redObject.width;
 
-	float redx = redObject.x_middle_coord;
-	float redy = redObject.y_middle_coord;
-	float redSize = redObject.height * redObject.width;
+		float bluex = blueObject.x_middle_coord;
+		float bluey = blueObject.y_middle_coord;
+		float blueSize = blueObject.height * blueObject.width;
 
-	float bluex = blueObject.x_middle_coord;
-	float bluey = blueObject.y_middle_coord;
-	float blueSize = blueObject.height * blueObject.width;
+		float yellowx = yellowObject.x_middle_coord;
+		float yellowy = yellowObject.y_middle_coord;
+		float yellowSize = yellowObject.height * yellowObject.width;
 
-	float yellowx = yellowObject.x_middle_coord;
-	float yellowy = yellowObject.y_middle_coord;
-	float yellowSize = yellowObject.height * yellowObject.width;
+		float imu_theta = imu.get_rotation();
+		float imu_accelx = imu.get_accel().x;
+		float imu_accely = imu.get_accel().y;
 
-	float imu_theta = imu.get_rotation();
-	float imu_accelx = imu.get_accel().x;
-	float imu_accely = imu.get_accel().y;
-
-	float liftpos = lift.getPosition();
-	float hook_state = hookState;
-	Tensor in;
-	if(RNN){
-		// Create a 3D Tensor on length 16 for input data.
-		Tensor in{1, 1, 16};
-		in.data_[0] = reflectivity;
-		in.data_[1] = echoDist;
-		in.data_[2] = redx;
-		in.data_[3] = redy;
-		in.data_[4] = redSize;
-		in.data_[5] = bluex;
-		in.data_[6] = bluey;
-		in.data_[7] = blueSize;
-		in.data_[8] = yellowx;
-		in.data_[9] = yellowy;
-		in.data_[10] = yellowSize;
-		in.data_[11] = imu_theta;
-		in.data_[12] = imu_accelx;
-		in.data_[13] = imu_accely;
-		in.data_[14] = liftpos;
-		in.data_[15] = hook_state;
+		float liftpos = lift.getPosition();
+		float hook_state = hookState;
+		Tensor in;
+		if(RNN){
+			// Create a 3D Tensor on length 16 for input data.
+			Tensor in{1, 1, 16};
+			in.data_[0] = reflectivity;
+			in.data_[1] = echoDist;
+			in.data_[2] = redx;
+			in.data_[3] = redy;
+			in.data_[4] = redSize;
+			in.data_[5] = bluex;
+			in.data_[6] = bluey;
+			in.data_[7] = blueSize;
+			in.data_[8] = yellowx;
+			in.data_[9] = yellowy;
+			in.data_[10] = yellowSize;
+			in.data_[11] = imu_theta;
+			in.data_[12] = imu_accelx;
+			in.data_[13] = imu_accely;
+			in.data_[14] = liftpos;
+			in.data_[15] = hook_state;
+		} else{
+			model = Model::load("/usd/keras_ann.model");
+			Tensor in{1, 16};
+			in.data_[0] = reflectivity;
+			in.data_[1] = echoDist;
+			in.data_[2] = redx;
+			in.data_[3] = redy;
+			in.data_[4] = redSize;
+			in.data_[5] = bluex;
+			in.data_[6] = bluey;
+			in.data_[7] = blueSize;
+			in.data_[8] = yellowx;
+			in.data_[9] = yellowy;
+			in.data_[10] = yellowSize;
+			in.data_[11] = imu_theta;
+			in.data_[12] = imu_accelx;
+			in.data_[13] = imu_accely;
+			in.data_[14] = liftpos;
+			in.data_[15] = hook_state;
+		}
+		// Run prediction
+		Tensor out = model(in);
+		float result = out.data_[0];
+		// change the decimal to increase sensitivity
+		// designed to correct error by requiring 2 in a row
+		if (userControlled == 'N'){
+			if (result > .55 && prevPrediction == true){
+				grab();
+				prevPrediction = true;
+			} else if ((result > .55) && prevPrediction == false)
+			{
+				prevPrediction = true;
+			}else if (result < .55 && prevPrediction == true){
+				prevPrediction = false;
+			}else{
+				ungrab();
+			}}
+		std::cout << result << std::endl;
 	} else{
-		model = Model::load("/usd/keras_ann.model");
-		Tensor in{1, 16};
-		in.data_[0] = reflectivity;
-		in.data_[1] = echoDist;
-		in.data_[2] = redx;
-		in.data_[3] = redy;
-		in.data_[4] = redSize;
-		in.data_[5] = bluex;
-		in.data_[6] = bluey;
-		in.data_[7] = blueSize;
-		in.data_[8] = yellowx;
-		in.data_[9] = yellowy;
-		in.data_[10] = yellowSize;
-		in.data_[11] = imu_theta;
-		in.data_[12] = imu_accelx;
-		in.data_[13] = imu_accely;
-		in.data_[14] = liftpos;
-		in.data_[15] = hook_state;
+		count ++;
 	}
-	// Run prediction
-	Tensor out = model(in);
-	float result = out.data_[0];
-	// change the decimal to increase sensitivity
-	// designed to correct error by requiring 2 in a row
-	if (userControlled == 'N'){
-		if (result > .55 && prevPrediction == true){
-			grab();
-			prevPrediction = true;
-		} else if ((result > .55) && prevPrediction == false)
-		{
-			prevPrediction = true;
-		}else if (result < .55 && prevPrediction == true){
-			prevPrediction = false;
-		}else{
-			ungrab();
-		}}
-    std::cout << result << std::endl;
 }
 
 void checkPreference(){
