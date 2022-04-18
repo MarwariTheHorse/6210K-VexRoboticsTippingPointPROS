@@ -28,6 +28,7 @@ char autonMode = 'N'; // Stands for none
 char userControlled = 'N'; //similar to above
 
 bool RNN = false;
+bool prevPrediction = false; //Begin unfired
 
 // Autons
 void skillsAuton()
@@ -461,14 +462,21 @@ void giveInstruction(){
 		in.data_[14] = liftpos;
 		in.data_[15] = hook_state;
 	}
-	// Run prediction.
+	// Run prediction
 	Tensor out = model(in);
 	float result = out.data_[0];
 	// change the decimal to increase sensitivity
+	// designed to correct error by requiring 2 in a row
 	if (userControlled == 'N'){
-		if (result > .55){
+		if (result > .55 && prevPrediction == true){
 			grab();
-		} else{
+			prevPrediction = true;
+		} else if ((result > .55) && prevPrediction == false)
+		{
+			prevPrediction = true;
+		}else if (result < .55 && prevPrediction == true){
+			prevPrediction = false;
+		}else{
 			ungrab();
 		}}
     std::cout << result << std::endl;
