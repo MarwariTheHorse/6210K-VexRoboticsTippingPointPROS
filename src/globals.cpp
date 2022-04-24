@@ -17,7 +17,7 @@
 
 #define GYRO 7
 
-#define GOAL_VISION 21
+#define GOAL_VISION 12
 #define RAMP_VISON 5
 #define GOAL_DETECT 'G'
 
@@ -51,6 +51,7 @@ pros::Vision rampVision(RAMP_VISON, pros::E_VISION_ZERO_CENTER);
 pros::Imu imu(GYRO);
 pros::GPS gps(GPS_PORT, GPS_OFFSET_X, GPS_OFFSET_Y);
 pros::ADIAnalogIn goalDetect(GOAL_DETECT);
+pros::ADIUltrasonic echo(5, 6);
 
 // ADI Stop sensor
 pros::ADIDigitalIn hookStop(HOOK_STOP);

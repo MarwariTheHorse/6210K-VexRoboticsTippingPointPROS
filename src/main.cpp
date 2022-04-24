@@ -1,8 +1,12 @@
 #include "main.h"
 #include <fstream>
+#include <string>
 #include "auton_assist_methods.h"
 #include "globals.h"
+#include "src/model.h"
 
+using keras2cpp::Model;
+using keras2cpp::Tensor;
 // Constants
 const bool TORQUE_THRESHOLD = 1.99;
 
@@ -12,6 +16,8 @@ bool gripState;
 bool hookState;
 double gripHoldPosition;
 
+int loggingCount = 0;
+
 // Anti-doubles
 bool prevUp;
 bool prevB;
@@ -19,6 +25,10 @@ bool prevB;
 double lastVibrate = 0;
 
 char autonMode = 'N'; // Stands for none
+char userControlled = 'N'; //similar to above
+
+bool RNN = false;
+bool prevPrediction = false; //Begin unfired
 
 // Autons
 void skillsAuton()
@@ -353,11 +363,96 @@ void autonomous() {
 	if(autonMode == 'A') experimental();
 }
 
+void logData() {
+	if(loggingCount > 4){
+		loggingCount = 0;
+
+		std::ofstream dataFile;
+		dataFile.open("/usd/current_data.csv", std::ios_base::app);
+
+		dataFile << gripState << ", " << goalDetect.get_value() << ", " << echo.get_value() << ", ";
+
+		double yValue = -averageGPSY(500) / std::cos(3.14159 * (imu.get_rotation() - 180) / 180);
+		dataFile << yValue << ", ";
+
+		dataFile << lift.getPosition() << ", " << hookState << std::endl;
+		dataFile.close();
+	}else{
+		loggingCount++;
+	}
+}
+int count = 0;
+void giveInstruction(){
+	auto model = Model::load("/usd/keras_rnn.model");
+	if (count > 2){
+		count = 0;
+		// convert everything to floats so the tensor doesn't cry
+		float reflectivity = goalDetect.get_value();
+		float echoDist = echo.get_value();
+
+		float yValue = -averageGPSY(500) / std::cos(3.14159 * (imu.get_rotation() - 180) / 180);
+
+		float liftpos = lift.getPosition();
+		float hook_state = hookState;
+		Tensor in;
+		if(RNN){
+			// Create a 3D Tensor on length 5 for input data.
+			Tensor in{1, 1, 5};
+			in.data_[0] = reflectivity;
+			in.data_[1] = echoDist;
+			in.data_[2] = yValue;
+			in.data_[3] = liftpos;
+			in.data_[4] = hook_state;
+		} else{
+			model = Model::load("/usd/keras_ann.model");
+			Tensor in{1, 5};
+			in.data_[0] = reflectivity;
+			in.data_[1] = echoDist;
+			in.data_[2] = yValue;
+			in.data_[3] = liftpos;
+			in.data_[4] = hook_state;
+		}
+		// Run prediction
+		Tensor out = model(in);
+		float result = out.data_[0];
+		// change the decimal to increase sensitivity
+		// designed to correct "Ghost Command"
+		if (userControlled == 'N'){
+			if (result > .55 && prevPrediction == true){
+				grab();
+				prevPrediction = true;
+			} else if ((result > .55) && prevPrediction == false)
+			{
+				prevPrediction = true;
+			}else if (result < .55 && prevPrediction == true){
+				prevPrediction = false;
+			}else{
+				ungrab();
+				prevPrediction = false;
+			}}
+		std::cout << result << std::endl;
+	} else{
+		count ++;
+	}
+}
+
+void checkPreference(){
+	if(master.getDigital(okapi::ControllerDigital::A)) userControlled = 'A';
+	if(master.getDigital(okapi::ControllerDigital::B)) userControlled = 'N';
+}
+
 void opcontrol() {
 	static bool initialized = false; // This line only runs once, no matter how many function calls
 	if(!initialized){
 		// Initialize stuff
 		pros::lcd::initialize();
+
+		// SD warning
+		if(!pros::usd::is_installed()){
+			master.rumble(".-");
+			while(!master.getDigital(okapi::ControllerDigital::A))
+				pros::delay(10);
+		}
 
 		// Configure the goal vision sensor
 		pros::vision_signature_s_t sigGoalRed = goalVision.signature_from_utility(1, 5607, 8193, 6900, -793, -297, -545, 3.7, 0);
@@ -392,6 +487,13 @@ void opcontrol() {
 		lift.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
 
 		// Render the prompt
+		master.setText(0, 0, "User or NN?");
+		while(userControlled == 'N'){
+			//Buttons
+			if(master.getDigital(okapi::ControllerDigital::A)) userControlled = 'A';
+			if(master.getDigital(okapi::ControllerDigital::B)) break;
+		}
+		master.clear();
 		master.setText(0, 0, "Select a mode:");
 
 		// Get the choice
@@ -419,6 +521,9 @@ void opcontrol() {
 		setHook();
 		setDTSpeeds();
 		setLift();
-		pros::delay(10);
+		logData();
+		//checkPreference();
+		//giveInstruction();
+		pros::delay(5);
 	}
 }
