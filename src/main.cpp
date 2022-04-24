@@ -363,13 +363,6 @@ void autonomous() {
 	if(autonMode == 'A') experimental();
 }
 
-void printHeaders() {
-	std::ofstream myfile;
-	myfile.open ("/usd/trainingData.txt", std::ios_base::app);
-	myfile << "Pneumatic State, Reflectivity, UltDist, Xr, Yr, Sr, Xb, Yb, Sb, Xy, Yy, Sy, IMUtheta, Ax, Ay, Lift Position, Judas" << std::endl;
-	myfile.close();
-}
-
 void logData() {
 	if(loggingCount > 4){
 		loggingCount = 0;
@@ -379,14 +372,10 @@ void logData() {
 
 		dataFile << gripState << ", " << goalDetect.get_value() << ", " << echo.get_value() << ", ";
 
-		auto redObject = goalVision.get_by_sig(0, 1);
-		dataFile << redObject.x_middle_coord << ", " << redObject.y_middle_coord << ", " << redObject.width * redObject.height << ", ";
-		auto blueObject = goalVision.get_by_sig(0, 2);
-		dataFile << blueObject.x_middle_coord << ", " << blueObject.y_middle_coord << ", " << blueObject.width * blueObject.height << ", ";
-		auto yellowObject = goalVision.get_by_sig(0, 3);
-		dataFile << yellowObject.x_middle_coord << ", " << yellowObject.y_middle_coord << ", " << yellowObject.width * yellowObject.height << ", ";
-		
-		dataFile << imu.get_rotation() << ", " << imu.get_accel().x << ", " << imu.get_accel().y << ", " << lift.getPosition() << ", " << hookState << std::endl;
+		double yValue = -averageGPSY(500) / std::cos(3.14159 * (imu.get_rotation() - 180) / 180);
+		dataFile << yValue << ", ";
+
+		dataFile << lift.getPosition() << ", " << hookState << std::endl;
 		dataFile.close();
 	}else{
 		loggingCount++;
@@ -397,77 +386,37 @@ void giveInstruction(){
 	auto model = Model::load("/usd/keras_rnn.model");
 	if (count > 2){
 		count = 0;
-		auto redObject = goalVision.get_by_sig(0, 1);
-		auto blueObject = goalVision.get_by_sig(0, 2);
-		auto yellowObject = goalVision.get_by_sig(0, 3);
-
 		// convert everything to floats so the tensor doesn't cry
 		float reflectivity = goalDetect.get_value();
 		float echoDist = echo.get_value();
 
-		float redx = redObject.x_middle_coord;
-		float redy = redObject.y_middle_coord;
-		float redSize = redObject.height * redObject.width;
-
-		float bluex = blueObject.x_middle_coord;
-		float bluey = blueObject.y_middle_coord;
-		float blueSize = blueObject.height * blueObject.width;
-
-		float yellowx = yellowObject.x_middle_coord;
-		float yellowy = yellowObject.y_middle_coord;
-		float yellowSize = yellowObject.height * yellowObject.width;
-
-		float imu_theta = imu.get_rotation();
-		float imu_accelx = imu.get_accel().x;
-		float imu_accely = imu.get_accel().y;
+		float yValue = -averageGPSY(500) / std::cos(3.14159 * (imu.get_rotation() - 180) / 180);
 
 		float liftpos = lift.getPosition();
 		float hook_state = hookState;
 		Tensor in;
 		if(RNN){
-			// Create a 3D Tensor on length 16 for input data.
-			Tensor in{1, 1, 16};
+			// Create a 3D Tensor on length 5 for input data.
+			Tensor in{1, 1, 5};
 			in.data_[0] = reflectivity;
 			in.data_[1] = echoDist;
-			in.data_[2] = redx;
-			in.data_[3] = redy;
-			in.data_[4] = redSize;
-			in.data_[5] = bluex;
-			in.data_[6] = bluey;
-			in.data_[7] = blueSize;
-			in.data_[8] = yellowx;
-			in.data_[9] = yellowy;
-			in.data_[10] = yellowSize;
-			in.data_[11] = imu_theta;
-			in.data_[12] = imu_accelx;
-			in.data_[13] = imu_accely;
-			in.data_[14] = liftpos;
-			in.data_[15] = hook_state;
+			in.data_[2] = yValue;
+			in.data_[3] = liftpos;
+			in.data_[4] = hook_state;
 		} else{
 			model = Model::load("/usd/keras_ann.model");
-			Tensor in{1, 16};
+			Tensor in{1, 5};
 			in.data_[0] = reflectivity;
 			in.data_[1] = echoDist;
-			in.data_[2] = redx;
-			in.data_[3] = redy;
-			in.data_[4] = redSize;
-			in.data_[5] = bluex;
-			in.data_[6] = bluey;
-			in.data_[7] = blueSize;
-			in.data_[8] = yellowx;
-			in.data_[9] = yellowy;
-			in.data_[10] = yellowSize;
-			in.data_[11] = imu_theta;
-			in.data_[12] = imu_accelx;
-			in.data_[13] = imu_accely;
-			in.data_[14] = liftpos;
-			in.data_[15] = hook_state;
+			in.data_[2] = yValue;
+			in.data_[3] = liftpos;
+			in.data_[4] = hook_state;
 		}
 		// Run prediction
 		Tensor out = model(in);
 		float result = out.data_[0];
 		// change the decimal to increase sensitivity
-		// designed to correct error by requiring 2 in a row
+		// designed to correct "Ghost Command"
 		if (userControlled == 'N'){
 			if (result > .55 && prevPrediction == true){
 				grab();
@@ -479,6 +428,7 @@ void giveInstruction(){
 				prevPrediction = false;
 			}else{
 				ungrab();
+				prevPrediction = false;
 			}}
 		std::cout << result << std::endl;
 	} else{
@@ -538,8 +488,6 @@ void opcontrol() {
 
 		// Render the prompt
 		master.setText(0, 0, "User or NN?");
-		master.setText(1, 0, "A for User");
-		master.setText(2, 0, "B for NN");
 		while(userControlled == 'N'){
 			//Buttons
 			if(master.getDigital(okapi::ControllerDigital::A)) userControlled = 'A';
@@ -567,19 +515,15 @@ void opcontrol() {
 		initialized = true;
 	}
 
-	printHeaders();
-
-
-
 	while (true) {
 		setVibrate();
 		setGrip();
 		setHook();
 		setDTSpeeds();
 		setLift();
-		//logData();
-		checkPreference();
-		giveInstruction();
+		logData();
+		//checkPreference();
+		//giveInstruction();
 		pros::delay(5);
 	}
 }
