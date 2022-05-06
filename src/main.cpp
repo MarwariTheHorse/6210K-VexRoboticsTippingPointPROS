@@ -364,7 +364,7 @@ void autonomous() {
 }
 
 void logData() {
-	if(loggingCount > 4){
+	if(loggingCount > 20){
 		loggingCount = 0;
 
 		std::ofstream dataFile;
@@ -372,7 +372,7 @@ void logData() {
 
 		dataFile << gripState << ", " << goalDetect.get_value() << ", " << echo.get_value() << ", ";
 
-		double yValue = -averageGPSY(500) / std::cos(3.14159 * (imu.get_rotation() - 180) / 180);
+		double yValue = gps.get_status().y;
 		dataFile << yValue << ", ";
 
 		dataFile << lift.getPosition() << ", " << hookState << std::endl;
@@ -384,13 +384,13 @@ void logData() {
 int count = 0;
 void giveInstruction(){
 	auto model = Model::load("/usd/keras_rnn.model");
-	if (count > 2){
+	if (count > 20){
 		count = 0;
 		// convert everything to floats so the tensor doesn't cry
 		float reflectivity = goalDetect.get_value();
 		float echoDist = echo.get_value();
 
-		float yValue = -averageGPSY(500) / std::cos(3.14159 * (imu.get_rotation() - 180) / 180);
+		float yValue = gps.get_status().y;
 
 		float liftpos = lift.getPosition();
 		float hook_state = hookState;
@@ -521,9 +521,9 @@ void opcontrol() {
 		setHook();
 		setDTSpeeds();
 		setLift();
-		logData();
-		//checkPreference();
-		//giveInstruction();
+		//logData();
+		checkPreference();
+		giveInstruction();
 		pros::delay(5);
 	}
 }
