@@ -6,7 +6,7 @@ from tensorflow.keras.optimizers import Adam
 from keras2cpp import export_model
 
 #Determine whether we ant the model to be saved onto the robot
-SAVE = True
+SAVE = False
 
 def create_model():
 	# Customize adam learning rate. Changing will require retrain.
@@ -36,6 +36,7 @@ def create_model():
 	# compile showing accuracy and using mse and adam as they performed the best
 	model.compile(loss='mean_squared_error', optimizer=Adam(learning_rate=.001), metrics=['accuracy'])
 	# can modify batch size and epochs but will require a retrain
+	model.summary()
 	model.fit(X, Y, batch_size=50, epochs=5000, verbose=1)
 	# print summary to terminal
 	model.summary()

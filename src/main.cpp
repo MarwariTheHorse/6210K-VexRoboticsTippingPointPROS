@@ -7,6 +7,7 @@
 
 using keras2cpp::Model;
 using keras2cpp::Tensor;
+auto model = Model::load("/usd/keras_ann.model");
 // Constants
 const bool TORQUE_THRESHOLD = 1.99;
 
@@ -383,35 +384,28 @@ void logData() {
 }
 int count = 0;
 void giveInstruction(){
-	auto model = Model::load("/usd/keras_rnn.model");
-	if (count > 20){
+	if (count > 40){
 		count = 0;
 		// convert everything to floats so the tensor doesn't cry
 		float reflectivity = goalDetect.get_value();
 		float echoDist = echo.get_value();
 
-		float yValue = gps.get_status().y;
+		float theta = imu.get_rotation();
+		float accelx = imu.get_accel().x;
+		float accely = imu.get_accel().y;
 
 		float liftpos = lift.getPosition();
 		float hook_state = hookState;
-		Tensor in;
-		if(RNN){
-			// Create a 3D Tensor on length 5 for input data.
-			Tensor in{1, 1, 5};
-			in.data_[0] = reflectivity;
-			in.data_[1] = echoDist;
-			in.data_[2] = yValue;
-			in.data_[3] = liftpos;
-			in.data_[4] = hook_state;
-		} else{
-			model = Model::load("/usd/keras_ann.model");
-			Tensor in{1, 5};
-			in.data_[0] = reflectivity;
-			in.data_[1] = echoDist;
-			in.data_[2] = yValue;
-			in.data_[3] = liftpos;
-			in.data_[4] = hook_state;
-		}
+		
+		Tensor in{7};
+		in.data_[0] = reflectivity;
+		in.data_[1] = echoDist;
+		in.data_[2] = theta;
+		in.data_[3] = accelx;
+		in.data_[4] = accely;
+		in.data_[5] = liftpos;
+		in.data_[6] = hook_state;
+		
 		// Run prediction
 		Tensor out = model(in);
 		float result = out.data_[0];
@@ -488,12 +482,13 @@ void opcontrol() {
 
 		// Render the prompt
 		master.setText(0, 0, "User or NN?");
-		while(userControlled == 'N'){
+		while(userControlled == 'N'){ // N is Neural Network, A is user controlled
 			//Buttons
 			if(master.getDigital(okapi::ControllerDigital::A)) userControlled = 'A';
 			if(master.getDigital(okapi::ControllerDigital::B)) break;
 		}
 		master.clear();
+		pros::delay(1000);
 		master.setText(0, 0, "Select a mode:");
 
 		// Get the choice
@@ -512,6 +507,7 @@ void opcontrol() {
 		}
 		master.clear();
 		pros::delay(1000);
+		std::cout << "hey" << std::endl;
 		initialized = true;
 	}
 
@@ -521,6 +517,7 @@ void opcontrol() {
 		setHook();
 		setDTSpeeds();
 		setLift();
+		std::cout << "hey" << std::endl;
 		//logData();
 		checkPreference();
 		giveInstruction();
