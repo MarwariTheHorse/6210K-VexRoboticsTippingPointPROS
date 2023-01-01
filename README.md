@@ -1,6 +1,16 @@
 # 6210K-VexRoboticsTippingPointPROS - LiftBot code
 The amazing code repo for all the PROS code of 2021-2022.
 
+-----------------------
+
+This years code controls a 6 motor drivetrain (two left, two center, two right) and a lift,
+with a pneumatic grip for grabbing the scoring objects. Along with the average driver
+code and autonomous code successes, we also succeeded in designing a neural network to
+operate the grip autonomously in any situation. The solution was insanely accurate, and even
+learned to react to certain situations we hadn't thought of while training it.
+
+-----------------------
+
 ### Authors:
 * Caleb Buening
 * Joey Curnutt
